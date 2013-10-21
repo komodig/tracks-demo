@@ -14,7 +14,7 @@ class Settings():
         self.height = height
 
 
-settings = Settings(clusters=10, cluster_size=7, width=1000, height=700)
+settings = Settings(clusters=7, cluster_size=7, width=1000, height=700)
 
 
 class Surface():
@@ -27,7 +27,7 @@ class Surface():
 
 def init_clients():
     clients = []
-    for i in range(0, settings.clusters * settings.cluster_size):
+    for i in range(settings.clusters * settings.cluster_size):
         clients.append(Client(randrange(1, settings.width), randrange(1, settings.height)))
 
     return clients
@@ -35,8 +35,10 @@ def init_clients():
 
 def find_next(client, clientlist):
     closest = clientlist[0]
-    for x in clientlist[1:]:
-        if client.distance_to(x) < client.distance_to(closest):
+    for x in clientlist:
+        if x == client:
+            continue
+        elif client.distance_to(x) < client.distance_to(closest):
             closest = x
 
     return closest
@@ -47,23 +49,23 @@ def get_exit_event():
         if event.type == KEYDOWN and event.key == K_ESCAPE:
             pygame.quit()
             exit()
+        elif event.type == KEYDOWN and event.key == K_SPACE:
+            while True:
+                sleep(3)
 
 
-def print_cluster(surface_config, clientlist, last_used):
+def print_cluster(surface_config, clientlist, start_client):
     if len(clientlist) < settings.cluster_size:
         print('not enough clients')
         exit()
 
-    cluster_clients = []
-    if last_used is None:
-        cluster_clients.append(clientlist[0])
-        del clientlist[0]
-    else:
-        first_of_cluster = find_next(last_used, clientlist)
-        cluster_clients.append(first_of_cluster)
-        clientlist.remove(first_of_cluster)
+    tour_length = 0.0
 
-    for i in range(0, settings.cluster_size - 1):
+    cluster_clients = []
+    cluster_clients.append(start_client)
+    clientlist.remove(start_client)
+
+    for i in range(settings.cluster_size - 1):
         next_client = find_next(cluster_clients[0], clientlist)
         cluster_clients.append(next_client)
         clientlist.remove(next_client)
@@ -73,6 +75,7 @@ def print_cluster(surface_config, clientlist, last_used):
     while len(cluster_clients):
         client2 = find_next(client1, cluster_clients)
         pygame.draw.line(surface_config.surface, surface_config.color2, client1.coords(), client2.coords(), 2)
+        tour_length += client1.distance_to(client2)
         pygame.display.update()
         surface_config.fps_clock.tick(30)
         try:
@@ -81,10 +84,11 @@ def print_cluster(surface_config, clientlist, last_used):
             pass
         client1 = copy(client2)
 
-    return clientlist, client1
+    return clientlist, client1, tour_length
 
 
-def print_clients(surface_config, clientlist, wait_for_user=1):
+def print_clients(surface_config, clientlist, first_client, wait_for_user=1):
+    length = 0.0
     for client in clientlist:
         pygame.draw.circle(surface_config.surface, surface_config.color1, client.coords(), 4, 0)
         pygame.display.update()
@@ -92,8 +96,12 @@ def print_clients(surface_config, clientlist, wait_for_user=1):
 
     last_used = None
     for i in range(0, settings.clusters):
-        print('clients left: %d' % len(clientlist))
-        clientlist, last_used = print_cluster(surface_config, clientlist, last_used)
+        if last_used is None:
+            start_client = first_client
+        else:
+            start_client = find_next(last_used, clientlist)
+        clientlist, last_used, cluster_length = print_cluster(surface_config, clientlist, start_client)
+        length += cluster_length
 
     if wait_for_user:
         while 1:
@@ -102,6 +110,8 @@ def print_clients(surface_config, clientlist, wait_for_user=1):
     else:
         sleep(3)
         get_exit_event()
+
+    return length
 
 
 def init_surface():
@@ -114,8 +124,24 @@ def init_surface():
 
 
 if __name__ == '__main__':
-    while True:
+    clients = init_clients()
+    print('running %d clients...' % (settings.clusters * settings.cluster_size))
+    clients_perm = copy(clients)
+    best_tour = None
+    for x in range(len(clients_perm)):
         surface_config = init_surface()
-        clients = init_clients()
-        print_clients(surface_config, clients, 1)
+        print('tour starting Client %d (%d, %d)' % (x + 1, clients[x].x, clients[x].y))
+        length = print_clients(surface_config, clients, clients[x], 0)
+        clients_perm[x].tour_length(length)
+        print('client %d tour length: %f' % (x + 1, clients_perm[x].tour_length()))
+        if best_tour is None or (length < clients_perm[best_tour].tour_length(None)):
+            best_tour = x
+            print('new best tour!')
+        clients = copy(clients_perm)
+
+    print('finished! displaying best tour...')
+    best = clients[best_tour]
+    print('starting Client %d (%d, %d) length: %f' % (x + 1, best.x, best.y, best.tour_length(None)))
+    surface_config = init_surface()
+    length = print_clients(surface_config, clients, clients[best_tour], 1)
 
