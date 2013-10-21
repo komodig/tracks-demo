@@ -74,7 +74,7 @@ def print_dots(dotlist, wait_for_user=1):
 
 
 if __name__ == '__main__':
-    for c in range(0,100):
+    while True:
         dots = init_dots()
         print_dots(dots, 0)
 
