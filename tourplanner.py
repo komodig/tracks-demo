@@ -10,7 +10,7 @@ settings = {'width': 1000, 'height': 700}
 
 def init_dots():
     dots = []
-    for i in range(0,200):
+    for i in range(0,100):
         dots.append((randrange(1, settings['width']), randrange(1, settings['height'])))
     
     return dots
