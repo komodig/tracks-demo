@@ -6,12 +6,21 @@ from time import sleep
 from copy import copy
 from clients import Client
 
-settings = {'width': 1000, 'height': 700}
+class Settings():
+    def __init__(self, clusters, cluster_size, width, height):
+        self.clusters = clusters
+        self.cluster_size = cluster_size
+        self.width = width
+        self.height = height
+
+
+settings = Settings(clusters=20, cluster_size=7, width=1000, height=700)
+
 
 def init_clients():
     clients = []
-    for i in range(0,20):
-        clients.append(Client(randrange(1, settings['width']), randrange(1, settings['height'])))
+    for i in range(0, settings.clusters * settings.cluster_size):
+        clients.append(Client(randrange(1, settings.width), randrange(1, settings.height)))
 
     return clients
 
@@ -34,7 +43,7 @@ def get_exit_event():
 
 def print_clients(clientlist, wait_for_user=1):
     pygame.init()
-    surface = pygame.display.set_mode((settings['width'], settings['height']))
+    surface = pygame.display.set_mode((settings.width, settings.height))
     color1 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
     color2 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
     fps_clock = pygame.time.Clock()
