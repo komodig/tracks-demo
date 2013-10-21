@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
     print('finished! displaying best tour...')
     best = clients[best_tour]
-    print('starting Client %d (%d, %d) length: %f' % (x + 1, best.x, best.y, best.tour_length(None)))
+    print('starting Client %d (%d, %d) length: %f' % (best_tour + 1, best.x, best.y, best.tour_length(None)))
     surface_config = init_surface()
     length = print_clients(surface_config, clients, clients[best_tour], 1)
 
