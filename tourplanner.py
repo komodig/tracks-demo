@@ -3,30 +3,23 @@ import pygame
 from pygame.locals import *
 from sys import exit
 from time import sleep
-from math import sqrt, pow
 from copy import copy
+from clients import Client
 
 settings = {'width': 1000, 'height': 700}
 
-def init_dots():
-    dots = []
-    for i in range(0,100):
-        dots.append((randrange(1, settings['width']), randrange(1, settings['height'])))
-    
-    return dots
+def init_clients():
+    clients = []
+    for i in range(0,20):
+        clients.append(Client(randrange(1, settings['width']), randrange(1, settings['height'])))
+
+    return clients
 
 
-def distance(a, b):
-    x = a[0] - b[0]
-    y = a[1] - b[1]
-
-    return sqrt(pow(x,2) + pow(y,2))
-
-
-def find_next(dot, dotlist):
-    closest = dotlist[0] 
-    for x in dotlist[1:]:
-        if distance(dot, x) < distance(dot, closest):
+def find_next(client, clientlist):
+    closest = clientlist[0]
+    for x in clientlist[1:]:
+        if client.distance_to(x) < client.distance_to(closest):
             closest = x
 
     return closest
@@ -39,30 +32,30 @@ def get_exit_event():
             exit()
 
 
-def print_dots(dotlist, wait_for_user=1):
+def print_clients(clientlist, wait_for_user=1):
     pygame.init()
     surface = pygame.display.set_mode((settings['width'], settings['height']))
     color1 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
     color2 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
     fps_clock = pygame.time.Clock()
-    
-    for dot in dotlist:
-        pygame.draw.circle(surface, color1, (dot[0],dot[1]), 4, 0)
+
+    for client in clientlist:
+        pygame.draw.circle(surface, color1, client.coords(), 4, 0)
         pygame.display.update()
         fps_clock.tick(30)
 
-    dot1 = dotlist[0]
-    dotlist.remove(dot1)
-    while len(dotlist):
-        dot2 = find_next(dot1, dotlist) 
-        pygame.draw.line(surface, color2, dot1, dot2, 2)
+    client1 = clientlist[0]
+    clientlist.remove(client1)
+    while len(clientlist):
+        client2 = find_next(client1, clientlist)
+        pygame.draw.line(surface, color2, client1.coords(), client2.coords(), 2)
         pygame.display.update()
         fps_clock.tick(30)
         try:
-            dotlist.remove(dot1)
+            clientlist.remove(client1)
         except ValueError:
             pass
-        dot1 = copy(dot2)
+        client1 = copy(client2)
 
     if wait_for_user:
         while 1:
@@ -75,6 +68,6 @@ def print_dots(dotlist, wait_for_user=1):
 
 if __name__ == '__main__':
     while True:
-        dots = init_dots()
-        print_dots(dots, 0)
+        clients = init_clients()
+        print_clients(clients, 0)
 
