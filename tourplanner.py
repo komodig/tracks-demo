@@ -87,14 +87,21 @@ def print_cluster(surface_config, clientlist, start_client):
     return clientlist, client1, tour_length
 
 
-def print_clients(surface_config, clientlist, first_client, wait_for_user=1):
-    length = 0.0
+def print_dots(surface_config, clientlist, slow=False):
     for client in clientlist:
         pygame.draw.circle(surface_config.surface, surface_config.color1, client.coords(), 4, 0)
-        pygame.display.update()
-        surface_config.fps_clock.tick(30)
+        if slow:
+            pygame.display.update()
+            surface_config.fps_clock.tick(30)
 
+    if not slow:
+        pygame.display.update()
+
+
+def print_clients(surface_config, clientlist, first_client, wait_for_user=1):
+    length = 0.0
     last_used = None
+
     for i in range(0, settings.clusters):
         if last_used is None:
             start_client = first_client
@@ -130,6 +137,7 @@ if __name__ == '__main__':
     best_tour = None
     for x in range(len(clients_perm)):
         surface_config = init_surface()
+        print_dots(surface_config, clients, True if x == 0 else False)
         print('tour starting Client %d (%d, %d)' % (x + 1, clients[x].x, clients[x].y))
         length = print_clients(surface_config, clients, clients[x], 0)
         clients_perm[x].tour_length(length)
