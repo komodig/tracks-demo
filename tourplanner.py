@@ -50,7 +50,7 @@ def find_next(client, clientlist):
     return closest
 
 
-def handle_events():
+def handle_user_events():
     while True:
         event = pygame.event.poll()
 
@@ -124,7 +124,7 @@ def print_routes(surface_config, clientlist, first_client):
 
         process = ProcessControl.RUN
         while 1:
-            cmd = handle_events()
+            cmd = handle_user_events()
             if cmd == ProcessControl.RUN and process == ProcessControl.RUN:
                 break
             elif cmd == ProcessControl.PAUSE and process == ProcessControl.RUN:
