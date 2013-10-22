@@ -25,6 +25,12 @@ class Surface():
         self.fps_clock = fps_clock
 
 
+class ProcessControl():
+    RUN   = 1
+    PAUSE = 2
+    WAIT  = 3
+
+
 def init_clients():
     clients = []
     for i in range(settings.clusters * settings.cluster_size):
@@ -44,14 +50,17 @@ def find_next(client, clientlist):
     return closest
 
 
-def get_exit_event():
-    for event in pygame.event.get():
-        if event.type == KEYDOWN and event.key == K_ESCAPE:
+def handle_events():
+    while True:
+        event = pygame.event.poll()
+
+        if event.type == NOEVENT:
+            return ProcessControl.RUN
+        elif event.type == KEYDOWN and event.key == K_ESCAPE:
             pygame.quit()
             exit()
         elif event.type == KEYDOWN and event.key == K_SPACE:
-            while True:
-                sleep(3)
+            return ProcessControl.PAUSE
 
 
 def print_cluster(surface_config, clientlist, start_client):
@@ -97,7 +106,7 @@ def print_clients(surface_config, clientlist, slow=False):
         pygame.display.update()
 
 
-def print_routes(surface_config, clientlist, first_client, wait_for_user=1):
+def print_routes(surface_config, clientlist, first_client):
     length = 0.0
     last_used = None
 
@@ -109,13 +118,21 @@ def print_routes(surface_config, clientlist, first_client, wait_for_user=1):
         clientlist, last_used, cluster_length = print_cluster(surface_config, clientlist, start_client)
         length += cluster_length
 
-    if wait_for_user:
+        # rest a little when figure is complete
+        if not len(clientlist):
+            sleep(2)
+
+        process = ProcessControl.RUN
         while 1:
-            get_exit_event()
+            cmd = handle_events()
+            if cmd == ProcessControl.RUN and process == ProcessControl.RUN:
+                break
+            elif cmd == ProcessControl.PAUSE and process == ProcessControl.RUN:
+                process = ProcessControl.WAIT
+            elif cmd == ProcessControl.PAUSE and process == ProcessControl.WAIT:
+                process = ProcessControl.RUN
+                break
             sleep(1)
-    else:
-        sleep(3)
-        get_exit_event()
 
     return length
 
@@ -136,19 +153,19 @@ if __name__ == '__main__':
     best_tour = None
     for x in range(len(clients_perm)):
         surface_config = init_surface()
-        print_clients(surface_config, clients, True if x == 0 else False)
+        print_clients(surface_config, clients_perm, True if x == 0 else False)
         print('tour starting Client %d (%d, %d)' % (x + 1, clients[x].x, clients[x].y))
-        length = print_routes(surface_config, clients, clients[x], 0)
+        length = print_routes(surface_config, clients, clients[x])
         clients_perm[x].tour_length(length)
         print('client %d tour length: %f' % (x + 1, clients_perm[x].tour_length()))
-        if best_tour is None or (length < clients_perm[best_tour].tour_length(None)):
+        if best_tour is None or (length < clients_perm[best_tour].tour_length()):
             best_tour = x
             print('new best tour!')
         clients = copy(clients_perm)
 
     print('finished! displaying best tour...')
     best = clients[best_tour]
-    print('starting Client %d (%d, %d) length: %f' % (best_tour + 1, best.x, best.y, best.tour_length(None)))
+    print('starting Client %d (%d, %d) length: %f' % (best_tour + 1, best.x, best.y, best.tour_length()))
     surface_config = init_surface()
     length = print_routes(surface_config, clients, clients[best_tour], 1)
 
