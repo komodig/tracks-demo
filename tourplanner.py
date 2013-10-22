@@ -123,7 +123,7 @@ def print_routes(surface_config, clientlist, first_client):
             sleep(2)
 
         process = ProcessControl.RUN
-        while 1:
+        while True:
             cmd = handle_user_events()
             if cmd == ProcessControl.RUN and process == ProcessControl.RUN:
                 break
@@ -168,4 +168,7 @@ if __name__ == '__main__':
     print('starting Client %d (%d, %d) length: %f' % (best_tour + 1, best.x, best.y, best.tour_length()))
     surface_config = init_surface()
     length = print_routes(surface_config, clients, clients[best_tour])
+    while True:
+        handle_user_events()
+        sleep(2)
 
