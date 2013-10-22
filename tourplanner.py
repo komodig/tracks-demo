@@ -14,7 +14,7 @@ class Settings():
         self.height = height
 
 
-settings = Settings(clusters=7, cluster_size=7, width=1000, height=700)
+settings = Settings(clusters=5, cluster_size=7, width=1200, height=800)
 
 
 class Surface():
@@ -87,18 +87,17 @@ def print_cluster(surface_config, clientlist, start_client):
     return clientlist, client1, tour_length
 
 
-def print_dots(surface_config, clientlist, slow=False):
+def print_clients(surface_config, clientlist, slow=False):
     for client in clientlist:
         pygame.draw.circle(surface_config.surface, surface_config.color1, client.coords(), 4, 0)
         if slow:
             pygame.display.update()
             surface_config.fps_clock.tick(30)
-
     if not slow:
         pygame.display.update()
 
 
-def print_clients(surface_config, clientlist, first_client, wait_for_user=1):
+def print_routes(surface_config, clientlist, first_client, wait_for_user=1):
     length = 0.0
     last_used = None
 
@@ -137,9 +136,9 @@ if __name__ == '__main__':
     best_tour = None
     for x in range(len(clients_perm)):
         surface_config = init_surface()
-        print_dots(surface_config, clients, True if x == 0 else False)
+        print_clients(surface_config, clients, True if x == 0 else False)
         print('tour starting Client %d (%d, %d)' % (x + 1, clients[x].x, clients[x].y))
-        length = print_clients(surface_config, clients, clients[x], 0)
+        length = print_routes(surface_config, clients, clients[x], 0)
         clients_perm[x].tour_length(length)
         print('client %d tour length: %f' % (x + 1, clients_perm[x].tour_length()))
         if best_tour is None or (length < clients_perm[best_tour].tour_length(None)):
@@ -151,5 +150,5 @@ if __name__ == '__main__':
     best = clients[best_tour]
     print('starting Client %d (%d, %d) length: %f' % (best_tour + 1, best.x, best.y, best.tour_length(None)))
     surface_config = init_surface()
-    length = print_clients(surface_config, clients, clients[best_tour], 1)
+    length = print_routes(surface_config, clients, clients[best_tour], 1)
 
