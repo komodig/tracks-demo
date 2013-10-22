@@ -25,7 +25,7 @@ class Settings():
 
 
 settings = Settings(clusters=5, cluster_size=7, width=1200, height=800)
-info = Info(version='0.1.1', usage='use <ESC> to quit and <SPACE> to pause and continue')
+info = Info(version='0.1.2', usage='use <ESC> to quit and <SPACE> to pause and continue')
 
 
 class Surface():
