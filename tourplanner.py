@@ -6,6 +6,16 @@ from time import sleep
 from copy import copy
 from clients import Client
 
+
+class Info():
+    def __init__(self, version, usage):
+        self.version = version
+        self.usage = usage
+
+    def __repr__(self):
+        return self.version
+
+
 class Settings():
     def __init__(self, clusters, cluster_size, width, height):
         self.clusters = clusters
@@ -15,6 +25,14 @@ class Settings():
 
 
 settings = Settings(clusters=5, cluster_size=7, width=1200, height=800)
+info = Info(version='0.1.1', usage=
+"""
+*   Usage:
+*
+*   You can control the running process by using
+*   <ESC> to quit
+*   <SPACE> to pause and continue
+""")
 
 
 class Surface():
@@ -148,6 +166,8 @@ def init_surface():
 
 if __name__ == '__main__':
     clients = init_clients()
+    print('\n*   Version: %s\n*%s' % (info.version, info.usage))
+
     print('running %d clients...' % (settings.clusters * settings.cluster_size))
     clients_perm = copy(clients)
     best_tour = None
