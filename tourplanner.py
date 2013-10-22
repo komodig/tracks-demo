@@ -25,14 +25,7 @@ class Settings():
 
 
 settings = Settings(clusters=5, cluster_size=7, width=1200, height=800)
-info = Info(version='0.1.1', usage=
-"""
-*   Usage:
-*
-*   You can control the running process by using
-*   <ESC> to quit
-*   <SPACE> to pause and continue
-""")
+info = Info(version='0.1.1', usage='use <ESC> to quit and <SPACE> to pause and continue')
 
 
 class Surface():
@@ -155,24 +148,33 @@ def print_routes(surface_config, clientlist, first_client):
     return length
 
 
-def init_surface():
+def init_surface(show_msg=False):
     pygame.init()
     surface = pygame.display.set_mode((settings.width, settings.height))
     color1 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
     color2 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
+
+    if show_msg:
+        font_color = pygame.Color(180,255,80)
+        font = pygame.font.Font('freesansbold.ttf', 24)
+        surface_msg = font.render(info.usage, False, font_color)
+        msg_rect = surface_msg.get_rect()
+        msg_rect.topleft = (250,200)
+        surface.blit(surface_msg, msg_rect)
+
     fps_clock = pygame.time.Clock()
     return Surface(surface, color1, color2, fps_clock)
 
 
 if __name__ == '__main__':
     clients = init_clients()
-    print('\n*   Version: %s\n*%s' % (info.version, info.usage))
-
+    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (info.version, info.usage))
+    #print pygame.font.get_fonts()
     print('running %d clients...' % (settings.clusters * settings.cluster_size))
     clients_perm = copy(clients)
     best_tour = None
     for x in range(len(clients_perm)):
-        surface_config = init_surface()
+        surface_config = init_surface(True if x <= 2 else False)
         print_clients(surface_config, clients_perm, True if x == 0 else False)
         print('tour starting Client %d (%d, %d)' % (x + 1, clients[x].x, clients[x].y))
         length = print_routes(surface_config, clients, clients[x])
