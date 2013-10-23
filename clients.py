@@ -49,6 +49,9 @@ class ClientsCollection():
             self.clients.append(Client(randrange(1, width), randrange(1, height)))
 
 
-    def get_list(self):
-        return self.clients
+    def clist(self, idx=None):
+        if idx is None:
+            return self.clients
+        else:
+            return self.clients[idx]
 

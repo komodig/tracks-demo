@@ -153,23 +153,23 @@ def init_surface(show_msg=False):
 
 if __name__ == '__main__':
     all_clients = ClientsCollection(**settings)
-    clients = all_clients.get_list()
+    clients = copy(all_clients.clist())
     print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (info['version'], info['usage']))
     #print pygame.font.get_fonts()
     print('running %d clients...' % (settings['clusters'] * settings['cluster_size']))
-    clients_perm = copy(clients)
     best_tour = None
-    for x in range(len(clients_perm)):
+
+    for x in range(len(all_clients.clist())):
         surface_config = init_surface(True if x <= 2 else False)
-        print_clients(surface_config, clients_perm, True if x == 0 else False)
+        print_clients(surface_config, all_clients.clist(), True if x == 0 else False)
         print('tour starting Client %d (%d, %d)' % (x + 1, clients[x].x, clients[x].y))
         length = print_tours(surface_config, clients, clients[x])
-        clients_perm[x].tour_length(length)
-        print('client %d tour length: %f' % (x + 1, clients_perm[x].tour_length()))
-        if best_tour is None or (length < clients_perm[best_tour].tour_length()):
+        all_clients.clist(x).tour_length(length)
+        print('client %d tour length: %f' % (x + 1, all_clients.clist(x).tour_length()))
+        if best_tour is None or (length < all_clients.clist(best_tour).tour_length()):
             best_tour = x
             print('new best tour!')
-        clients = copy(clients_perm)
+        clients = copy(all_clients.clist())
 
     print('finished! displaying best tour...')
     best = clients[best_tour]
