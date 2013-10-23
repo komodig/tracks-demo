@@ -1,3 +1,4 @@
+import pygame
 from math import sqrt, pow
 from random import randrange
 
@@ -12,8 +13,7 @@ class Client():
         self.x = x
         self.y = y
         self.state = ClientState.UNASSOCIATED
-        self.tour_length_when_first = 0.0
-        print('created new client with x:%d y:%d' % (self.x, self.y))
+        print('created new client at x:%d y:%d' % (self.x, self.y))
 
 
     def __repr__(self):
@@ -34,24 +34,28 @@ class Client():
         return sqrt(pow(x,2) + pow(y,2))
 
 
-    def tour_length(self, length=None):
-        if length is None:
-            return self.tour_length_when_first
-        else:
-            self.tour_length_when_first = length
-
-
 class ClientsCollection():
     def __init__(self, clusters, cluster_size, width, height):
         self.clients = []
+        self.max_distance = 0.0
+        self.avg_distance = 0.0
 
         for i in range(clusters * cluster_size):
             self.clients.append(Client(randrange(1, width), randrange(1, height)))
 
+        self.get_client_distances()
+        print('\nmaximum client distance: %f\naverage client distance: %f' %(self.max_distance, self.avg_distance))
 
-    def clist(self, idx=None):
-        if idx is None:
-            return self.clients
-        else:
-            return self.clients[idx]
+
+    def get_client_distances(self):
+        for client in self.clients:
+            for other in self.clients:
+                dist = client.distance_to(other)
+                if dist:                            # omit zero-distance to client itself
+                    self.avg_distance += dist
+                if dist > self.max_distance:
+                    self.max_distance = dist
+
+        self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself 
+
 
