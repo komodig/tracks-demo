@@ -117,7 +117,7 @@ def print_clients(surface_config, clientlist, slow=False):
         pygame.display.update()
 
 
-def print_routes(surface_config, clientlist, first_client):
+def print_tours(surface_config, clientlist, first_client):
     length = 0.0
     last_used = None
 
@@ -177,7 +177,7 @@ if __name__ == '__main__':
         surface_config = init_surface(True if x <= 2 else False)
         print_clients(surface_config, clients_perm, True if x == 0 else False)
         print('tour starting Client %d (%d, %d)' % (x + 1, clients[x].x, clients[x].y))
-        length = print_routes(surface_config, clients, clients[x])
+        length = print_tours(surface_config, clients, clients[x])
         clients_perm[x].tour_length(length)
         print('client %d tour length: %f' % (x + 1, clients_perm[x].tour_length()))
         if best_tour is None or (length < clients_perm[best_tour].tour_length()):
@@ -189,7 +189,7 @@ if __name__ == '__main__':
     best = clients[best_tour]
     print('starting Client %d (%d, %d) length: %f' % (best_tour + 1, best.x, best.y, best.tour_length()))
     surface_config = init_surface()
-    length = print_routes(surface_config, clients, clients[best_tour])
+    length = print_tours(surface_config, clients, clients[best_tour])
     while True:
         handle_user_events()
         sleep(2)
