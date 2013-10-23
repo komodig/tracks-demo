@@ -4,28 +4,21 @@ from pygame.locals import *
 from sys import exit
 from time import sleep
 from copy import copy
-from clients import Client
+from clients import Client, ClientsCollection
 
 
-class Info():
-    def __init__(self, version, usage):
-        self.version = version
-        self.usage = usage
-
-    def __repr__(self):
-        return self.version
+info = {
+    'version': '0.1.2',
+    'usage': 'use <ESC> to quit and <SPACE> to pause and continue',
+}
 
 
-class Settings():
-    def __init__(self, clusters, cluster_size, width, height):
-        self.clusters = clusters
-        self.cluster_size = cluster_size
-        self.width = width
-        self.height = height
-
-
-settings = Settings(clusters=5, cluster_size=7, width=1200, height=800)
-info = Info(version='0.1.2', usage='use <ESC> to quit and <SPACE> to pause and continue')
+settings = {
+    'clusters': 5,
+    'cluster_size': 7,
+    'width': 1200,
+    'height': 800,
+}
 
 
 class Surface():
@@ -40,14 +33,6 @@ class ProcessControl():
     RUN   = 1
     PAUSE = 2
     WAIT  = 3
-
-
-def init_clients():
-    clients = []
-    for i in range(settings.clusters * settings.cluster_size):
-        clients.append(Client(randrange(1, settings.width), randrange(1, settings.height)))
-
-    return clients
 
 
 def find_next(client, clientlist):
@@ -75,7 +60,7 @@ def handle_user_events():
 
 
 def print_cluster(surface_config, clientlist, start_client):
-    if len(clientlist) < settings.cluster_size:
+    if len(clientlist) < settings['cluster_size']:
         print('not enough clients')
         exit()
 
@@ -85,7 +70,7 @@ def print_cluster(surface_config, clientlist, start_client):
     cluster_clients.append(start_client)
     clientlist.remove(start_client)
 
-    for i in range(settings.cluster_size - 1):
+    for i in range(settings['cluster_size'] - 1):
         next_client = find_next(cluster_clients[0], clientlist)
         cluster_clients.append(next_client)
         clientlist.remove(next_client)
@@ -121,7 +106,7 @@ def print_tours(surface_config, clientlist, first_client):
     length = 0.0
     last_used = None
 
-    for i in range(0, settings.clusters):
+    for i in range(0, settings['clusters']):
         if last_used is None:
             start_client = first_client
         else:
@@ -150,14 +135,14 @@ def print_tours(surface_config, clientlist, first_client):
 
 def init_surface(show_msg=False):
     pygame.init()
-    surface = pygame.display.set_mode((settings.width, settings.height))
+    surface = pygame.display.set_mode((settings['width'], settings['height']))
     color1 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
     color2 = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
 
     if show_msg:
         font_color = pygame.Color(180,255,80)
         font = pygame.font.Font('freesansbold.ttf', 24)
-        surface_msg = font.render(info.usage, False, font_color)
+        surface_msg = font.render(info['usage'], False, font_color)
         msg_rect = surface_msg.get_rect()
         msg_rect.topleft = (250,200)
         surface.blit(surface_msg, msg_rect)
@@ -167,10 +152,11 @@ def init_surface(show_msg=False):
 
 
 if __name__ == '__main__':
-    clients = init_clients()
-    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (info.version, info.usage))
+    all_clients = ClientsCollection(**settings)
+    clients = all_clients.get_list()
+    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (info['version'], info['usage']))
     #print pygame.font.get_fonts()
-    print('running %d clients...' % (settings.clusters * settings.cluster_size))
+    print('running %d clients...' % (settings['clusters'] * settings['cluster_size']))
     clients_perm = copy(clients)
     best_tour = None
     for x in range(len(clients_perm)):

@@ -1,12 +1,13 @@
 from math import sqrt, pow
+from random import randrange
 
 
-class ClientState:
+class ClientState():
     UNASSOCIATED = 1
     ASSOCIATED   = 2
 
 
-class Client:
+class Client():
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
@@ -38,3 +39,16 @@ class Client:
             return self.tour_length_when_first
         else:
             self.tour_length_when_first = length
+
+
+class ClientsCollection():
+    def __init__(self, clusters, cluster_size, width, height):
+        self.clients = []
+
+        for i in range(clusters * cluster_size):
+            self.clients.append(Client(randrange(1, width), randrange(1, height)))
+
+
+    def get_list(self):
+        return self.clients
+
