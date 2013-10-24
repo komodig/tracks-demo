@@ -21,7 +21,7 @@ class Client():
 
 
     def __eq__(self, other):
-        return (self.x == other.x and self.y == other.y)
+        return False if other is None else (self.x == other.x and self.y == other.y)
 
 
     def coords(self):
@@ -57,5 +57,16 @@ class ClientsCollection():
                     self.max_distance = dist
 
         self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself 
+
+
+def find_next(client, clientlist):
+    closest = None
+    for x in clientlist:
+        if x == client or x.state == ClientState.ASSOCIATED:
+            continue
+        elif closest is None or client.distance_to(x) < client.distance_to(closest):
+            closest = x
+
+    return closest
 
 
