@@ -6,9 +6,9 @@ from config import SETTINGS, INFO
 
 
 class ProcessControl():
+    WAIT  = 0
     RUN   = 1
     PAUSE = 2
-    WAIT  = 3
 
     def __init__(self):
         self.state = ProcessControl.RUN

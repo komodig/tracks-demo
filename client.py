@@ -1,4 +1,3 @@
-import pygame
 from math import sqrt, pow
 from random import randrange
 
