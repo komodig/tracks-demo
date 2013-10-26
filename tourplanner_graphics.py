@@ -1,3 +1,4 @@
+from time import sleep
 import pygame
 from pygame.locals import *
 from random import randrange
@@ -8,6 +9,9 @@ class ProcessControl():
     RUN   = 1
     PAUSE = 2
     WAIT  = 3
+
+    def __init__(self):
+        self.state = ProcessControl.RUN
 
 
 class TourplannerSurface():
@@ -28,6 +32,8 @@ class TourplannerSurface():
             self.msg_rect.topleft = (250,200)
             self.surface.blit(self.surface_msg, self.msg_rect)
 
+        self.process = ProcessControl()
+
 
 def print_clients(tour_surface, clients, slow=False):
     for client in clients:
@@ -47,17 +53,26 @@ def print_route(all_clients, tour_clients):
         pygame.display.update()
         tour_surface.fps_clock.tick(30)
 
+    handle_user_events(tour_surface.process)
 
-def handle_user_events():
+
+def handle_user_events(process):
     while True:
         event = pygame.event.poll()
 
         if event.type == NOEVENT:
-            return ProcessControl.RUN
+            if process.state == ProcessControl.RUN:
+                break
+            elif process.state == ProcessControl.PAUSE:
+                sleep(1)
         elif event.type == KEYDOWN and event.key == K_ESCAPE:
             pygame.quit()
             exit()
         elif event.type == KEYDOWN and event.key == K_SPACE:
-            return ProcessControl.PAUSE
+            if process.state == ProcessControl.RUN:
+                print('  === paused ===')
+                process.state = ProcessControl.PAUSE
+            elif process.state == ProcessControl.PAUSE:
+                process.state = ProcessControl.RUN
 
 

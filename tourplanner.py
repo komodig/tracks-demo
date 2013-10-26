@@ -1,8 +1,8 @@
-from time import sleep
 from client import Client, ClientsCollection
 from tourplanner_graphics import TourplannerSurface, print_clients, handle_user_events
 import tour
 from config import SETTINGS, INFO
+
 
 if __name__ == '__main__':
     all_clients = ClientsCollection(**SETTINGS)
@@ -13,8 +13,6 @@ if __name__ == '__main__':
     print_clients(surface, all_clients.clients, True)
     tour.calculate_tours(all_clients, **SETTINGS)
 
-    while True:
-        handle_user_events()
-        sleep(2)
+    handle_user_events(surface.process)
 
 

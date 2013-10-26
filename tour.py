@@ -84,6 +84,7 @@ def find_best_route(all_clients, tour, cluster_size):
         if best_route is None or tour.length < best_route.length:
             best_route = copy(tour)
         print_route(all_clients, tour.sorted_clients)
+
     print('best route length: %f' % best_route.length)
     print_route(all_clients, best_route.sorted_clients)
 
@@ -94,10 +95,14 @@ def calculate_tours(all_clients, clusters, cluster_size, width, height):
     tour_clients = []
 
     while len(tour_clients) < cluster_size:
+        if pow(lateral_length, 2) >= width * height / 5:
+            print('bad tours, try something else!')
+            break
         lateral_length += width/100
         print('find tour clients in area: %f x %f' % (lateral_length, lateral_length))
         tour_clients = find_tour_clients(origin, lateral_length, all_clients)
 
     tour = Tour(origin, lateral_length, lateral_length, tour_clients)
     find_best_route(all_clients, tour, cluster_size)
+
 
