@@ -2,24 +2,37 @@ from math import sqrt
 from client import Client
 from tourplanner_graphics import print_route
 from client import find_next, ClientState as state
-from copy import copy
+from copy import copy, deepcopy
 
 class Tour():
-    def __init__(self, origin, width, height, clients):
+    def __init__(self, origin, width, height, clients, start_client):
         self.origin = origin
         self.width = width
         self.height = height
-        self.clients = clients
+        self.clients = deepcopy(clients)
         self.sorted_clients = []
         self.length = 0.0
-        print('got tour area at (%d,%d) (%d x %d) with %d clients' % (origin[0], origin[1], width, height, len(clients)))
+
+        for c in self.clients:
+            if c == start_client: self.assign(c)
+
+        print('got tour area at (%d,%d) (%d x %d) with %d clients and %s as start client' % \
+                (origin[0], origin[1], width, height, len(clients), start_client))
+
+
+    def __lt__(self, other):
+        return self.length < other.length
+
+
+    def __repr__(self):
+        return ('%s' % self.sorted_clients)
 
 
     def assign(self, client):
         if len(self.sorted_clients):
             self.length += client.distance_to(self.sorted_clients[-1])
-        self.sorted_clients.append(client)
         client.state = state.ASSOCIATED
+        self.sorted_clients.append(client)
 
 
 def find_tour_clients(origin, lateral_length, clients):
@@ -32,30 +45,26 @@ def find_tour_clients(origin, lateral_length, clients):
     return tour_clients
 
 
-def reset_tour_clients(tour):
-    for c in tour.clients:
-        c.state = state.UNASSOCIATED
-
-    tour.sorted_clients = []
-    tour.length = 0.0
-
-
 def find_best_route(all_clients, tour, cluster_size):
-    best_route = None
-    for client in tour.clients:
-        reset_tour_clients(tour)
-        tour.assign(client)
-        while len(tour.sorted_clients) < cluster_size:
-            next_client = find_next(tour.sorted_clients[-1], tour.clients)
-            if next_client is None: break
-            tour.assign(next_client)
+    if len(tour.sorted_clients) < cluster_size:
+#        other_tour = deepcopy(tour)
 
-        if best_route is None or tour.length < best_route.length:
-            best_route = copy(tour)
+        next_client = find_next(tour.sorted_clients[-1], tour.clients)
+        tour.assign(next_client)
         print_route(all_clients, tour.sorted_clients)
+        return find_best_route(all_clients, tour, cluster_size)
 
-    print('best route length: %f' % best_route.length)
-    print_route(all_clients, best_route.sorted_clients)
+#        next_next_client = find_next(next_client, other_tour.clients)
+#        other_tour.assign(next_next_client)
+#        print_route(all_clients, other_tour.sorted_clients)
+#        b = find_best_route(all_clients, other_tour, cluster_size)
+#
+#        print a < b
+#        print a.length < b.length
+#        return a if a < b else b
+    else:
+        return tour
+
 
 
 def calculate_tours(all_clients, clusters, cluster_size, width, height):
@@ -71,7 +80,16 @@ def calculate_tours(all_clients, clusters, cluster_size, width, height):
         print('find tour clients in area: %f x %f' % (lateral_length, lateral_length))
         tour_clients = find_tour_clients(origin, lateral_length, all_clients)
 
-    tour = Tour(origin, lateral_length, lateral_length, tour_clients)
-    find_best_route(all_clients, tour, cluster_size)
+    tours = []
+    for start_client in tour_clients:
+        tour = Tour(origin, lateral_length, lateral_length, tour_clients, start_client)
+        res_tour = find_best_route(all_clients, tour, cluster_size)
+        tours.append(res_tour)
 
+    best_tour = tours[0]
+    for t in tours:
+        if t.length < best_tour.length:
+            best_tour = t
+    print('best tour length: %f' % best_tour.length)
+    print_route(all_clients, best_tour.sorted_clients)
 

@@ -5,7 +5,6 @@ from random import randrange
 class ClientState():
     UNASSOCIATED = 1
     ASSOCIATED   = 2
-    CANDIDATE    = 3
 
 
 class Client():
@@ -62,7 +61,7 @@ class ClientsCollection():
 def find_next(client, clientlist):
     closest = None
     for x in clientlist:
-        if x == client or x.state == ClientState.ASSOCIATED or x.state == ClientState.CANDIDATE:
+        if x == client or x.state == ClientState.ASSOCIATED:
             continue
         elif closest is None or client.distance_to(x) < client.distance_to(closest):
             closest = x

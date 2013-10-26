@@ -63,16 +63,17 @@ def handle_user_events(process):
         if event.type == NOEVENT:
             if process.state == ProcessControl.RUN:
                 break
-            elif process.state == ProcessControl.PAUSE:
+            elif process.state == ProcessControl.WAIT or process.state == ProcessControl.PAUSE:
                 sleep(1)
-        elif event.type == KEYDOWN and event.key == K_ESCAPE:
-            pygame.quit()
-            exit()
-        elif event.type == KEYDOWN and event.key == K_SPACE:
-            if process.state == ProcessControl.RUN:
-                print('  === paused ===')
-                process.state = ProcessControl.PAUSE
-            elif process.state == ProcessControl.PAUSE:
-                process.state = ProcessControl.RUN
-
+        elif event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                pygame.quit()
+                exit()
+            elif event.key == K_SPACE:
+                if process.state == ProcessControl.RUN:
+                    print('  === paused ===')
+                    process.state = ProcessControl.PAUSE
+                elif process.state == ProcessControl.PAUSE:
+                    process.state = ProcessControl.RUN
+                    break
 
