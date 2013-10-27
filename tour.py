@@ -49,21 +49,22 @@ def find_tour_clients(origin, lateral_length, clients):
 
 def find_best_route(all_clients, tour, cluster_size):
     if len(tour.sorted_clients) < cluster_size:
-#        other_tour = deepcopy(tour)
+        other_tour = deepcopy(tour)
 
         next_client = find_next(tour.sorted_clients[-1], tour.clients)
         tour.assign(next_client)
         print_route(all_clients, tour.sorted_clients)
-        return find_best_route(all_clients, tour, cluster_size)
+        a = find_best_route(all_clients, tour, cluster_size)
 
-#        next_next_client = find_next(next_client, other_tour.clients)
-#        other_tour.assign(next_next_client)
-#        print_route(all_clients, other_tour.sorted_clients)
-#        b = find_best_route(all_clients, other_tour, cluster_size)
-#
-#        print a < b
-#        print a.length < b.length
-#        return a if a < b else b
+        next_next_client = find_next(next_client, other_tour.clients)
+        if next_next_client is None:
+            b = a
+        else:
+            other_tour.assign(next_next_client)
+            print_route(all_clients, other_tour.sorted_clients)
+            b = find_best_route(all_clients, other_tour, cluster_size)
+
+        return a if a < b else b
     else:
         return tour
 
