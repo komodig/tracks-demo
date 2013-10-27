@@ -3,9 +3,12 @@ from client import Client
 from tourplanner_graphics import print_route
 from client import find_next, ClientState as state
 from copy import copy, deepcopy
+from random import randrange
 
 class Tour():
     def __init__(self, origin, width, height, clients, start_client):
+        self.client_color = (randrange(0,255), randrange(0,255), randrange(0,255))
+        self.route_color = (randrange(0,255), randrange(0,255), randrange(0,255))
         self.origin = origin
         self.width = width
         self.height = height
@@ -53,7 +56,7 @@ def find_best_route(all_clients, tour, cluster_size):
 
         next_client = find_next(tour.sorted_clients[-1], tour.clients)
         tour.assign(next_client)
-        print_route(all_clients, tour.sorted_clients)
+        print_route(all_clients, tour)
         a = find_best_route(all_clients, tour, cluster_size)
 
         next_next_client = find_next(next_client, other_tour.clients)
@@ -61,7 +64,7 @@ def find_best_route(all_clients, tour, cluster_size):
             b = a
         else:
             other_tour.assign(next_next_client)
-            print_route(all_clients, other_tour.sorted_clients)
+            print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour, cluster_size)
 
         return a if a < b else b
@@ -77,8 +80,8 @@ def calculate_tours(all_clients, clusters, cluster_size, width, height):
 
     while len(tour_clients) < cluster_size:
         if pow(lateral_length, 2) >= width * height / 5:
-            print('bad tours, try something else!')
-            break
+            print('\nnot enough clients, try something else!\n')
+            return
         lateral_length += width/100
         print('find tour clients in area: %f x %f' % (lateral_length, lateral_length))
         tour_clients = find_tour_clients(origin, lateral_length, all_clients)
@@ -91,5 +94,7 @@ def calculate_tours(all_clients, clusters, cluster_size, width, height):
             best_tour = res_tour
 
     print('best tour length: %f' % best_tour.length)
-    print_route(all_clients, best_tour.sorted_clients)
+    all_clients.final_print = True
+    print_route(all_clients, best_tour)
+
 
