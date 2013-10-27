@@ -38,7 +38,7 @@ class ClientsCollection():
         self.clients = []
         self.max_distance = 0.0
         self.avg_distance = 0.0
-        self.printed = 0
+        self.first_print = True
         self.final_print = False
 
         for i in range(clusters * cluster_size):
