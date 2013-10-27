@@ -14,7 +14,9 @@ class Tour():
         self.length = 0.0
 
         for c in self.clients:
-            if c == start_client: self.assign(c)
+            if c == start_client:
+                self.assign(c)
+                break
 
         print('got tour area at (%d,%d) (%d x %d) with %d clients and %s as start client' % \
                 (origin[0], origin[1], width, height, len(clients), start_client))
@@ -80,16 +82,13 @@ def calculate_tours(all_clients, clusters, cluster_size, width, height):
         print('find tour clients in area: %f x %f' % (lateral_length, lateral_length))
         tour_clients = find_tour_clients(origin, lateral_length, all_clients)
 
-    tours = []
+    best_tour = None
     for start_client in tour_clients:
         tour = Tour(origin, lateral_length, lateral_length, tour_clients, start_client)
         res_tour = find_best_route(all_clients, tour, cluster_size)
-        tours.append(res_tour)
+        if best_tour is None or res_tour < best_tour:
+            best_tour = res_tour
 
-    best_tour = tours[0]
-    for t in tours:
-        if t.length < best_tour.length:
-            best_tour = t
     print('best tour length: %f' % best_tour.length)
     print_route(all_clients, best_tour.sorted_clients)
 
