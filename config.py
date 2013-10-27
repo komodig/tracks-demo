@@ -1,12 +1,12 @@
 INFO = {
-    'version': '0.3.1',
+    'version': '0.3.2',
     'usage': 'use <ESC> to quit and <SPACE> to pause and continue',
 }
 
 
 SETTINGS = {
-    'clusters': 20,
-    'cluster_size': 7,
+    'clusters': 5,
+    'cluster_size': 10,
     'width': 1200,
     'height': 700,
 }

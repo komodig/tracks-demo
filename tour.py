@@ -56,7 +56,7 @@ def find_best_route(all_clients, tour, cluster_size):
 
         next_client = find_next(tour.sorted_clients[-1], tour.clients)
         tour.assign(next_client)
-        print_route(all_clients, tour)
+        #print_route(all_clients, tour)
         a = find_best_route(all_clients, tour, cluster_size)
 
         next_next_client = find_next(next_client, other_tour.clients)
@@ -64,7 +64,7 @@ def find_best_route(all_clients, tour, cluster_size):
             b = a
         else:
             other_tour.assign(next_next_client)
-            print_route(all_clients, other_tour)
+            #print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour, cluster_size)
 
         return a if a < b else b
@@ -90,6 +90,7 @@ def calculate_tours(all_clients, clusters, cluster_size, width, height):
     for start_client in tour_clients:
         tour = Tour(origin, lateral_length, lateral_length, tour_clients, start_client)
         res_tour = find_best_route(all_clients, tour, cluster_size)
+        print_route(all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
