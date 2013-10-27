@@ -1,5 +1,5 @@
 INFO = {
-    'version': '0.3.0',
+    'version': '0.3.1',
     'usage': 'use <ESC> to quit and <SPACE> to pause and continue',
 }
 
