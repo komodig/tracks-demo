@@ -43,6 +43,7 @@ class Tour():
 def find_tour_clients(origin, lateral_length, clients):
     tour_clients = []
     for client in clients.clients:
+        if client.state == state.CANDIDATE: continue
         if client.x > origin[0] and client.x < (origin[0] + lateral_length) and \
                 client.y > origin[1] and client.y < (origin[1] + lateral_length):
             tour_clients.append(client)
@@ -72,19 +73,48 @@ def find_best_route(all_clients, tour, cluster_size):
         return tour
 
 
+def remove_excessive_clients(tour_clients, cluster_size, end_of_area):
+    ex = None
+    while len(tour_clients) > cluster_size:
+        ex = find_next(end_of_area, tour_clients)
+        print('kick this one out: %s' % ex)
+        tour_clients.remove(ex)
 
-def calculate_tours(all_clients, clusters, cluster_size, width, height):
+    for cli in tour_clients:
+        cli.state = state.CANDIDATE
+
+    return ex
+
+
+def calculate_all_tours(all_clients, clusters, cluster_size, width, height):
     lateral_length = sqrt(width * height / (clusters * 2))   # begin with explicit short dimension
     origin = (0,0)
+
+    ex, earlier_tour = calculate_area_tour(all_clients, clusters, cluster_size, width, height, origin, lateral_length)
+    all_clients.best_tours.append(earlier_tour)
+    if ex is None:
+        origin = (earlier_tour.origin[0] + earlier_tour.width, earlier_tour.origin[1])
+    else:
+        origin = (ex.x, 0)
+    # TODO: the following is just for tour #2
+    ex, earlier_tour = calculate_area_tour(all_clients, clusters, cluster_size, width, height, origin, lateral_length)
+#    all_clients.best_tours.append(earlier_tour)
+
+    all_clients.final_print = True
+    print_route(all_clients, earlier_tour)
+
+def calculate_area_tour(all_clients, clusters, cluster_size, width, height, origin, lateral_length):
     tour_clients = []
 
     while len(tour_clients) < cluster_size:
         if pow(lateral_length, 2) >= width * height / 5:
             print('\nnot enough clients, try something else!\n')
-            return
+            exit()
         lateral_length += width/100
         print('find tour clients in area: %f x %f' % (lateral_length, lateral_length))
         tour_clients = find_tour_clients(origin, lateral_length, all_clients)
+
+    next_area_start = remove_excessive_clients(tour_clients, cluster_size, Client(origin[0] + lateral_length, lateral_length))
 
     best_tour = None
     for start_client in tour_clients:
@@ -95,7 +125,8 @@ def calculate_tours(all_clients, clusters, cluster_size, width, height):
             best_tour = res_tour
 
     print('best tour length: %f' % best_tour.length)
-    all_clients.final_print = True
-    print_route(all_clients, best_tour)
+#    all_clients.final_print = True
+#    print_route(all_clients, best_tour)
+    return next_area_start, best_tour
 
 

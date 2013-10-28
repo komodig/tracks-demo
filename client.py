@@ -5,6 +5,7 @@ from random import randrange
 class ClientState():
     UNASSOCIATED = 1
     ASSOCIATED   = 2
+    CANDIDATE    = 3
 
 
 class Client():
@@ -36,6 +37,7 @@ class Client():
 class ClientsCollection():
     def __init__(self, clusters, cluster_size, width, height):
         self.clients = []
+        self.best_tours = []
         self.max_distance = 0.0
         self.avg_distance = 0.0
         self.first_print = True

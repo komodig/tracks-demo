@@ -44,17 +44,26 @@ def print_clients(tour_surface, clients, slow=False):
         pygame.display.update()
 
 
+def print_earlier_tours(all_clients, surface):
+    for earlier in all_clients.best_tours:
+        for x in range(len(earlier.sorted_clients) - 1):
+            pygame.draw.line(surface.surface, surface.route_color, earlier.sorted_clients[x].coords(), earlier.sorted_clients[x+1].coords(), 2)
+
+
 def print_route(all_clients, tour):
     if all_clients.first_print:
         tour_surface = TourplannerSurface(SETTINGS, INFO, tour, True)
         print_clients(tour_surface, all_clients.clients, True)
         all_clients.first_print = False
+        handle_user_events(tour_surface.process)
         sleep(3)
     else:
         tour_surface = TourplannerSurface(SETTINGS, INFO, tour, False)
         print_clients(tour_surface, all_clients.clients, False)
 
     for x in range(len(tour.sorted_clients) - 1):
+        print_earlier_tours(all_clients, tour_surface)
+
         pygame.draw.line(tour_surface.surface, tour_surface.route_color, tour.sorted_clients[x].coords(), tour.sorted_clients[x+1].coords(), 2)
         pygame.display.update()
         tour_surface.fps_clock.tick(30)
