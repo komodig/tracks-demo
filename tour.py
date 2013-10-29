@@ -84,10 +84,6 @@ def define_tour_clients(all_clients, tour_clients, cluster_size, end_of_area):
     for cli in tour_clients:
         cli.state = state.CANDIDATE
     all_clients.init_tours.append(tour_clients)
-    for x in all_clients.clients:
-        for y in all_clients.init_tours[-1]:
-            if x is y: print('found it!!')
-    print all_clients.init_tours[-1]
 
     return ex
 
@@ -97,7 +93,7 @@ def get_dimensions(all_clients, origin, clusters, cluster_size, width, height):
     end = (origin[0] + lateral_length, origin[1] + lateral_length)
     tour_clients = []
 
-    print('    find tour clients in area: %s - %s' % (origin, end))
+    print('    find tour clients in area: (%d, %d) - (%d, %d)' % (origin[0], origin[1], end[0], end[1]))
     while len(tour_clients) < cluster_size:
         if end[0] > width and end[1] > height:
             print('\nnot enough clients, try something else!\n')
@@ -106,7 +102,7 @@ def get_dimensions(all_clients, origin, clusters, cluster_size, width, height):
         tour_clients = find_tour_clients(origin, end, all_clients)
 
     ex = define_tour_clients(all_clients, tour_clients, cluster_size, end)
-    print('    finally got area: %s x %s with %d clients' % (origin, end, len(tour_clients)))
+    print('     finally got tour in area: (%d, %d) - (%d, %d) with %d clients' % (origin[0], origin[1], end[0], end[1], len(tour_clients)))
 
     if ex is None: ex = Client(end[0], end[1])
     new_x = ex.x if ex.x < width else 0
