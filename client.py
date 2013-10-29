@@ -37,6 +37,7 @@ class Client():
 class ClientsCollection():
     def __init__(self, clusters, cluster_size, width, height):
         self.clients = []
+        self.init_tours = []
         self.best_tours = []
         self.max_distance = 0.0
         self.avg_distance = 0.0
@@ -48,6 +49,10 @@ class ClientsCollection():
 
         self.get_client_distances()
         print('\nmaximum client distance: %f\naverage client distance: %f' %(self.max_distance, self.avg_distance))
+
+
+    def __len__(self):
+        return len(self.clients)
 
 
     def get_client_distances(self):

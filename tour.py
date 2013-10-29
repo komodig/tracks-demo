@@ -5,13 +5,14 @@ from client import find_next, ClientState as state
 from copy import copy, deepcopy
 from random import randrange
 
+
 class Tour():
-    def __init__(self, origin, width, height, clients, start_client):
+    def __init__(self, origin, end, clients, start_client):
         self.client_color = (randrange(0,255), randrange(0,255), randrange(0,255))
         self.route_color = (randrange(0,255), randrange(0,255), randrange(0,255))
         self.origin = origin
-        self.width = width
-        self.height = height
+        self.width = end[0]
+        self.height = end[1]
         self.clients = deepcopy(clients)
         self.sorted_clients = []
         self.length = 0.0
@@ -22,7 +23,7 @@ class Tour():
                 break
 
         print('got tour area at (%d,%d) (%d x %d) with %d clients and %s as start client' % \
-                (origin[0], origin[1], width, height, len(clients), start_client))
+                (origin[0], origin[1], self.width, self.height, len(clients), start_client))
 
 
     def __lt__(self, other):
@@ -40,12 +41,12 @@ class Tour():
         self.sorted_clients.append(client)
 
 
-def find_tour_clients(origin, lateral_length, clients):
+def find_tour_clients(origin, end, clients):
     tour_clients = []
     for client in clients.clients:
         if client.state == state.CANDIDATE: continue
-        if client.x > origin[0] and client.x < (origin[0] + lateral_length) and \
-                client.y > origin[1] and client.y < (origin[1] + lateral_length):
+        if client.x > origin[0] and client.x < (origin[0] + end[0]) and \
+                client.y > origin[1] and client.y < (origin[1] + end[1]):
             tour_clients.append(client)
 
     return tour_clients
@@ -73,60 +74,83 @@ def find_best_route(all_clients, tour, cluster_size):
         return tour
 
 
-def remove_excessive_clients(tour_clients, cluster_size, end_of_area):
+def define_tour_clients(all_clients, tour_clients, cluster_size, end_of_area):
     ex = None
     while len(tour_clients) > cluster_size:
-        ex = find_next(end_of_area, tour_clients)
+        ex = find_next(Client(end_of_area[0], end_of_area[1]), tour_clients)
         print('kick this one out: %s' % ex)
         tour_clients.remove(ex)
 
     for cli in tour_clients:
         cli.state = state.CANDIDATE
+    all_clients.init_tours.append(tour_clients)
+    for x in all_clients.clients:
+        for y in all_clients.init_tours[-1]:
+            if x is y: print('found it!!')
+    print all_clients.init_tours[-1]
 
     return ex
 
 
-def calculate_all_tours(all_clients, clusters, cluster_size, width, height):
+def get_dimensions(all_clients, origin, clusters, cluster_size, width, height):
     lateral_length = sqrt(width * height / (clusters * 2))   # begin with explicit short dimension
-    origin = (0,0)
-
-    ex, earlier_tour = calculate_area_tour(all_clients, clusters, cluster_size, width, height, origin, lateral_length)
-    all_clients.best_tours.append(earlier_tour)
-    if ex is None:
-        origin = (earlier_tour.origin[0] + earlier_tour.width, earlier_tour.origin[1])
-    else:
-        origin = (ex.x, 0)
-    # TODO: the following is just for tour #2
-    ex, earlier_tour = calculate_area_tour(all_clients, clusters, cluster_size, width, height, origin, lateral_length)
-#    all_clients.best_tours.append(earlier_tour)
-
-    all_clients.final_print = True
-    print_route(all_clients, earlier_tour)
-
-def calculate_area_tour(all_clients, clusters, cluster_size, width, height, origin, lateral_length):
+    end = (origin[0] + lateral_length, origin[1] + lateral_length)
     tour_clients = []
 
+    print('    find tour clients in area: %s - %s' % (origin, end))
     while len(tour_clients) < cluster_size:
-        if pow(lateral_length, 2) >= width * height / 5:
+        if end[0] > width and end[1] > height:
             print('\nnot enough clients, try something else!\n')
             exit()
-        lateral_length += width/100
-        print('find tour clients in area: %f x %f' % (lateral_length, lateral_length))
-        tour_clients = find_tour_clients(origin, lateral_length, all_clients)
+        end = (end[0] + width/100, end[1] + height/100)
+        tour_clients = find_tour_clients(origin, end, all_clients)
 
-    next_area_start = remove_excessive_clients(tour_clients, cluster_size, Client(origin[0] + lateral_length, lateral_length))
+    ex = define_tour_clients(all_clients, tour_clients, cluster_size, end)
+    print('    finally got area: %s x %s with %d clients' % (origin, end, len(tour_clients)))
 
+    if ex is None: ex = Client(end[0], end[1])
+    new_x = ex.x if ex.x < width else 0
+    new_y = 0 if ex.x < width else origin[1] + lateral_length
+    origin = (new_x, new_y)
+    end = (new_x + lateral_length, new_y + lateral_length)
+
+    return origin, end
+
+
+def clients_have_state(all_clients, booh_state):
+    booh_clients = []
+    for cli in all_clients.clients:
+        if cli.state == booh_state:
+            booh_clients.append(cli)
+    print('BOOH: %d' % len(booh_clients))
+
+    return True if len(booh_clients) else False
+
+
+def calculate_all_tours(all_clients, SETTINGS):
+    origin = (0,0)
+    for it in range(SETTINGS['clusters']):
+        origin, end = get_dimensions(all_clients, origin, **SETTINGS)
+        clients_have_state(all_clients, state.UNASSOCIATED)
+
+    for tour_clients in all_clients.init_tours:
+        nice_tour = calculate_area_tour(all_clients, SETTINGS, tour_clients, origin, end)
+        all_clients.best_tours.append(nice_tour)
+
+    all_clients.final_print = True
+    print_route(all_clients, nice_tour)
+
+
+def calculate_area_tour(all_clients, SETTINGS, tour_clients, origin, end):
     best_tour = None
     for start_client in tour_clients:
-        tour = Tour(origin, lateral_length, lateral_length, tour_clients, start_client)
-        res_tour = find_best_route(all_clients, tour, cluster_size)
+        tour = Tour(origin, end, tour_clients, start_client)
+        res_tour = find_best_route(all_clients, tour, SETTINGS['cluster_size'])
         print_route(all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
     print('best tour length: %f' % best_tour.length)
-#    all_clients.final_print = True
-#    print_route(all_clients, best_tour)
-    return next_area_start, best_tour
+    return best_tour
 
 

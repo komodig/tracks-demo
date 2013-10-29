@@ -10,6 +10,6 @@ if __name__ == '__main__':
     all_clients = ClientsCollection(**SETTINGS)
     print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
     print('running %d clients...' % (SETTINGS['clusters'] * SETTINGS['cluster_size']))
-    calculate_all_tours(all_clients, **SETTINGS)
+    calculate_all_tours(all_clients, SETTINGS)
 
 
