@@ -1,9 +1,12 @@
 from math import sqrt
 from client import Client
-from tourplanner_graphics import print_route
+from tourplanner_graphics import print_route, print_area, TourplannerSurface, handle_user_events
 from client import find_next, ClientState as state
 from copy import copy, deepcopy
 from random import randrange
+from config import SETTINGS
+from time import sleep
+from sys import stdout
 
 
 class Tour():
@@ -76,10 +79,20 @@ def find_best_route(all_clients, tour, cluster_size):
 
 def define_tour_clients(all_clients, tour_clients, cluster_size, end_of_area):
     ex = None
+    print('\nspawn temp client as end of area...')
+    end = Client(end_of_area[0], end_of_area[1])
+    kicked_clients = []
     while len(tour_clients) > cluster_size:
-        ex = find_next(Client(end_of_area[0], end_of_area[1]), tour_clients)
-        print('kick this one out: %s' % ex)
+        ex = find_next(end, tour_clients)
+        kicked_clients.append(ex)
         tour_clients.remove(ex)
+
+    ex = None
+    if len(kicked_clients):
+        print('kicked %d clients: %s' % (len(kicked_clients), kicked_clients))
+        for kicked in kicked_clients:
+            if ex is None or kicked.distance_to(end) > ex.distance_to(end):
+                ex = kicked
 
     for cli in tour_clients:
         cli.state = state.CANDIDATE
@@ -88,29 +101,42 @@ def define_tour_clients(all_clients, tour_clients, cluster_size, end_of_area):
     return ex
 
 
-def get_dimensions(all_clients, origin, clusters, cluster_size, width, height):
+def get_dimensions(all_clients, origin, dim_surface, clusters, cluster_size, width, height):
     lateral_length = sqrt(width * height / (clusters * 2))   # begin with explicit short dimension
     end = (origin[0] + lateral_length, origin[1] + lateral_length)
     tour_clients = []
+    calculating = '+'
 
-    print('    find tour clients in area: (%d, %d) - (%d, %d)' % (origin[0], origin[1], end[0], end[1]))
     while len(tour_clients) < cluster_size:
         if end[0] > width and end[1] > height:
             print('\nnot enough clients, try something else!\n')
-            exit()
+
+            sleep(3)
+            handle_user_events(dim_surface.process)
+
+            exit(3)
+        stdout.write(calculating)
+        stdout.flush()
+        calculating += '+'
         end = (end[0] + width/100, end[1] + height/100)
         tour_clients = find_tour_clients(origin, end, all_clients)
 
+        if dim_surface is None:
+            temp_client = Client(0, 0)
+            temp_tour = Tour(origin, end, [temp_client], temp_client)
+            dim_surface = TourplannerSurface(SETTINGS, None, temp_tour)
+        print_area(SETTINGS, all_clients, origin, end, dim_surface)
+
     ex = define_tour_clients(all_clients, tour_clients, cluster_size, end)
-    print('     finally got tour in area: (%d, %d) - (%d, %d) with %d clients' % (origin[0], origin[1], end[0], end[1], len(tour_clients)))
+    print('FINALLY! got tour in area: (%d, %d) - (%d, %d) with %d clients' % (origin[0], origin[1], end[0], end[1], len(tour_clients)))
 
     if ex is None: ex = Client(end[0], end[1])
     new_x = ex.x if ex.x < width else 0
-    new_y = 0 if ex.x < width else origin[1] + lateral_length
+    new_y = origin[1] if ex.x < width else origin[1] + lateral_length
     origin = (new_x, new_y)
     end = (new_x + lateral_length, new_y + lateral_length)
 
-    return origin, end
+    return origin, end, dim_surface
 
 
 def clients_have_state(all_clients, booh_state):
@@ -125,9 +151,14 @@ def clients_have_state(all_clients, booh_state):
 
 def calculate_all_tours(all_clients, SETTINGS):
     origin = (0,0)
+    dim_surface = None
+
     for it in range(SETTINGS['clusters']):
-        origin, end = get_dimensions(all_clients, origin, **SETTINGS)
+        origin, end, dim_surface = get_dimensions(all_clients, origin, dim_surface, **SETTINGS)
         clients_have_state(all_clients, state.UNASSOCIATED)
+
+    sleep(3)
+    handle_user_events(dim_surface.process)
 
     for tour_clients in all_clients.init_tours:
         nice_tour = calculate_area_tour(all_clients, SETTINGS, tour_clients, origin, end)

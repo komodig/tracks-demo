@@ -73,6 +73,16 @@ def print_route(all_clients, tour):
     handle_user_events(tour_surface.process)
 
 
+def print_area(SETTINGS, all_clients, origin, end, tour_surface):
+    print_clients(tour_surface, all_clients.clients, False)
+    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin[0], origin[1]), (end[0], origin[1]), 2)
+    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (end[0], origin[1]), (end[0], end[1]), 2)
+    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin[0], origin[1]), (origin[0], end[1]), 2)
+    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin[0], end[1]), (end[0], end[1]), 2)
+    pygame.display.update()
+    tour_surface.fps_clock.tick(30)
+
+
 def handle_user_events(process):
     while True:
         event = pygame.event.poll()
