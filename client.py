@@ -18,7 +18,7 @@ class Client():
 
 
     def __repr__(self):
-        return ('%d,%d,[%d]' % (self.x, self.y, self.state))
+        return ('%d,%d' % (self.x, self.y))
 
 
     def __eq__(self, other):
