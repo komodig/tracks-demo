@@ -1,5 +1,6 @@
 from math import sqrt, pow
 from random import randrange
+from config import DISPLAY, DIMENSION
 
 
 class ClientState():
@@ -13,11 +14,11 @@ class Client():
         self.x = x
         self.y = y
         self.state = ClientState.UNASSOCIATED
-        print('created new client at x:%d y:%d' % (self.x, self.y))
+        if DISPLAY['clients']['init']: print('created new client at x:%d y:%d' % (self.x, self.y))
 
 
     def __repr__(self):
-        return ('%d,%d' % (self.x, self.y))
+        return ('%d,%d,[%d]' % (self.x, self.y, self.state))
 
 
     def __eq__(self, other):
@@ -43,6 +44,9 @@ class ClientsCollection():
         self.avg_distance = 0.0
         self.first_print = True
         self.final_print = False
+        self.x_factor = DIMENSION[0]['x_factor']
+        self.y_factor = DIMENSION[0]['y_factor']
+        self.d_mod = 0
 
         for i in range(clusters * cluster_size):
             self.clients.append(Client(randrange(1, width), randrange(1, height)))
@@ -54,6 +58,9 @@ class ClientsCollection():
     def __len__(self):
         return len(self.clients)
 
+
+    def __repr__(self):
+        return '%s' % (self.clients)
 
     def get_client_distances(self):
         for client in self.clients:
@@ -67,10 +74,11 @@ class ClientsCollection():
         self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself 
 
 
-def find_next(client, clientlist):
+def find_next(client, clientlist, ignore_candidates=False):
     closest = None
     for x in clientlist:
-        if x == client or x.state == ClientState.ASSOCIATED:
+        if x == client or x.state == ClientState.ASSOCIATED \
+                or (ignore_candidates and x.state == ClientState.CANDIDATE):
             continue
         elif closest is None or client.distance_to(x) < client.distance_to(closest):
             closest = x
