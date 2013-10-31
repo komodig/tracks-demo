@@ -132,7 +132,7 @@ def get_dimensions(all_clients, origin, lateral_length, dim_surface, clusters, c
     ex = define_tour_clients(all_clients, tour_clients, cluster_size, end)
     print('\nFINALLY! got nice area origin: [%s] end: [%s] with %d clients' % (origin, end, len(tour_clients)))
     if ex is None:
-        origin  = Client(end.x - lateral_length/2, origin.y) # -lateral_length/2 because it might be good to start a little to the left. just a feeling :-)
+        origin  = Client(end.x - lateral_length/2, origin.y) # -lateral_length/2 good to start a little to the left maybe?
     else:
         origin  = Client(ex.x, origin.y)
 
