@@ -9,6 +9,11 @@ class ClientState():
     CANDIDATE    = 3
 
 
+class TourState():
+    OPEN  = 1
+    FIXED = 2
+
+
 class Client():
     def __init__(self, x=0, y=0):
         self.x = x
@@ -39,6 +44,7 @@ class ClientsCollection():
     def __init__(self, clusters, cluster_size, width, height):
         self.clients = []
         self.init_tours = []
+        self.init_tours_state = TourState.OPEN
         self.best_tours = []
         self.max_distance = 0.0
         self.avg_distance = 0.0
