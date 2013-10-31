@@ -4,7 +4,7 @@ from tourplanner_graphics import print_route, print_area, TourplannerSurface, ha
 from client import find_next, ClientState as state
 from copy import copy, deepcopy
 from random import randrange
-from config import SETTINGS
+from config import SETTINGS, DISPLAY
 from time import sleep
 from sys import stdout
 
@@ -61,7 +61,7 @@ def find_best_route(all_clients, tour, cluster_size):
 
         next_client = find_next(tour.sorted_clients[-1], tour.clients)
         tour.assign(next_client)
-        #print_route(all_clients, tour)
+        if DISPLAY['routing'] == 'all': print_route(all_clients, tour)
         a = find_best_route(all_clients, tour, cluster_size)
 
         next_next_client = find_next(next_client, other_tour.clients)
@@ -69,7 +69,7 @@ def find_best_route(all_clients, tour, cluster_size):
             b = a
         else:
             other_tour.assign(next_next_client)
-            #print_route(all_clients, other_tour)
+            if DISPLAY['routing'] == 'all': print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour, cluster_size)
 
         return a if a < b else b
@@ -102,6 +102,7 @@ def define_tour_clients(all_clients, tour_clients, cluster_size, end_of_area):
 
 
 def get_dimensions(all_clients, origin, dim_surface, clusters, cluster_size, width, height):
+    # TODO: move lateral_length elsewhere!
     lateral_length = sqrt(width * height / (clusters * 2))   # begin with explicit short dimension
     end = (origin[0] + lateral_length, origin[1] + lateral_length)
     tour_clients = []
@@ -113,11 +114,12 @@ def get_dimensions(all_clients, origin, dim_surface, clusters, cluster_size, wid
 
             sleep(3)
             handle_user_events(dim_surface.process)
-
             exit(3)
+
         stdout.write(calculating)
         stdout.flush()
         calculating += '+'
+
         end = (end[0] + width/100, end[1] + height/100)
         tour_clients = find_tour_clients(origin, end, all_clients)
 
@@ -128,13 +130,9 @@ def get_dimensions(all_clients, origin, dim_surface, clusters, cluster_size, wid
         print_area(SETTINGS, all_clients, origin, end, dim_surface)
 
     ex = define_tour_clients(all_clients, tour_clients, cluster_size, end)
-    print('FINALLY! got tour in area: (%d, %d) - (%d, %d) with %d clients' % (origin[0], origin[1], end[0], end[1], len(tour_clients)))
+    print('FINALLY! got nice area origin: [%d, %d] end: [%d, %d] with %d clients' % (origin[0], origin[1], end[0], end[1], len(tour_clients)))
 
-    if ex is None: ex = Client(end[0], end[1])
-    new_x = ex.x if ex.x < width else 0
-    new_y = origin[1] if ex.x < width else origin[1] + lateral_length
-    origin = (new_x, new_y)
-    end = (new_x + lateral_length, new_y + lateral_length)
+    print('starting with new area origin: [%d, %d] end: [%d, %d]' % (origin[0], origin[1], end[0], end[1]))
 
     return origin, end, dim_surface
 

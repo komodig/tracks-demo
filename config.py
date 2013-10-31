@@ -12,3 +12,8 @@ SETTINGS = {
 }
 
 
+DISPLAY = {
+    'dimensions': 'all',
+    'routing': 'best',
+}
+
