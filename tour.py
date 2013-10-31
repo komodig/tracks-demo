@@ -79,9 +79,8 @@ def find_best_route(all_clients, tour, cluster_size):
         return tour
 
 
-def define_tour_clients(all_clients, tour_clients, cluster_size, end_of_area):
+def define_tour_clients(all_clients, tour_clients, cluster_size, end):
     ex = None
-    end = Client(end_of_area.x, end_of_area.y)
     kicked_clients = []
     while len(tour_clients) > cluster_size:
         ex = find_next(end, tour_clients)
