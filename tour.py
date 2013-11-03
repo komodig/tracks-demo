@@ -12,7 +12,7 @@ class Tour():
         self.clients = clients
         self.sorted_clients = []
         self.length = 0.0
-        print('got tour area at (%d,%d) (%dx%d) with %d clients' % (origin[0], origin[1], width, height, len(clients)))
+        print('got tour area at (%d,%d) (%d x %d) with %d clients' % (origin[0], origin[1], width, height, len(clients)))
 
 
     def assign(self, client):
@@ -46,7 +46,7 @@ def find_best_route(all_clients, tour, cluster_size):
         reset_tour_clients(tour)
         tour.assign(client)
         while len(tour.sorted_clients) < cluster_size:
-            next_client = find_next(client, tour.clients)
+            next_client = find_next(tour.sorted_clients[-1], tour.clients)
             for candidate in tour.sorted_clients:
                 if candidate == next_client: next_client = None
             if next_client: tour.assign(next_client)

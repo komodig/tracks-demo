@@ -5,10 +5,10 @@ INFO = {
 
 
 SETTINGS = {
-    'clusters': 5,
+    'clusters': 10,
     'cluster_size': 7,
     'width': 1200,
-    'height': 800,
+    'height': 700,
 }
 
 
