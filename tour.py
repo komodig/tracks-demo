@@ -40,6 +40,34 @@ def reset_tour_clients(tour):
     tour.length = 0.0
 
 
+def check_next_to_next_client(last_assigned, next_client, tour_clients):
+    next_client.state = state.CANDIDATE
+    try:
+        next_next_client = find_next(next_client, tour_clients)
+    except TypeError:
+        next_client.state = state.UNASSOCIATED
+        return None, False
+
+    next_next_client.state = state.CANDIDATE
+    try:
+        next_next_next_client = find_next(next_next_client, tour_clients)
+    except TypeError:
+        next_next_client.state = state.UNASSOCIATED
+        return None, False
+
+    length = last_assigned.distance_to(next_client)
+    length += next_client.distance_to(next_next_client)
+    length += next_next_client.distance_to(next_next_next_client)
+    alternative_length = last_assigned.distance_to(next_next_client)
+    alternative_length += next_next_client.distance_to(next_client)
+    alternative_length += next_client.distance_to(next_next_next_client)
+    #next_client.state = state.UNASSOCIATED
+    #next_next_client.state = state.UNASSOCIATED
+    if alternative_length < length:
+        print('YEAH %f < %f' % (alternative_length, length))
+        return next_next_client, True
+
+
 def find_best_route(all_clients, tour, cluster_size):
     best_route = None
     for client in tour.clients:
@@ -47,9 +75,11 @@ def find_best_route(all_clients, tour, cluster_size):
         tour.assign(client)
         while len(tour.sorted_clients) < cluster_size:
             next_client = find_next(tour.sorted_clients[-1], tour.clients)
-            for candidate in tour.sorted_clients:
-                if candidate == next_client: next_client = None
-            if next_client: tour.assign(next_client)
+            if next_client is None: break
+            #next_next_client, is_better = check_next_to_next_client(tour.sorted_clients[-1], next_client, tour.clients)
+            #if is_better:
+            #    tour.assign(next_next_client)
+            tour.assign(next_client)
 
         if best_route is None or tour.length < best_route.length:
             best_route = copy(tour)
