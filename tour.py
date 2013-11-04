@@ -18,7 +18,7 @@ class Tour():
         self.end = end
         self.width = end.x - origin.x
         self.height = end.y - origin.y
-        self.clients = []   # for get_dimensions() a referenced list with state CANDIDATE 
+        self.clients = []   # for get_dimensions() a referenced list with state CANDIDATE
         self.sorted_clients = [] # clients appended here get state ASSOCIATED
         self.length = 0.0
         self.x_factor = DIMENSION[0]['x_factor']
@@ -66,7 +66,7 @@ class Tour():
                     client.y > self.origin.y and client.y < self.end.y:
                 client.state = state.CANDIDATE
                 self.clients.append(client)
-        
+
         print('got tour area at (%d,%d) (%d x %d) with %d clients' % \
                     (self.origin.x, self.origin.y, self.width, self.height, len(self.clients)))
         return len(self.clients)
@@ -117,7 +117,7 @@ def define_tour_clients(all_clients, tour, cluster_size):
 
 def get_distance_east(area):
     x = area.origin.x
-    closest = None 
+    closest = None
     for cli in area.clients:
         if closest is None or cli.x < closest.x:
             closest = cli
@@ -127,7 +127,7 @@ def get_distance_east(area):
 
 def get_distance_south(area):
     y = area.origin.y
-    closest = None 
+    closest = None
     for cli in area.clients:
         if closest is None or cli.y < closest.y:
             closest = cli
@@ -141,7 +141,7 @@ def get_dimensions(all_clients, origin, lateral_length, dim_surface, SETTINGS):
         area = Tour(origin, end, None)
         print('starting area [%s / %s]' % (area.origin, area.end))
         area.add_area_clients(all_clients)
-        
+
         print_area(SETTINGS, all_clients, area.origin, area.end, dim_surface)
         handle_user_events(dim_surface.process)
         if not len(area.clients):
@@ -150,13 +150,13 @@ def get_dimensions(all_clients, origin, lateral_length, dim_surface, SETTINGS):
                 print('FUCK!')
                 exit(1)
         else:
-            break 
+            break
 
     while len(area.clients) < SETTINGS['cluster_size']:
         print('total area [%s / %s] with %d clients' % (area.origin, area.end, len(area.clients)))
         south = Tour(Client(area.origin.x, area.end.y), Client(area.end.x, area.end.y + lateral_length * area.y_factor), None)
         south_clients = south.add_area_clients(all_clients)
-        
+
         east_end = Tour(Client(area.end.x, area.origin.y), Client(SETTINGS['width'], area.end.y), None)
         clients_till_end = east_end.add_area_clients(all_clients)
         for cli in east_end.clients:
@@ -172,12 +172,12 @@ def get_dimensions(all_clients, origin, lateral_length, dim_surface, SETTINGS):
             else:
                 all_clients.level_up = True
 
-            return end_of_upper_area 
-            
-        
+            return end_of_upper_area
+
+
         east = Tour(Client(area.end.x, area.origin.y), Client(area.end.x + lateral_length * area.x_factor, area.end.y), None)
         east_clients = east.add_area_clients(all_clients)
-   
+
         if not east_clients and not south_clients:
             print('no clients ! grow the whole damn thing')
             area.end.x += lateral_length * area.x_factor
