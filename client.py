@@ -4,21 +4,16 @@ from config import DISPLAY, DIMENSION
 
 
 class ClientState():
-    UNASSOCIATED = 1
+    FREE = 1
     ASSOCIATED   = 2
     CANDIDATE    = 3
-
-
-class TourState():
-    OPEN  = 1
-    FIXED = 2
 
 
 class Client():
     def __init__(self, x=0, y=0):
         self.x = x
         self.y = y
-        self.state = ClientState.UNASSOCIATED
+        self.state = ClientState.FREE
         if DISPLAY['clients']['init']: print('created new client at x:%d y:%d' % (self.x, self.y))
 
 
@@ -44,15 +39,12 @@ class ClientsCollection():
     def __init__(self, clusters, cluster_size, width, height):
         self.clients = []
         self.init_tours = []
-        self.init_tours_state = TourState.OPEN
+        self.level_up = False
         self.best_tours = []
         self.max_distance = 0.0
         self.avg_distance = 0.0
         self.first_print = True
         self.final_print = False
-        self.x_factor = DIMENSION[0]['x_factor']
-        self.y_factor = DIMENSION[0]['y_factor']
-        self.d_mod = 0
 
         for i in range(clusters * cluster_size):
             self.clients.append(Client(randrange(1, width), randrange(1, height)))
@@ -78,6 +70,13 @@ class ClientsCollection():
                     self.max_distance = dist
 
         self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself 
+
+    def append_init_tour(self, tour):
+        if not len(self.init_tours) or self.level_up:
+            self.init_tours.append([tour, ])
+            self.level_up = False
+        else:
+            self.init_tours[-1].append(tour)
 
 
 def find_next(client, clientlist, ignore_candidates=False):

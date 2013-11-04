@@ -14,24 +14,8 @@ SETTINGS = {
 
 DIMENSION = [
 {
-    'x_factor': 0.01,
-    'y_factor': 0.01
-},
-{
-    'x_factor': 0.01,
-    'y_factor': 0.015
-},
-{
-    'x_factor': 0.01,
-    'y_factor': 0.005
-},
-{
-    'x_factor': 0.01,
-    'y_factor': 0.03
-},
-{
-    'x_factor': 0.03,
-    'y_factor': 0.01
+    'x_factor': 0.2,
+    'y_factor': 0.2
 },
 ]
 

@@ -18,21 +18,29 @@ class Tour():
         self.end = end
         self.width = end.x - origin.x
         self.height = end.y - origin.y
-        self.clients = []   # for get_dimensions() a referenced list of clients is needed!
-        self.sorted_clients = []
+        self.clients = []   # for get_dimensions() a referenced list with state CANDIDATE 
+        self.sorted_clients = [] # clients appended here get state ASSOCIATED
         self.length = 0.0
+        self.x_factor = DIMENSION[0]['x_factor']
+        self.y_factor = DIMENSION[0]['y_factor']
+        self.d_mod = 0
 
         if clients:         # this is for do_routing()
             self.clients = deepcopy(clients)
+            for cli in self.clients:
+                cli.state = state.CANDIDATE
 
         if start_client:
-            for c in self.clients:
-                if c == start_client:
-                    self.assign(c)
+            for cli in self.clients:
+                if cli == start_client:
+                    self.assign(cli)
                     break
 
-        print('got tour area at (%d,%d) (%d x %d) with %d clients and %s as start client' % \
-                (origin.x, origin.y, self.width, self.height, len(clients), start_client))
+        try:
+            print('got tour area at (%d,%d) (%d x %d) with %d clients and %s as start client' % \
+                    (origin.x, origin.y, self.width, self.height, len(clients), start_client))
+        except TypeError:
+            pass
 
 
     def __lt__(self, other):
@@ -50,22 +58,18 @@ class Tour():
         self.sorted_clients.append(client)
 
 
-def client_in_list(client, cli_list):
-    for cli in cli_list:
-        if cli == client: return True
-
-    return False
-
-
-def find_clients(area, clients):
-    for client in clients.clients:
-        if client_in_list(client, area.clients) or client.state == state.CANDIDATE:
-            continue
-        if client.x > area.origin.x and client.x < area.end.x and \
-                client.y > area.origin.y and client.y < area.end.y:
-            area.clients.append(client)
-
-    return area
+    def add_area_clients(self, all_clients):
+        for client in all_clients.clients:
+            if client.state != state.FREE:
+                continue
+            if client.x > self.origin.x and client.x < self.end.x and \
+                    client.y > self.origin.y and client.y < self.end.y:
+                client.state = state.CANDIDATE
+                self.clients.append(client)
+        
+        print('got tour area at (%d,%d) (%d x %d) with %d clients' % \
+                    (self.origin.x, self.origin.y, self.width, self.height, len(self.clients)))
+        return len(self.clients)
 
 
 def find_best_route(all_clients, tour, cluster_size):
@@ -90,11 +94,12 @@ def find_best_route(all_clients, tour, cluster_size):
         return tour
 
 
-def define_tour_clients(all_clients, tour, cluster_size, end):
+def define_tour_clients(all_clients, tour, cluster_size):
     ex = None
     kicked_clients = []
     while len(tour.clients) > cluster_size:
-        ex = find_next(end, tour.clients)
+        ex = find_next(tour.end, tour.clients)
+        ex.state = state.FREE
         kicked_clients.append(ex)
         tour.clients.remove(ex)
 
@@ -102,42 +107,110 @@ def define_tour_clients(all_clients, tour, cluster_size, end):
     if len(kicked_clients):
         print('kicked %d clients: %s' % (len(kicked_clients), kicked_clients))
         for kicked in kicked_clients:
-            if ex is None or kicked.distance_to(end) > ex.distance_to(end):
+            if ex is None or kicked.distance_to(tour.end) > ex.distance_to(tour.end):
                 ex = kicked
 
-    for cli in tour.clients:
-        cli.state = state.CANDIDATE
-
-    if all_clients.init_tours.state == TourState.FIXED:
-        all_clients.init_tours.append([tour, ])
-        all_clients.init_tours_state = TourState.OPEN:
-    elif all_clients.init_tours_state == TourState.OPEN:
-        all_clients.init_tours[-1].append(tour)
-    else:
-        print('dunno what to do with tour!')
-        exit(1)
+    all_clients.append_init_tour(tour)
 
     return ex
 
 
-def neighbour_candidates(area, all_clients, SETTINGS):
-    neighbours = find_clients(area, all_clients)
-    print('found neighbours: %d' % len(neighbours))
-    return (len(neighbours.clients) % SETTINGS['cluster_size'])
+def get_distance_east(area):
+    x = area.origin.x
+    closest = None 
+    for cli in area.clients:
+        if closest is None or cli.x < closest.x:
+            closest = cli
+
+    return (closest.x - x) if closest else SETTINGS['width']
+
+
+def get_distance_south(area):
+    y = area.origin.y
+    closest = None 
+    for cli in area.clients:
+        if closest is None or cli.y < closest.y:
+            closest = cli
+
+    return (closest.y - y) if closest else SETTINGS['height']
 
 
 def get_dimensions(all_clients, origin, lateral_length, dim_surface, SETTINGS):
-    end = Client(origin.x + lateral_length, origin.y + lateral_length)
-    area = Tour(origin, end, None)
-    while len(find_clients(area, all_clients).clients) < SETTINGS['cluster_size']:
-        Tour(Client(area.end.x, area.origin.y), Client(SETTINGS['width'], area.end.y), all_clients)
-        quantity_east = candidates_east(area, all_clients, SETTINGS))
-        quantity_south = candidates_south(area, all_clients, SETTINGS))
+    while True:
+        end = Client(origin.x + lateral_length, origin.y + lateral_length)
+        area = Tour(origin, end, None)
+        print('starting area [%s / %s]' % (area.origin, area.end))
+        area.add_area_clients(all_clients)
+        
+        print_area(SETTINGS, all_clients, area.origin, area.end, dim_surface)
+        handle_user_events(dim_surface.process)
+        if not len(area.clients):
+            end.x += lateral_length * area.x_factor
+            if end.x > SETTINGS['width'] + lateral_length * 2:
+                print('FUCK!')
+                exit(1)
+        else:
+            break 
+
+    while len(area.clients) < SETTINGS['cluster_size']:
+        print('total area [%s / %s] with %d clients' % (area.origin, area.end, len(area.clients)))
+        south = Tour(Client(area.origin.x, area.end.y), Client(area.end.x, area.end.y + lateral_length * area.y_factor), None)
+        south_clients = south.add_area_clients(all_clients)
+        
+        east_end = Tour(Client(area.end.x, area.origin.y), Client(SETTINGS['width'], area.end.y), None)
+        clients_till_end = east_end.add_area_clients(all_clients)
+        for cli in east_end.clients:
+            cli.state = state.FREE   # this was just temporary tour
+        print('clients until end of area: %d' % clients_till_end)
+        if clients_till_end > 0 and clients_till_end < SETTINGS['cluster_size']:
+            south_clients = 0
+        elif clients_till_end == 0:
+            try:
+                end_of_upper_area = Client(0, all_clients.init_tours[-1][0].end.y)
+            except IndexError:
+                end_of_upper_area = Client(origin.x + lateral_length * area.x_factor, origin.y)
+            else:
+                all_clients.level_up = True
+
+            return end_of_upper_area 
+            
+        
+        east = Tour(Client(area.end.x, area.origin.y), Client(area.end.x + lateral_length * area.x_factor, area.end.y), None)
+        east_clients = east.add_area_clients(all_clients)
+   
+        if not east_clients and not south_clients:
+            print('no clients ! grow the whole damn thing')
+            area.end.x += lateral_length * area.x_factor
+            area.end.y += lateral_length * area.y_factor
+        elif not east_clients:
+            print('no east, grow south!')
+            area.end = south.end
+            area.clients.extend(south.clients)
+        elif not south_clients:
+            print('no south, grow east!')
+            area.end = east.end
+            area.clients.extend(east.clients)
+        else: # east and south
+            print('choosing south or east!')
+            area.end = east.end if get_distance_east(east) < get_distance_south(south) else south.end
+            if get_distance_east(east) < get_distance_south(south):
+                area.end = east.end
+                area.clients.extend(east.clients)
+            else:
+                area.end = south.end
+                area.clients.extend(south.clients)
+
+        print_area(SETTINGS, all_clients, area.origin, area.end, dim_surface)
+        handle_user_events(dim_surface.process)
+
+    define_tour_clients(all_clients, area, SETTINGS['cluster_size'])
+    return Client(area.end.x, area.origin.y)
 
 
-def new_surface(origin, end):
-    temp_client = Client(0, 0)
-    temp_tour = Tour(origin, end, [temp_client])
+def new_surface(SETTINGS):
+    temp_origin = Client(0, 0)
+    temp_end = Client(SETTINGS['width'], SETTINGS['height'])
+    temp_tour = Tour(temp_origin, temp_end, [temp_origin])
     return TourplannerSurface(SETTINGS, None, temp_tour)
 
 
@@ -153,12 +226,17 @@ def clients_have_state(all_clients, booh_state):
 
 def calculate_all_tours(all_clients, SETTINGS):
     lateral_length = sqrt(SETTINGS['width'] * SETTINGS['height'] / (SETTINGS['clusters'] * 2))   # begin with explicit short dimension
+    print('lateral_length: %f' % lateral_length)
+    surface = new_surface(SETTINGS)
+    origin = Client(0,0)
 
-    while clients_have_state(all_clients, state.UNASSOCIATED):
-        get_dimensions(all_clients, Client(0,0), lateral_length, None, SETTINGS)
+    while clients_have_state(all_clients, state.FREE):
+        origin = get_dimensions(all_clients, origin, lateral_length, surface, SETTINGS)
 
-#    sleep(2)
-#    handle_user_events(dim_surface.process)
+    sleep(2)
+    handle_user_events(dim_surface.process)
+    print all_clients.init_tours
+    exit(0)
 #
 #    for tour_clients in all_clients.init_tours:
 #        nice_tour = do_routing(all_clients, SETTINGS, tour_clients, origin, end)
