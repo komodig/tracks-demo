@@ -69,7 +69,7 @@ class ClientsCollection():
                 if dist > self.max_distance:
                     self.max_distance = dist
 
-        self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself 
+        self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself
 
     def append_init_tour(self, tour):
         if not len(self.init_tours) or self.level_up:
@@ -77,6 +77,20 @@ class ClientsCollection():
             self.level_up = False
         else:
             self.init_tours[-1].append(tour)
+
+        print self.init_tours
+
+
+    def get_aligned_origin(self, area, kicked, lateral_length, clients_after_area):
+        init_level = len(self.init_tours)
+        last_level_length = len(self.init_tours[-1])
+        # TODO: consider kicked ones here:
+        if not clients_after_area:
+            return Client(0, self.init_tours[-1][0].end.y)  # \n\r
+
+        x = kicked.x if kicked else area.end.x
+        y = lateral_length * (init_level - 1)
+        return Client(x, y)
 
 
 def find_next(client, clientlist, ignore_candidates=False):
