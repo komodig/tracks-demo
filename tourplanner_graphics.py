@@ -34,9 +34,11 @@ class TourplannerSurface():
         self.process = ProcessControl()
 
 
-def print_clients(tour_surface, clients, slow=False):
+def print_clients(tour_surface, clients, slow=False, circle=False):
+    width = 2 if circle else 0
+    radius = 16 if circle else 4
     for client in clients:
-        pygame.draw.circle(tour_surface.surface, tour_surface.client_color, client.coords(), 4, 0)
+        pygame.draw.circle(tour_surface.surface, tour_surface.client_color, client.coords(), radius, width)
         if slow:
             pygame.display.update()
             tour_surface.fps_clock.tick(30)
@@ -95,7 +97,7 @@ def handle_user_events(process):
         elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 pygame.quit()
-                exit()
+                exit(0)
             elif event.key == K_SPACE:
                 if process.state == ProcessControl.RUN:
                     print('  === paused ===')
