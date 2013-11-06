@@ -63,15 +63,13 @@ class Tour():
 #                if add_them:
 #                    print('add_area_clients: skipping unfree client: %s' % client)
                 continue
-            if client.x >= self.origin.x and client.x < self.end.x and \
-                    client.y >= self.origin.y and client.y < self.end.y:
+            if (client.x > self.origin.x or client.x == self.origin.x == 0) and client.x <= self.end.x and \
+                    (client.y > self.origin.y or client.y == self.origin.y == 0) and client.y <= self.end.y:
                 count += 1
                 if add_them:
                     client.state = state.CANDIDATE
                     self.clients.append(client)
                     print('add_area_clients: appended client: %s' % client)
-#                else:
-#                    print('add_area_clients: counted client: %s' % client)
 
         if add_them:
             print('got tour area at (%d,%d) (%d x %d) with %d clients' % \
@@ -167,6 +165,7 @@ def calculate_all_tours(all_clients, SETTINGS):
         all_clients.small_areas.append(small_area)
 
     free_clients = clients_have_state(all_clients, state.FREE, surface)
+    sleep(1)
     if free_clients:
         surface.process.state = ProcessControl.WAIT
     handle_user_events(surface.process)

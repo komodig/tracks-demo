@@ -27,3 +27,6 @@ DISPLAY = {
     }
 }
 
+TEST = {
+    'level': 1
+}
