@@ -1,6 +1,6 @@
 from math import sqrt
 from client import Client
-from tourplanner_graphics import print_route, print_area, TourplannerSurface, \
+from tourplanner_graphics import print_route, print_area, print_clients, TourplannerSurface, \
         handle_user_events, ProcessControl
 from client import find_next, ClientState as state
 from copy import copy, deepcopy
@@ -8,6 +8,7 @@ from random import randrange
 from config import SETTINGS, DISPLAY, DIMENSION
 from time import sleep
 from sys import stdout
+from pygame import quit
 
 
 class Tour():
@@ -18,12 +19,9 @@ class Tour():
         self.end = end
         self.width = end.x - origin.x
         self.height = end.y - origin.y
-        self.clients = []   # for get_dimensions() a referenced list with state CANDIDATE
+        self.clients = []   # for get_area() a referenced list with state CANDIDATE
         self.sorted_clients = [] # clients appended here get state ASSOCIATED
         self.length = 0.0
-        self.x_factor = DIMENSION[0]['x_factor']
-        self.y_factor = DIMENSION[0]['y_factor']
-        self.d_mod = 0
 
         if clients:         # this is for do_routing()
             self.clients = deepcopy(clients)
@@ -65,8 +63,8 @@ class Tour():
 #                if add_them:
 #                    print('add_area_clients: skipping unfree client: %s' % client)
                 continue
-            if client.x > self.origin.x and client.x < self.end.x and \
-                    client.y > self.origin.y and client.y < self.end.y:
+            if client.x >= self.origin.x and client.x < self.end.x and \
+                    client.y >= self.origin.y and client.y < self.end.y:
                 count += 1
                 if add_them:
                     client.state = state.CANDIDATE
@@ -108,29 +106,35 @@ def find_best_route(all_clients, tour, cluster_size):
         return tour
 
 
-def define_tour_clients(all_clients, tour, cluster_size):
-    ex = None
-    kicked_clients = []
-    while len(tour.clients) > cluster_size:
-        ex = find_next(tour.end, tour.clients)
-        ex.state = state.FREE
-        kicked_clients.append(ex)
-        tour.clients.remove(ex)
+def get_next_area_with_clients(origin, all_clients):
+    area_width = SETTINGS['width'] * DIMENSION[0]['x_factor']
+    area_height = SETTINGS['height'] * DIMENSION[0]['y_factor']
+    end = Client(origin.x + area_width, origin.y + area_height)
+    area = Tour(origin, end, None)
+    while area.count_area_clients(all_clients) == 0:
+        if area.end.x + area_width > SETTINGS['width']:
+            if area.end.y + area_height > SETTINGS['height']:
+                print('END OF TOTAL AREA!')
+                return None
+            area.origin.x = 0
+            area.origin.y += area_height
+            area.end.x = area_width
+            area.end.y += area_height
+        else:
+            area.origin.x += area_width
+            area.end.x += area_width
 
-    ex = None
-    if len(kicked_clients):
-        print('kicked %d clients: %s' % (len(kicked_clients), kicked_clients))
-        for kicked in kicked_clients:
-            if ex is None or kicked.distance_to(tour.end) > ex.distance_to(tour.end):
-                ex = kicked
-
-    all_clients.append_init_tour(tour)
-
-    return ex
+    return area
 
 
-def get_dimensions(all_clients, origin, lateral_length, dim_surface, SETTINGS):
-    
+def get_area(all_clients, last_tour, dim_surface):
+    last_end = Client(last_tour.end.x, last_tour.origin.y)
+    small_area = get_next_area_with_clients(last_end, all_clients)
+    if small_area is None:
+        return None
+    cli = small_area.add_area_clients(all_clients)
+    print('small_area has %d clients' % cli)
+    return small_area
 
 
 def new_surface(SETTINGS):
@@ -140,33 +144,34 @@ def new_surface(SETTINGS):
     return TourplannerSurface(SETTINGS, None, temp_tour)
 
 
-def clients_have_state(all_clients, booh_state):
+def clients_have_state(all_clients, booh_state, surface):
     booh_clients = []
     for cli in all_clients.clients:
         if cli.state == booh_state:
             booh_clients.append(cli)
     print('remaining FREE clients: %d' % len(booh_clients))
+    print_clients(surface, booh_clients, False, True)
 
     return len(booh_clients)
 
 
 def calculate_all_tours(all_clients, SETTINGS):
-    lateral_length = sqrt(SETTINGS['width'] * SETTINGS['height'] / (SETTINGS['clusters'] * 2))   # begin with explicit short dimension
-    print('lateral_length: %f' % lateral_length)
     surface = new_surface(SETTINGS)
-    origin = Client(0,0)
+    small_area = Tour(Client(0, 0), Client(0, 0), None)
 
-    while clients_have_state(all_clients, state.FREE):
-        origin = get_dimensions(all_clients, origin, lateral_length, surface, SETTINGS)
+    while True:
+        small_area = get_area(all_clients, small_area, surface)
+        if small_area is None:
+            break
+        print_area(SETTINGS, all_clients, small_area.origin, small_area.end, surface)
+        all_clients.small_areas.append(small_area)
 
-    for ll in range(len(all_clients.init_tours)):
-        print all_clients.init_tours[ll]
-    sleep(2)
+    free_clients = clients_have_state(all_clients, state.FREE, surface)
+    if free_clients:
+        surface.process.state = ProcessControl.WAIT
     handle_user_events(surface.process)
-    for ll in range(len(all_clients.init_tours)):
-        for tour in all_clients.init_tours[ll]:
-            nice_tour = do_routing(all_clients, SETTINGS, tour)
-            all_clients.best_tours.append(nice_tour)
+    quit() # pygame
+    exit(0)
 
     all_clients.final_print = True
     print_route(all_clients, nice_tour)
