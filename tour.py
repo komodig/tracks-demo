@@ -34,12 +34,6 @@ class Tour():
                     self.assign(cli)
                     break
 
-       # try:
-       #     print('got tour area at (%d,%d) (%d x %d) with %d clients and %s as start client' % \
-       #             (origin.x, origin.y, self.width, self.height, len(clients), start_client))
-       # except TypeError:
-       #     pass
-
 
     def __lt__(self, other):
         return self.length < other.length
@@ -60,8 +54,6 @@ class Tour():
         count = 0
         for client in all_clients.clients:
             if client.state != state.FREE:
-#                if add_them:
-#                    print('add_area_clients: skipping unfree client: %s' % client)
                 continue
             if (client.x > self.origin.x or client.x == self.origin.x == 0) and client.x <= self.end.x and \
                     (client.y > self.origin.y or client.y == self.origin.y == 0) and client.y <= self.end.y:
