@@ -52,13 +52,13 @@ def print_earlier_tours(all_clients, surface):
             pygame.draw.line(surface.surface, surface.route_color, earlier.sorted_clients[x].coords(), earlier.sorted_clients[x+1].coords(), 2)
 
 
-def print_route(all_clients, tour):
+def print_route(all_clients, tour):  #, tour_surface):
     if all_clients.first_print:
         tour_surface = TourplannerSurface(SETTINGS, INFO, tour, True)
         print_clients(tour_surface, all_clients.clients, True)
         all_clients.first_print = False
         handle_user_events(tour_surface.process)
-        sleep(3)
+        sleep(2)
     else:
         tour_surface = TourplannerSurface(SETTINGS, INFO, tour, False)
         print_clients(tour_surface, all_clients.clients, False)

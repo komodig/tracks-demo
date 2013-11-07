@@ -5,27 +5,30 @@ INFO = {
 
 
 SETTINGS = {
-    'clusters': 50,
-    'cluster_size': 10,
-    'width': 1800,
-    'height': 1200,
+    'clusters': 20,
+    'cluster_size': 5,
+    'width': 1000,
+    'height': 800,
 }
 
 
 DIMENSION = [
 {
-    'x_factor': 0.1,
-    'y_factor': 0.1,
+    'x_factor': 0.2,
+    'y_factor': 0.2,
 },
 ]
 
 DISPLAY = {
-    'dimensions': False,
-    'routing': False,
+    'dimensions': True,
+    'routing': {
+        'all': False,
+        'best_starter': False,
+    },
     'clients': {
         'init': False,
         'append':False,
-    }
+    },
 }
 
 TEST = {

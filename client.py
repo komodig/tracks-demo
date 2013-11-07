@@ -43,6 +43,7 @@ class ClientsCollection():
         self.best_tours = []
         self.max_distance = 0.0
         self.avg_distance = 0.0
+        self.total_length = 0
         self.first_print = True
         self.final_print = False
 
@@ -59,6 +60,11 @@ class ClientsCollection():
 
     def __repr__(self):
         return '%s' % (self.clients)
+
+
+    def add_best_tour(self, the_winner):
+        self.best_tours.append(the_winner)
+        self.total_length += the_winner.length
 
 
     def get_client_distances(self):

@@ -75,12 +75,12 @@ class Tour():
 
 
 def find_best_route(all_clients, tour, cluster_size):
-    if len(tour.sorted_clients) < cluster_size:
+    if len(tour.sorted_clients) < len(tour.clients):
         other_tour = deepcopy(tour)
 
         next_client = find_next(tour.sorted_clients[-1], tour.clients)
         tour.assign(next_client)
-        if DISPLAY['routing']: print_route(all_clients, tour)
+        if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour, cluster_size)
 
         next_next_client = find_next(next_client, other_tour.clients)
@@ -88,7 +88,7 @@ def find_best_route(all_clients, tour, cluster_size):
             b = a
         else:
             other_tour.assign(next_next_client)
-            if DISPLAY['routing']: print_route(all_clients, other_tour)
+            if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour, cluster_size)
 
         return a if a < b else b
@@ -133,13 +133,13 @@ def new_surface(SETTINGS):
     return TourplannerSurface(SETTINGS, None, temp_tour)
 
 
-def clients_have_state(all_clients, booh_state, surface):
+def clients_have_state(all_clients, booh_str, booh_state, surface):
     booh_clients = []
     for cli in all_clients.clients:
         if cli.state == booh_state:
             booh_clients.append(cli)
-    print('remaining FREE clients: %d' % len(booh_clients))
-    print_clients(surface, booh_clients, False, True)
+    print('remaining %s clients: %d' % (booh_str, len(booh_clients)))
+    # print_clients(surface, booh_clients, False, True)
 
     return len(booh_clients)
 
@@ -150,7 +150,17 @@ def get_average_members(all_clients):
     for sa in all_clients.small_areas:
         avg += len(sa.clients)
         cnt += 1
+
     return avg/cnt
+
+
+def get_singles(all_clients):
+    isolated = []
+    for area in all_clients.small_areas:
+        if len(area.clients) == 1:
+            isolated.append(area.clients[0])
+
+    return isolated
 
 
 def calculate_all_tours(all_clients, SETTINGS):
@@ -164,26 +174,43 @@ def calculate_all_tours(all_clients, SETTINGS):
         if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, small_area.origin, small_area.end, surface)
         all_clients.small_areas.append(small_area)
 
-    free_clients = clients_have_state(all_clients, state.FREE, surface)
     print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
     print('average of %d members' % get_average_members(all_clients))
+    free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
+    free_clients = clients_have_state(all_clients, 'CANDIDATE', state.CANDIDATE, surface)
+    free_clients = clients_have_state(all_clients, 'FREE', state.FREE, surface)
+
+    lonesome = get_singles(all_clients)
+    print lonesome
+
+    print_clients(surface, lonesome, False, True)
     sleep(1)
     if free_clients:
         surface.process.state = ProcessControl.WAIT
     handle_user_events(surface.process)
-    quit() # pygame
-    exit(0)
+   # quit() # pygame
+   # exit(0)
 
+    for brautpaare in all_clients.small_areas:
+        best = do_routing(all_clients, SETTINGS, brautpaare, surface)
+        all_clients.add_best_tour(best)
+
+    free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
+    free_clients = clients_have_state(all_clients, 'CANDIDATE', state.CANDIDATE, surface)
+    free_clients = clients_have_state(all_clients, 'FREE', state.FREE, surface)
+    print('total length: %f' % all_clients.total_length)
     all_clients.final_print = True
-    print_route(all_clients, nice_tour)
+    #last_surface = new_surface(SETTINGS, True)
+    for bt in all_clients.best_tours:
+        print_route(all_clients, bt)
 
 
-def do_routing(all_clients, SETTINGS, tour):
+def do_routing(all_clients, SETTINGS, tour, tour_surface):
     best_tour = None
     for start_client in tour.clients:
         tour = Tour(tour.origin, tour.end, tour.clients, start_client)
         res_tour = find_best_route(all_clients, tour, SETTINGS['cluster_size'])
-        print_route(all_clients, res_tour)
+        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
