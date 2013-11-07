@@ -5,10 +5,10 @@ INFO = {
 
 
 SETTINGS = {
-    'clusters': 6,
-    'cluster_size': 5,
-    'width': 1200,
-    'height': 700,
+    'clusters': 50,
+    'cluster_size': 10,
+    'width': 1800,
+    'height': 1200,
 }
 
 
@@ -20,10 +20,11 @@ DIMENSION = [
 ]
 
 DISPLAY = {
-    'dimensions': True,
+    'dimensions': False,
     'routing': False,
     'clients': {
-        'init': False
+        'init': False,
+        'append':False,
     }
 }
 

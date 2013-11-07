@@ -61,10 +61,10 @@ class Tour():
                 if add_them:
                     client.state = state.CANDIDATE
                     self.clients.append(client)
-                    print('add_area_clients: appended client: %s' % client)
+                    if DISPLAY['clients']['append']: print('add_area_clients: appended client: %s' % client)
 
         if add_them:
-            print('got tour area at (%d,%d) (%d x %d) with %d clients' % \
+            print('got area at (%d,%d) (%d x %d) with %d clients' % \
                     (self.origin.x, self.origin.y, self.width, self.height, len(self.clients)))
         return count
 
@@ -122,8 +122,7 @@ def get_area(all_clients, last_tour, dim_surface):
     small_area = get_next_area_with_clients(last_end, all_clients)
     if small_area is None:
         return None
-    cli = small_area.add_area_clients(all_clients)
-    print('small_area has %d clients' % cli)
+    cli_sum = small_area.add_area_clients(all_clients)
     return small_area
 
 
@@ -145,6 +144,15 @@ def clients_have_state(all_clients, booh_state, surface):
     return len(booh_clients)
 
 
+def get_average_members(all_clients):
+    avg = 0
+    cnt = 0
+    for sa in all_clients.small_areas:
+        avg += len(sa.clients)
+        cnt += 1
+    return avg/cnt
+
+
 def calculate_all_tours(all_clients, SETTINGS):
     surface = new_surface(SETTINGS)
     small_area = Tour(Client(0, 0), Client(0, 0), None)
@@ -153,10 +161,12 @@ def calculate_all_tours(all_clients, SETTINGS):
         small_area = get_area(all_clients, small_area, surface)
         if small_area is None:
             break
-        print_area(SETTINGS, all_clients, small_area.origin, small_area.end, surface)
+        if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, small_area.origin, small_area.end, surface)
         all_clients.small_areas.append(small_area)
 
     free_clients = clients_have_state(all_clients, state.FREE, surface)
+    print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
+    print('average of %d members' % get_average_members(all_clients))
     sleep(1)
     if free_clients:
         surface.process.state = ProcessControl.WAIT
