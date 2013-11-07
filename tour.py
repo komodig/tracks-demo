@@ -185,11 +185,9 @@ def calculate_all_tours(all_clients, SETTINGS):
 
     print_clients(surface, lonesome, False, True)
     sleep(1)
-    if free_clients:
-        surface.process.state = ProcessControl.WAIT
-    handle_user_events(surface.process)
-   # quit() # pygame
-   # exit(0)
+#    if free_clients:
+#        surface.process.state = ProcessControl.WAIT
+#    handle_user_events(surface.process)
 
     for brautpaare in all_clients.small_areas:
         best = do_routing(all_clients, SETTINGS, brautpaare, surface)
@@ -203,6 +201,8 @@ def calculate_all_tours(all_clients, SETTINGS):
     #last_surface = new_surface(SETTINGS, True)
     for bt in all_clients.best_tours:
         print_route(all_clients, bt)
+    sleep(3)
+    handle_user_events(surface.process)
 
 
 def do_routing(all_clients, SETTINGS, tour, tour_surface):

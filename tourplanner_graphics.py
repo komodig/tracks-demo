@@ -24,7 +24,7 @@ class TourplannerSurface():
 
 
         if self.show_msg:
-            self.font_color = pygame.Color(180,255,80)
+            self.font_color = pygame.Color(100,150,60)
             self.font = pygame.font.Font('freesansbold.ttf', 24)
             self.surface_msg = self.font.render(INFO['usage'], False, self.font_color)
             self.msg_rect = self.surface_msg.get_rect()
