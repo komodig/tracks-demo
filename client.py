@@ -39,7 +39,6 @@ class ClientsCollection():
     def __init__(self, clients, cluster_size_min, cluster_size_max, width, height):
         self.clients = []
         self.small_areas = []
-        self.init_tours = []
         self.best_tours = []
         self.max_distance = 0.0
         self.avg_distance = 0.0

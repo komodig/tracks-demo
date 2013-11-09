@@ -240,10 +240,8 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
                 (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
             neighbours.append(tour)
             if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, tour.origin, tour.end, surface)
-
     sleep(3)
-    print('chose best to assimilate')
-    #neighbours.sort()
+
     best = None
     chosen = None
     for nei in neighbours:
@@ -259,12 +257,9 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     if best is None:
         print('sorry, nothing to unite!')
         return None
-    print('small_areas len %d' % len(all_clients.small_areas))
     all_clients.small_areas.remove(ass)
     all_clients.small_areas.remove(chosen)
-    print('small_areas len %d' % len(all_clients.small_areas))
     all_clients.small_areas.append(best)
-    print('small_areas len %d' % len(all_clients.small_areas))
     surface.change_route_color()
     if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, united.origin, united.end, surface)
     sleep(1)
