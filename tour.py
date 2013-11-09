@@ -240,7 +240,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
                 (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
             neighbours.append(tour)
             if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, tour.origin, tour.end, surface)
-    sleep(3)
+    sleep(1)
 
     best = None
     chosen = None
@@ -257,6 +257,8 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     if best is None:
         print('sorry, nothing to unite!')
         return None
+
+    # FIXME: some tours are not routed. i guess removal is not working properly:
     all_clients.small_areas.remove(ass)
     all_clients.small_areas.remove(chosen)
     all_clients.small_areas.append(best)
