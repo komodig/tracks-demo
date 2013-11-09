@@ -5,7 +5,7 @@ from tourplanner_graphics import print_route, print_area, print_clients, Tourpla
 from client import find_next, ClientState as state
 from copy import copy, deepcopy
 from random import randrange
-from config import SETTINGS, DISPLAY, DIMENSION
+from config import SETTINGS, INFO, DISPLAY, DIMENSION
 from time import sleep
 from sys import stdout
 from pygame import quit
@@ -13,8 +13,6 @@ from pygame import quit
 
 class Tour():
     def __init__(self, origin, end, clients, start_client=None):
-        self.client_color = (randrange(0,255), randrange(0,255), randrange(0,255))
-        self.route_color = (randrange(0,255), randrange(0,255), randrange(0,255))
         self.origin = origin
         self.end = end
         self.width = end.x - origin.x
@@ -90,7 +88,7 @@ def do_routing(all_clients, SETTINGS, tour, tour_surface):
     for start_client in tour.clients:
         tour = Tour(tour.origin, tour.end, tour.clients, start_client)
         res_tour = find_best_route(all_clients, tour)
-        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
+        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
@@ -150,13 +148,6 @@ def get_area(all_clients, last_tour, dim_surface):
         return None
     cli_sum = small_area.add_area_clients(all_clients)
     return small_area
-
-
-def new_surface(SETTINGS):
-    temp_origin = Client(0, 0)
-    temp_end = Client(SETTINGS['width'], SETTINGS['height'])
-    temp_tour = Tour(temp_origin, temp_end, [temp_origin])
-    return TourplannerSurface(SETTINGS, None, temp_tour)
 
 
 def clients_have_state(all_clients, booh_str, booh_state, surface):
@@ -219,11 +210,10 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     to_assimilate = tours_with_count(all_clients, with_member_count)
 
     if DISPLAY['dimensions']:
-        surface = new_surface(SETTINGS)
-        print_clients(surface, all_clients.clients)
+        print_clients(all_clients.surface, all_clients.clients)
         mark_these = tours_with_count(all_clients, with_member_count)
         for tour in mark_these:
-            print_clients(surface, tour.clients, False, True)
+            print_clients(all_clients.surface, tour.clients, False, True)
 
     try:
         ass = to_assimilate[0]
@@ -239,7 +229,8 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
                 (tour.origin.x == ass.origin.x and tour.origin.y == ass.end.y) or \
                 (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
             neighbours.append(tour)
-            if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, tour.origin, tour.end, surface)
+            print('got neighbour...')
+            if DISPLAY['dimensions']: print_area(all_clients, tour.origin, tour.end)
 
     sleep(3)
     print('chose best to assimilate')
@@ -251,7 +242,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
             print('unity not possible.')
             continue
         united = unite(ass, nei)
-        best_nei = do_routing(all_clients, SETTINGS, united, surface)
+        best_nei = do_routing(all_clients, SETTINGS, united, all_clients.surface)
         if best is None or united < best:
             best = united
             chosen = nei
@@ -259,27 +250,26 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     if best is None:
         print('sorry, nothing to unite!')
         return None
-    print('small_areas len %d' % len(all_clients.small_areas))
     all_clients.small_areas.remove(ass)
     all_clients.small_areas.remove(chosen)
-    print('small_areas len %d' % len(all_clients.small_areas))
     all_clients.small_areas.append(best)
-    print('small_areas len %d' % len(all_clients.small_areas))
-    surface.change_route_color()
-    if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, united.origin, united.end, surface)
+    all_clients.surface.change_route_color()
+    if DISPLAY['dimensions']: print_area(all_clients, united.origin, united.end)
     sleep(1)
     return best
 
 
 def calculate_all_tours(all_clients, SETTINGS):
-    surface = new_surface(SETTINGS)
+    surface = TourplannerSurface(SETTINGS, INFO)
+    if all_clients.surface is None:
+        all_clients.surface = surface
     small_area = Tour(Client(0, 0), Client(0, 0), None)
 
     while True:
         small_area = get_area(all_clients, small_area, surface)
         if small_area is None:
             break
-        if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, small_area.origin, small_area.end, surface)
+        if DISPLAY['dimensions']: print_area(all_clients, small_area.origin, small_area.end)
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 

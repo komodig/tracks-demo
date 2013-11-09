@@ -2,7 +2,7 @@ from time import sleep
 import pygame
 from pygame.locals import *
 from random import randrange
-from config import SETTINGS, INFO
+from config import SETTINGS, INFO, DISPLAY
 
 
 class ProcessControl():
@@ -15,17 +15,16 @@ class ProcessControl():
 
 
 class TourplannerSurface():
-    def __init__(self, SETTINGS, INFO, tour, show_msg=False):
+    def __init__(self, SETTINGS, INFO):
         pygame.init()
-        self.show_msg = show_msg
         self.surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
-        self.client_color = pygame.Color(*tour.client_color)
-        self.route_color = pygame.Color(*tour.route_color)
+        self.client_color = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
+        self.route_color = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
         self.emph_color = pygame.Color(255,255,255)
         self.fps_clock = pygame.time.Clock()
 
 
-        if self.show_msg:
+        if DISPLAY['clients_intro']:
             self.font_color = pygame.Color(100,150,60)
             self.font = pygame.font.Font('freesansbold.ttf', 24)
             self.surface_msg = self.font.render(INFO['usage'], False, self.font_color)
@@ -40,56 +39,51 @@ class TourplannerSurface():
         self.route_color = pygame.Color(*rgb)
 
 
-def print_clients(tour_surface, clients, slow=False, circle=False):
+def print_clients(surface, clients, slow=False, circle=False):
     width = 2 if circle else 0
     radius = 16 if circle else 4
-    color = tour_surface.emph_color if circle else tour_surface.client_color
+    color = surface.emph_color if circle else surface.client_color
     for client in clients:
-        pygame.draw.circle(tour_surface.surface, color, client.coords(), radius, width)
+        pygame.draw.circle(surface.surface, color, client.coords(), radius, width)
         if slow:
             pygame.display.update()
-            tour_surface.fps_clock.tick(30)
+            surface.fps_clock.tick(30)
     if not slow:
         pygame.display.update()
 
 
-def print_earlier_tours(all_clients, surface):
+def print_earlier_tours(surface, all_clients):
     for earlier in all_clients.best_tours:
         for x in range(len(earlier.sorted_clients) - 1):
             pygame.draw.line(surface.surface, surface.route_color, earlier.sorted_clients[x].coords(), earlier.sorted_clients[x+1].coords(), 2)
 
 
-def print_route(all_clients, tour):  #, tour_surface):
-    if all_clients.first_print:
-        tour_surface = TourplannerSurface(SETTINGS, INFO, tour, True)
-        print_clients(tour_surface, all_clients.clients, True)
-        all_clients.first_print = False
-        handle_user_events(tour_surface.process)
-        sleep(2)
-    else:
-        tour_surface = TourplannerSurface(SETTINGS, INFO, tour, False)
-        print_clients(tour_surface, all_clients.clients, False)
-
+def print_route(all_clients, tour):
+    surface = TourplannerSurface(SETTINGS, INFO)
     for x in range(len(tour.sorted_clients) - 1):
-        print_earlier_tours(all_clients, tour_surface)
+        print_clients(surface, all_clients.clients, False)
+        print_earlier_tours(surface, all_clients)
 
-        pygame.draw.line(tour_surface.surface, tour_surface.route_color, tour.sorted_clients[x].coords(), tour.sorted_clients[x+1].coords(), 2)
+        pygame.draw.line(surface.surface, surface.route_color, tour.sorted_clients[x].coords(), tour.sorted_clients[x+1].coords(), 2)
         pygame.display.update()
-        tour_surface.fps_clock.tick(30)
+        surface.fps_clock.tick(30)
+        handle_user_events(all_clients.surface.process)
 
     if all_clients.final_print:
-        tour_surface.process.state = ProcessControl.WAIT
-    handle_user_events(tour_surface.process)
+        all_clients.surface.process.state = ProcessControl.WAIT
+    handle_user_events(all_clients.surface.process)
 
 
-def print_area(SETTINGS, all_clients, origin, end, tour_surface):
-    print_clients(tour_surface, all_clients.clients, False)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (end.x, origin.y), (end.x, end.y), 2)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (origin.x, end.y), 2)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, end.y), (end.x, end.y), 2)
+def print_area(all_clients, origin, end):
+    print('print_area(): clients')
+    print_clients(all_clients.surface, all_clients.clients, False)
+    print('print_area(): area')
+    pygame.draw.line(all_clients.surface.surface, all_clients.surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
+    pygame.draw.line(all_clients.surface.surface, all_clients.surface.route_color, (end.x, origin.y), (end.x, end.y), 2)
+    pygame.draw.line(all_clients.surface.surface, all_clients.surface.route_color, (origin.x, origin.y), (origin.x, end.y), 2)
+    pygame.draw.line(all_clients.surface.surface, all_clients.surface.route_color, (origin.x, end.y), (end.x, end.y), 2)
     pygame.display.update()
-    tour_surface.fps_clock.tick(30)
+    all_clients.surface.fps_clock.tick(30)
 
 
 def handle_user_events(process):
