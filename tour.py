@@ -22,6 +22,7 @@ class Tour():
         self.clients = []   # for get_area() a referenced list with state CANDIDATE
         self.sorted_clients = [] # clients appended here get state ASSOCIATED
         self.length = 0.0
+        self.valid = True
 
         if clients:         # this is for do_routing()
             self.clients = deepcopy(clients)
@@ -33,6 +34,10 @@ class Tour():
                 if cli == start_client:
                     self.assign(cli)
                     break
+
+
+    def __eq__(self, other):
+        return (self.origin == other.origin and self.end == other.end)
 
 
     def __cmp__(self, other):
@@ -180,7 +185,7 @@ def clients_have_state(all_clients, booh_str, booh_state, surface):
 def get_average_members(all_clients):
     avg = 0
     cnt = 0
-    for sa in all_clients.small_areas:
+    for sa in get_valid_areas(all_clients):
         avg += len(sa.clients)
         cnt += 1
 
@@ -189,7 +194,7 @@ def get_average_members(all_clients):
 
 def tours_with_count(all_clients, count):
     wanted = []
-    for area in all_clients.small_areas:
+    for area in get_valid_areas(all_clients):
         if len(area.clients) == count:
             wanted.append(area)
 
@@ -215,6 +220,15 @@ def unite(one, other):
     return new
 
 
+def get_valid_areas(all_clients):
+    areas = []
+    for area in all_clients.small_areas:
+        if area.valid:
+            areas.append(area)
+
+    return areas
+
+
 def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count):
     to_assimilate = tours_with_count(all_clients, with_member_count)
 
@@ -232,7 +246,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         return None
 
     neighbours = []
-    for tour in all_clients.small_areas:
+    for tour in get_valid_areas(all_clients):
         # north, east, south, west
         if (tour.origin.x == ass.origin.x and tour.end.y == ass.origin.y) or \
                 (tour.origin.x == ass.end.x and tour.end.y == ass.end.y) or \
@@ -250,20 +264,21 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
             continue
         united = unite(ass, nei)
         best_nei = do_routing(all_clients, SETTINGS, united, surface)
-        if best is None or united < best:
-            best = united
-            chosen = nei
+        if best is None or best_nei < best:
+            best = copy(united)
+            chosen = copy(nei)
 
     if best is None:
         print('sorry, nothing to unite!')
         return None
 
-    # FIXME: some tours are not routed. i guess removal is not working properly:
-    all_clients.small_areas.remove(ass)
-    all_clients.small_areas.remove(chosen)
+    for area in get_valid_areas(all_clients):
+        if area == ass: area.valid = False
+        if area == chosen: area.valid = False
+
     all_clients.small_areas.append(best)
     surface.change_route_color()
-    if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, united.origin, united.end, surface)
+    if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, best.origin, best.end, surface)
     sleep(1)
     return best
 
@@ -292,13 +307,11 @@ def calculate_all_tours(all_clients, SETTINGS):
         if ret is None: break
         handle_user_events(surface.process)
 
-    for brautpaare in all_clients.small_areas:
+    for brautpaare in get_valid_areas(all_clients):
         best = do_routing(all_clients, SETTINGS, brautpaare, surface)
         all_clients.best_tours.append(best)
         handle_user_events(surface.process)
 
-    # FIXME:
-    # why does it crash in assign() sometimes?!
     free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
 
     lonesome = tours_with_count(all_clients, 1)
@@ -308,14 +321,11 @@ def calculate_all_tours(all_clients, SETTINGS):
     all_clients.final_print = False
     print_route(all_clients, all_clients.best_tours[0])
 
-    sleep(3)
+    #if single_members < 1:
+    #    quit()
+    #    exit(3)
+
+    surface.process.state = ProcessControl.PAUSE
     handle_user_events(surface.process)
-
-    if single_members < 1:
-        quit()
-        exit(3)
-
-    #surface.process.state = ProcessControl.WAIT
-    #handle_user_events(surface.process)
 
 
