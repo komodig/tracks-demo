@@ -14,6 +14,7 @@ class Client():
         self.x = x
         self.y = y
         self.state = ClientState.FREE
+        self.next_assigned = None
         if DISPLAY['clients']['init']: print('created new client at x:%d y:%d' % (self.x, self.y))
 
 
@@ -80,15 +81,23 @@ class ClientsCollection():
         self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself
 
 
-def find_next(client, clientlist, ignore_candidates=False):
+def find_next(client, clientlist, skip_candidates=False):
     closest = None
     for x in clientlist:
         if x == client or x.state == ClientState.ASSOCIATED \
-                or (ignore_candidates and x.state == ClientState.CANDIDATE):
+                or (skip_candidates and x.state == ClientState.CANDIDATE):
             continue
         elif closest is None or client.distance_to(x) < client.distance_to(closest):
             closest = x
 
     return closest
+
+
+def get_with_state(clients, booh_state):
+    return [x for x in clients if x.state == booh_state]
+
+
+def count_with_state(clients, booh_state):
+    return len(get_with_state(clients, booh_state))
 
 

@@ -3,7 +3,7 @@ import pygame
 from pygame.locals import *
 from random import randrange
 from config import SETTINGS, INFO
-
+from client import count_with_state, get_with_state, ClientState as state
 
 class ProcessControl():
     WAIT  = 0
@@ -55,11 +55,13 @@ def print_clients(tour_surface, clients, slow=False, circle=False):
 
 def print_earlier_tours(all_clients, surface):
     for earlier in all_clients.best_tours:
-        for x in range(len(earlier.sorted_clients) - 1):
-            pygame.draw.line(surface.surface, surface.route_color, earlier.sorted_clients[x].coords(), earlier.sorted_clients[x+1].coords(), 2)
+        assigned = earlier.first_assigned
+        while assigned.next_assigned:
+            pygame.draw.line(surface.surface, surface.route_color, assigned.coords(), assigned.next_assigned.coords(), 2)
+            assigned = assigned.next_assigned
 
 
-def print_route(all_clients, tour):  #, tour_surface):
+def print_route(all_clients, tour):
     if all_clients.first_print:
         tour_surface = TourplannerSurface(True)
         print_clients(tour_surface, all_clients.clients, True)
@@ -70,10 +72,11 @@ def print_route(all_clients, tour):  #, tour_surface):
         tour_surface = TourplannerSurface(False)
         print_clients(tour_surface, all_clients.clients, False)
 
-    for x in range(len(tour.sorted_clients) - 1):
+    assigned = tour.first_assigned
+    while assigned.next_assigned:
         print_earlier_tours(all_clients, tour_surface)
-
-        pygame.draw.line(tour_surface.surface, tour_surface.route_color, tour.sorted_clients[x].coords(), tour.sorted_clients[x+1].coords(), 2)
+        pygame.draw.line(tour_surface.surface, tour_surface.route_color, assigned.coords(), assigned.next_assigned.coords(), 2)
+        assigned = assigned.next_assigned
         pygame.display.update()
         tour_surface.fps_clock.tick(30)
 

@@ -1,7 +1,7 @@
 from client import Client
 from tourplanner_graphics import print_route, print_area, print_clients, TourplannerSurface, \
         handle_user_events, ProcessControl
-from client import find_next, ClientState as state
+from client import find_next, count_with_state, get_with_state, ClientState as state
 from copy import copy, deepcopy
 from config import SETTINGS, INFO, DISPLAY, DIMENSION
 from time import sleep
@@ -14,15 +14,16 @@ class Tour():
         self.end = end
         self.width = end.x - origin.x
         self.height = end.y - origin.y
-        self.clients = []   # for get_area() a referenced list with state CANDIDATE
-        self.sorted_clients = [] # clients appended here get state ASSOCIATED
+        self.clients = []
         self.length = 0.0
         self.valid = True
         self.can_unite = True
+        self.first_assigned = None
 
         if clients:         # this is for do_routing()
             self.clients = deepcopy(clients)
             for cli in self.clients:
+                cli.next_assigned = None
                 cli.state = state.CANDIDATE
 
         if start_client:
@@ -52,14 +53,35 @@ class Tour():
 
 
     def __repr__(self):
-        return ('%s' % self.sorted_clients)
+        return ('%s' % self.clients)
 
 
-    def assign(self, client):
-        if len(self.sorted_clients):
-            self.length += client.distance_to(self.sorted_clients[-1])
+    def get_last_assigned(self):
+        if self.first_assigned is None:
+            return None
+        else:
+            last_assigned = self.first_assigned
+            while last_assigned.next_assigned:
+                last_assigned = last_assigned.next_assigned
+            return last_assigned
+
+
+    def assign(self, incoming):
+        print('assign()')
+        client = None
+        for it in self.clients:
+            if it == incoming:
+                client = it # in case of cloned client
+                break
+        assert client, 'FATAL! Trying to assing not-member-client!'
+        assert client.next_assigned is None, 'STRANGE! client to assign has next_assigned set!'
+        if self.first_assigned is None:
+            self.first_assigned = client
+        else:
+            last = self.get_last_assigned()
+            self.length += client.distance_to(last)
+            last.next_assigned = client
         client.state = state.ASSOCIATED
-        self.sorted_clients.append(client)
 
 
     def add_area_clients(self, all_clients, add_them=True):
@@ -91,6 +113,7 @@ def do_routing(all_clients, tour, tour_surface):
     for start_client in tour.clients:
         tour = Tour(tour.origin, tour.end, tour.clients, start_client)
         res_tour = find_best_route(all_clients, tour)
+        print('tour length: %f' % res_tour.length)
         if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
@@ -100,10 +123,13 @@ def do_routing(all_clients, tour, tour_surface):
 
 
 def find_best_route(all_clients, tour):
-    if len(tour.sorted_clients) < len(tour.clients):
+    print('find_best_route()')
+    if count_with_state(tour.clients, state.ASSOCIATED) < len(tour.clients):
         other_tour = deepcopy(tour)
 
-        next_client = find_next(tour.sorted_clients[-1], tour.clients)
+        latest = tour.get_last_assigned()
+        assert latest, 'FATAL! No start_client found'
+        next_client = find_next(latest, tour.clients)
         if next_client is None:
             return tour
         tour.assign(next_client)
@@ -151,19 +177,6 @@ def get_area(all_clients, last_tour, dim_surface):
         return None
     cli_sum = small_area.add_area_clients(all_clients)
     return small_area
-
-
-def clients_have_state(all_clients, booh_state):
-    booh_clients = 0
-    if booh_state == state.ASSOCIATED:
-        for tour in all_clients.best_tours:
-            booh_clients += len(tour.clients)
-    else:
-        for cli in all_clients.clients:
-            if cli.state == booh_state:
-                booh_clients += 1
-
-    return booh_clients
 
 
 def get_average_members(all_clients):
@@ -259,7 +272,6 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         return ass
 
     # areas.remove(chosen) causes strange behaviour so remove differently
-    # MAYBE because do_routing() plays in sorted_client not small_areas?!
     for area in get_valid_areas(all_clients):
         if area == ass: area.valid = False
         if area == chosen: area.valid = False
@@ -283,8 +295,8 @@ def calculate_all_tours(all_clients):
         handle_user_events(surface.process)
 
     print('average of %d members' % get_average_members(all_clients))
-    print('CANDIDATE clients: %d' % clients_have_state(all_clients, state.CANDIDATE))
-    print('FREE clients: %d' % clients_have_state(all_clients, state.FREE))
+    print('CANDIDATE clients: %d' % count_with_state(all_clients.clients, state.CANDIDATE))
+    print('FREE clients: %d' % count_with_state(all_clients.clients, state.FREE))
 
     tour_size = 1
     while True:
@@ -303,7 +315,7 @@ def calculate_all_tours(all_clients):
         all_clients.best_tours.append(best)
         handle_user_events(surface.process)
 
-    print('ASSOCIATED clients: %d' % clients_have_state(all_clients, state.ASSOCIATED))
+    print('ASSOCIATED clients: %d' % count_with_state(all_clients.clients, state.ASSOCIATED))
     print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
     print('total length: %f' % all_clients.summarize_total_length())
     all_clients.final_print = False
