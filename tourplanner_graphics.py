@@ -15,7 +15,7 @@ class ProcessControl():
 
 
 class TourplannerSurface():
-    def __init__(self, SETTINGS, INFO, show_msg=False):
+    def __init__(self, show_msg=False):
         pygame.init()
         self.show_msg = show_msg
         self.surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
@@ -42,7 +42,7 @@ class TourplannerSurface():
 
 def print_clients(tour_surface, clients, slow=False, circle=False):
     width = 2 if circle else 0
-    radius = 16 if circle else 4
+    radius = 16 if circle else 3
     color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
         pygame.draw.circle(tour_surface.surface, color, client.coords(), radius, width)
@@ -61,13 +61,13 @@ def print_earlier_tours(all_clients, surface):
 
 def print_route(all_clients, tour):  #, tour_surface):
     if all_clients.first_print:
-        tour_surface = TourplannerSurface(SETTINGS, INFO, True)
+        tour_surface = TourplannerSurface(True)
         print_clients(tour_surface, all_clients.clients, True)
         all_clients.first_print = False
-        handle_user_events(tour_surface.process)
         sleep(2)
+        handle_user_events(tour_surface.process)
     else:
-        tour_surface = TourplannerSurface(SETTINGS, INFO, False)
+        tour_surface = TourplannerSurface(False)
         print_clients(tour_surface, all_clients.clients, False)
 
     for x in range(len(tour.sorted_clients) - 1):
@@ -82,7 +82,7 @@ def print_route(all_clients, tour):  #, tour_surface):
     handle_user_events(tour_surface.process)
 
 
-def print_area(SETTINGS, all_clients, origin, end, tour_surface):
+def print_area(all_clients, origin, end, tour_surface):
     print_clients(tour_surface, all_clients.clients, False)
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (end.x, origin.y), (end.x, end.y), 2)

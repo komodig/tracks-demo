@@ -86,7 +86,7 @@ class Tour():
         return count
 
 
-def do_routing(all_clients, SETTINGS, tour, tour_surface):
+def do_routing(all_clients, tour, tour_surface):
     best_tour = None
     for start_client in tour.clients:
         tour = Tour(tour.origin, tour.end, tour.clients, start_client)
@@ -153,7 +153,7 @@ def get_area(all_clients, last_tour, dim_surface):
     return small_area
 
 
-def clients_have_state(all_clients, booh_str, booh_state, surface):
+def clients_have_state(all_clients, booh_state, surface):
     booh_clients = 0
     if booh_state == state.ASSOCIATED:
         for tour in all_clients.best_tours:
@@ -162,8 +162,6 @@ def clients_have_state(all_clients, booh_str, booh_state, surface):
         for cli in all_clients.clients:
             if cli.state == booh_state:
                 booh_clients += 1
-
-    print('%s clients: %d' % (booh_str, booh_clients))
 
     return booh_clients
 
@@ -219,7 +217,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     to_assimilate = tours_with_count(all_clients, with_member_count)
 
     if DISPLAY['dimensions']:
-        surface = TourplannerSurface(SETTINGS, INFO)
+        surface = TourplannerSurface()
         print_clients(surface, all_clients.clients)
         mark_these = tours_with_count(all_clients, with_member_count)
         for tour in mark_these:
@@ -241,7 +239,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
                 (tour.origin.x == ass.origin.x and tour.origin.y == ass.end.y) or \
                 (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
             neighbours.append(tour)
-            if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, tour.origin, tour.end, surface)
+            if DISPLAY['dimensions']: print_area(all_clients, tour.origin, tour.end, surface)
 
     best = None
     chosen = None
@@ -249,7 +247,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         if (len(nei.clients) + len(ass.clients)) > cluster_max:
             continue
         united = unite(ass, nei)
-        best_nei = do_routing(all_clients, SETTINGS, united, surface)
+        best_nei = do_routing(all_clients, united, surface)
         if best is None or best_nei < best:
             best = copy(united)
             chosen = copy(nei)
@@ -266,45 +264,45 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
 
     all_clients.small_areas.append(best)
     surface.change_route_color()
-    if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, best.origin, best.end, surface)
+    if DISPLAY['dimensions']: print_area(all_clients, best.origin, best.end, surface)
     sleep(1)
     return best
 
 
-def calculate_all_tours(all_clients, SETTINGS):
-    surface = TourplannerSurface(SETTINGS, INFO)
+def calculate_all_tours(all_clients):
+    surface = TourplannerSurface()
     small_area = Tour(Client(0, 0), Client(0, 0), None)
 
     while True:
         small_area = get_area(all_clients, small_area, surface)
         if small_area is None:
             break
-        if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, small_area.origin, small_area.end, surface)
+        if DISPLAY['dimensions']: print_area(all_clients, small_area.origin, small_area.end, surface)
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 
     print('average of %d members' % get_average_members(all_clients))
-    free_clients = clients_have_state(all_clients, 'CANDIDATE', state.CANDIDATE, surface)
-    free_clients = clients_have_state(all_clients, 'FREE', state.FREE, surface)
+    print('CANDIDATE clients: %d' % clients_have_state(all_clients, state.CANDIDATE, surface))
+    print('FREE clients: %d' % clients_have_state(all_clients, state.FREE, surface))
 
-    members = 1
+    tour_size = 1
     while True:
-        mark_these = tours_with_count(all_clients, members)
+        mark_these = tours_with_count(all_clients, tour_size)
         if not len(mark_these):
-            if members < SETTINGS['cluster_size_min']:
-                members += 1
+            if tour_size < SETTINGS['cluster_size_min']:
+                tour_size += 1
             else:
                 break
-        if assimilate_the_weak(all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], members) is None: break
+        if assimilate_the_weak(all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], tour_size) is None:
+            break
         handle_user_events(surface.process)
 
     for brautpaare in get_valid_areas(all_clients):
-        best = do_routing(all_clients, SETTINGS, brautpaare, surface)
+        best = do_routing(all_clients, brautpaare, surface)
         all_clients.best_tours.append(best)
         handle_user_events(surface.process)
 
-    free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
-
+    print('ASSOCIATED clients: %d' % clients_have_state(all_clients, state.ASSOCIATED, surface))
     print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
     print('total length: %f' % all_clients.summarize_total_length())
     all_clients.final_print = False

@@ -1,6 +1,6 @@
 from math import sqrt, pow
 from random import randrange
-from config import SETTINGS, DISPLAY, DIMENSION
+from config import DISPLAY
 
 
 class ClientState():
