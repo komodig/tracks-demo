@@ -202,9 +202,9 @@ def tours_with_count(all_clients, count):
 
 
 def unite(one, other):
-    print('unite(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['unite_areas']: print('unite(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
             (one.origin.x, one.origin.y, one.width, one.height, len(one.clients)))
-    print('unite(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['unite_areas']: print('unite(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
             (other.origin.x, other.origin.y, other.width, other.height, len(other.clients)))
     if one.origin.x < other.origin.x or one.origin.y < other.origin.y:
         origin = one.origin
@@ -215,7 +215,7 @@ def unite(one, other):
 
     new = Tour(origin, end, one.clients)
     new.clients.extend(other.clients)
-    print('unite(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['unite_areas']: print('unite(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new.origin.x, new.origin.y, new.width, new.height, len(new.clients)))
     return new
 

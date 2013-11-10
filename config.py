@@ -7,7 +7,7 @@ INFO = {
 SETTINGS = {
     'clients': 100,
     'cluster_size_min': 5,
-    'cluster_size_max': 20,
+    'cluster_size_max': 8,
     'width': 1200,
     'height': 700,
 }
@@ -23,6 +23,7 @@ DIMENSION = [
 DISPLAY = {
     'clients_intro': False,
     'dimensions': True,
+    'unite_areas': False,
     'routing': {
         'all': False,
         'best_starter': False,
