@@ -18,6 +18,7 @@ class Tour():
         self.sorted_clients = [] # clients appended here get state ASSOCIATED
         self.length = 0.0
         self.valid = True
+        self.can_unite = True
 
         if clients:         # this is for do_routing()
             self.clients = deepcopy(clients)
@@ -153,21 +154,18 @@ def get_area(all_clients, last_tour, dim_surface):
 
 
 def clients_have_state(all_clients, booh_str, booh_state, surface):
-    booh_clients = []
+    booh_clients = 0
     if booh_state == state.ASSOCIATED:
-        for all_tours in all_clients.best_tours:
-            for cli in all_tours.clients:
-                for cloned in all_clients.clients:
-                    if cli == cloned and cli.state == booh_state:
-                        booh_clients.append(cli)
+        for tour in all_clients.best_tours:
+            booh_clients += len(tour.clients)
     else:
         for cli in all_clients.clients:
             if cli.state == booh_state:
-                booh_clients.append(cli)
+                booh_clients += 1
 
-    print('%s clients: %d' % (booh_str, len(booh_clients)))
+    print('%s clients: %d' % (booh_str, booh_clients))
 
-    return len(booh_clients)
+    return booh_clients
 
 
 def get_average_members(all_clients):
@@ -227,11 +225,13 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         for tour in mark_these:
             print_clients(surface, tour.clients, False, True)
 
-    try:
-        ass = to_assimilate[0]
-    except IndexError:
-        print('nothing to assimilate')
-        return None
+    ass = None
+    for it in to_assimilate:
+        if it.can_unite:
+            ass = it
+            break
+
+    if ass is None: return None
 
     neighbours = []
     for tour in get_valid_areas(all_clients):
@@ -242,13 +242,11 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
                 (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
             neighbours.append(tour)
             if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, tour.origin, tour.end, surface)
-    sleep(1)
 
     best = None
     chosen = None
     for nei in neighbours:
         if (len(nei.clients) + len(ass.clients)) > cluster_max:
-            print('unity not possible.')
             continue
         united = unite(ass, nei)
         best_nei = do_routing(all_clients, SETTINGS, united, surface)
@@ -257,9 +255,11 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
             chosen = copy(nei)
 
     if best is None:
-        print('sorry, nothing to unite!')
+        print('sorry, can\'t unite!')
+        ass.can_unite = False
         return None
 
+    # areas.remove(chosen) causes strange behaviour so remove differently
     for area in get_valid_areas(all_clients):
         if area == ass: area.valid = False
         if area == chosen: area.valid = False
@@ -283,16 +283,19 @@ def calculate_all_tours(all_clients, SETTINGS):
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 
-    print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
     print('average of %d members' % get_average_members(all_clients))
     free_clients = clients_have_state(all_clients, 'CANDIDATE', state.CANDIDATE, surface)
     free_clients = clients_have_state(all_clients, 'FREE', state.FREE, surface)
 
+    members = 1
     while True:
-        mark_these = tours_with_count(all_clients, 1)
-        if not len(mark_these): break
-        ret = assimilate_the_weak(all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], 1)
-        if ret is None: break
+        mark_these = tours_with_count(all_clients, members)
+        if not len(mark_these):
+            if members < SETTINGS['cluster_size_min']:
+                members += 1
+            else:
+                break
+        if assimilate_the_weak(all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], members) is None: break
         handle_user_events(surface.process)
 
     for brautpaare in get_valid_areas(all_clients):
@@ -302,10 +305,8 @@ def calculate_all_tours(all_clients, SETTINGS):
 
     free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
 
-    lonesome = tours_with_count(all_clients, 1)
-    single_members = len(lonesome)
+    print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
     print('total length: %f' % all_clients.summarize_total_length())
-    print('singles: %d' % single_members)
     all_clients.final_print = False
     print_route(all_clients, all_clients.best_tours[0])
 

@@ -36,7 +36,7 @@ class TourplannerSurface():
         self.process = ProcessControl()
 
     def change_route_color(self):
-        rgb = (randrange(0,255), randrange(0,255), randrange(0,255))
+        rgb = (0,255,0)
         self.route_color = pygame.Color(*rgb)
 
 
