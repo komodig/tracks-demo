@@ -302,7 +302,7 @@ def calculate_all_tours(all_clients):
         handle_user_events(surface.process)
 
     print('ASSOCIATED clients: %d' % clients_have_state(all_clients, state.ASSOCIATED, surface))
-    print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
+    print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
     print('total length: %f' % all_clients.summarize_total_length())
     all_clients.final_print = False
     print_route(all_clients, all_clients.best_tours[0])

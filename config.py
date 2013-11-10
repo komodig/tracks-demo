@@ -7,7 +7,7 @@ INFO = {
 SETTINGS = {
     'clients': 100,
     'cluster_size_min': 5,
-    'cluster_size_max': 6,
+    'cluster_size_max': 7,
     'width': 1200,
     'height': 700,
 }
