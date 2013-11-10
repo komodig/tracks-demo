@@ -67,7 +67,6 @@ class Tour():
 
 
     def assign(self, incoming):
-        print('assign()')
         client = None
         for it in self.clients:
             if it == incoming:
@@ -123,7 +122,6 @@ def do_routing(all_clients, tour, tour_surface):
 
 
 def find_best_route(all_clients, tour):
-    print('find_best_route()')
     if count_with_state(tour.clients, state.ASSOCIATED) < len(tour.clients):
         other_tour = deepcopy(tour)
 
