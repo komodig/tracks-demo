@@ -152,13 +152,6 @@ def get_area(all_clients, last_tour, dim_surface):
     return small_area
 
 
-def new_surface(SETTINGS):
-    temp_origin = Client(0, 0)
-    temp_end = Client(SETTINGS['width'], SETTINGS['height'])
-    temp_tour = Tour(temp_origin, temp_end, [temp_origin])
-    return TourplannerSurface(SETTINGS, INFO)
-
-
 def clients_have_state(all_clients, booh_str, booh_state, surface):
     booh_clients = []
     if booh_state == state.ASSOCIATED:
@@ -228,7 +221,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     to_assimilate = tours_with_count(all_clients, with_member_count)
 
     if DISPLAY['dimensions']:
-        surface = new_surface(SETTINGS)
+        surface = TourplannerSurface(SETTINGS, INFO)
         print_clients(surface, all_clients.clients)
         mark_these = tours_with_count(all_clients, with_member_count)
         for tour in mark_these:
@@ -279,7 +272,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
 
 
 def calculate_all_tours(all_clients, SETTINGS):
-    surface = new_surface(SETTINGS)
+    surface = TourplannerSurface(SETTINGS, INFO)
     small_area = Tour(Client(0, 0), Client(0, 0), None)
 
     while True:
