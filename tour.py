@@ -254,10 +254,12 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
 
     if best is None:
         print('sorry, can\'t unite!')
+        # TODO: is this final? don't route this again!!
         ass.can_unite = False
         return ass
 
     # areas.remove(chosen) causes strange behaviour so remove differently
+    # MAYBE because do_routing() plays in sorted_client not small_areas?!
     for area in get_valid_areas(all_clients):
         if area == ass: area.valid = False
         if area == chosen: area.valid = False
