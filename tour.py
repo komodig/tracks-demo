@@ -1,20 +1,15 @@
-from math import sqrt
 from client import Client
 from tourplanner_graphics import print_route, print_area, print_clients, TourplannerSurface, \
         handle_user_events, ProcessControl
 from client import find_next, ClientState as state
 from copy import copy, deepcopy
-from random import randrange
-from config import SETTINGS, DISPLAY, DIMENSION
+from config import SETTINGS, INFO, DISPLAY, DIMENSION
 from time import sleep
-from sys import stdout
 from pygame import quit
 
 
 class Tour():
     def __init__(self, origin, end, clients, start_client=None):
-        self.client_color = (randrange(0,255), randrange(0,255), randrange(0,255))
-        self.route_color = (randrange(0,255), randrange(0,255), randrange(0,255))
         self.origin = origin
         self.end = end
         self.width = end.x - origin.x
@@ -161,7 +156,7 @@ def new_surface(SETTINGS):
     temp_origin = Client(0, 0)
     temp_end = Client(SETTINGS['width'], SETTINGS['height'])
     temp_tour = Tour(temp_origin, temp_end, [temp_origin])
-    return TourplannerSurface(SETTINGS, None, temp_tour)
+    return TourplannerSurface(SETTINGS, INFO)
 
 
 def clients_have_state(all_clients, booh_str, booh_state, surface):

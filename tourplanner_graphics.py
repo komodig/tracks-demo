@@ -15,12 +15,12 @@ class ProcessControl():
 
 
 class TourplannerSurface():
-    def __init__(self, SETTINGS, INFO, tour, show_msg=False):
+    def __init__(self, SETTINGS, INFO, show_msg=False):
         pygame.init()
         self.show_msg = show_msg
         self.surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
-        self.client_color = pygame.Color(*tour.client_color)
-        self.route_color = pygame.Color(*tour.route_color)
+        self.client_color = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
+        self.route_color = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
         self.emph_color = pygame.Color(255,255,255)
         self.fps_clock = pygame.time.Clock()
 
@@ -61,13 +61,13 @@ def print_earlier_tours(all_clients, surface):
 
 def print_route(all_clients, tour):  #, tour_surface):
     if all_clients.first_print:
-        tour_surface = TourplannerSurface(SETTINGS, INFO, tour, True)
+        tour_surface = TourplannerSurface(SETTINGS, INFO, True)
         print_clients(tour_surface, all_clients.clients, True)
         all_clients.first_print = False
         handle_user_events(tour_surface.process)
         sleep(2)
     else:
-        tour_surface = TourplannerSurface(SETTINGS, INFO, tour, False)
+        tour_surface = TourplannerSurface(SETTINGS, INFO, False)
         print_clients(tour_surface, all_clients.clients, False)
 
     for x in range(len(tour.sorted_clients) - 1):
