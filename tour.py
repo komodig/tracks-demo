@@ -153,7 +153,7 @@ def get_area(all_clients, last_tour, dim_surface):
     return small_area
 
 
-def clients_have_state(all_clients, booh_state, surface):
+def clients_have_state(all_clients, booh_state):
     booh_clients = 0
     if booh_state == state.ASSOCIATED:
         for tour in all_clients.best_tours:
@@ -283,8 +283,8 @@ def calculate_all_tours(all_clients):
         handle_user_events(surface.process)
 
     print('average of %d members' % get_average_members(all_clients))
-    print('CANDIDATE clients: %d' % clients_have_state(all_clients, state.CANDIDATE, surface))
-    print('FREE clients: %d' % clients_have_state(all_clients, state.FREE, surface))
+    print('CANDIDATE clients: %d' % clients_have_state(all_clients, state.CANDIDATE))
+    print('FREE clients: %d' % clients_have_state(all_clients, state.FREE))
 
     tour_size = 1
     while True:
@@ -303,7 +303,7 @@ def calculate_all_tours(all_clients):
         all_clients.best_tours.append(best)
         handle_user_events(surface.process)
 
-    print('ASSOCIATED clients: %d' % clients_have_state(all_clients, state.ASSOCIATED, surface))
+    print('ASSOCIATED clients: %d' % clients_have_state(all_clients, state.ASSOCIATED))
     print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
     print('total length: %f' % all_clients.summarize_total_length())
     all_clients.final_print = False
