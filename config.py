@@ -1,22 +1,22 @@
 INFO = {
-    'version': '0.9.0',
+    'version': '0.9.1',
     'usage': 'use <ESC> to quit and <SPACE> to pause and continue',
 }
 
 
 SETTINGS = {
-    'clients': 100,
+    'clients': 300,
     'cluster_size_min': 5,
-    'cluster_size_max': 7,
+    'cluster_size_max': 6,
     'width': 1200,
-    'height': 700,
+    'height': 800,
 }
 
 
 DIMENSION = [
 {
-    'x_factor': 0.2,
-    'y_factor': 0.2,
+    'x_factor': 0.1,
+    'y_factor': 0.1,
 },
 ]
 

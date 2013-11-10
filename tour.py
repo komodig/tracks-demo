@@ -255,7 +255,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     if best is None:
         print('sorry, can\'t unite!')
         ass.can_unite = False
-        return None
+        return ass
 
     # areas.remove(chosen) causes strange behaviour so remove differently
     for area in get_valid_areas(all_clients):
