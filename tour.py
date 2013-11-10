@@ -307,11 +307,7 @@ def calculate_all_tours(all_clients):
     all_clients.final_print = False
     print_route(all_clients, all_clients.best_tours[0])
 
-    #if single_members < 1:
-    #    quit()
-    #    exit(3)
-
-    surface.process.state = ProcessControl.PAUSE
+    surface.process.state = ProcessControl.WAIT
     handle_user_events(surface.process)
 
 
