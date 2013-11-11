@@ -20,7 +20,7 @@ class Tour():
         self.can_unite = True
         self.first_assigned = None
 
-        if clients:         # this is for do_routing()
+        if clients:         # this is for clones in do_routing()
             self.clients = deepcopy(clients)
             for cli in self.clients:
                 cli.next_assigned = None
@@ -188,12 +188,8 @@ def get_average_members(all_clients):
 
 
 def tours_with_count(all_clients, count):
-    wanted = []
-    for area in get_valid_areas(all_clients):
-        if len(area.clients) == count:
-            wanted.append(area)
-
-    return wanted
+    wanted = get_valid_areas(all_clients)
+    return [ area for area in wanted if len(area.clients) == count ]
 
 
 def unite(one, other):
@@ -216,12 +212,7 @@ def unite(one, other):
 
 
 def get_valid_areas(all_clients):
-    areas = []
-    for area in all_clients.small_areas:
-        if area.valid:
-            areas.append(area)
-
-    return areas
+    return [ area for area in all_clients.small_areas if area.valid ]
 
 
 def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count):
