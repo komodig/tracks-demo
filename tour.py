@@ -308,13 +308,15 @@ def calculate_all_tours(all_clients):
     print('\nstart final routing\n')
     doubles = 0
     for brautpaare in get_valid_areas(all_clients):
-        if brautpaare.final: print('  pre-calculated: %f' % brautpaare.length)
-        best = do_routing(all_clients, brautpaare, surface)
-        if brautpaare.final: 
-            print('calculated again: %f' % best.length)
-            assert best.length == brautpaare.length, 'second tour calculation different'
+        if brautpaare.final:
+            print('  pre-calculated: %f' % brautpaare.length)
+            #assert best.length == brautpaare.length, 'second tour calculation different'
             doubles += 1
-        all_clients.best_tours.append(best)
+            all_clients.best_tours.append(brautpaare)
+        else:
+            best = do_routing(all_clients, brautpaare, surface)
+            all_clients.best_tours.append(best)
+
         handle_user_events(surface.process)
 
     print('double calculations: %d' % doubles)

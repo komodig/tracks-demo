@@ -36,6 +36,6 @@ DISPLAY = {
 }
 
 TEST = {
-    'long_term': True,
+    'long_term': False,
     'level': 1,
 }

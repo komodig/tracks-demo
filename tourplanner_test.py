@@ -1,4 +1,4 @@
-import client 
+import client
 import config
 
 def edge_test_clients(all_clients):
@@ -24,7 +24,7 @@ def length_test_client_generator():
     clients.append(client.Client(400, 10))
     clients.append(client.Client(450, 10))
     for it in clients:
-        print it 
+        print it
     return clients
 
 
