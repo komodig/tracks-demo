@@ -319,7 +319,7 @@ def calculate_all_tours(all_clients):
 
         handle_user_events(surface.process)
 
-    print('double calculations: %d' % doubles)
+    print('avoided double calculations: %d' % doubles)
 
     print('ASSOCIATED clients: %d' % count_with_state(all_clients.clients, state.ASSOCIATED))
     print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
