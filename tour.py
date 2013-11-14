@@ -307,19 +307,19 @@ def calculate_all_tours(all_clients):
 
     print('\nstart final routing\n')
     doubles = 0
-    for brautpaare in get_valid_areas(all_clients):
-        if brautpaare.final:
-            print('  pre-calculated: %f' % brautpaare.length)
-            #assert best.length == brautpaare.length, 'second tour calculation different'
+    for connect_this in get_valid_areas(all_clients):
+        if connect_this.final:
+            print('  pre-calculated: %f' % connect_this.length)
+            #assert best.length == connect_this.length, 'second tour calculation different'
             doubles += 1
-            all_clients.best_tours.append(brautpaare)
+            all_clients.best_tours.append(connect_this)
         else:
-            best = do_routing(all_clients, brautpaare, surface)
+            best = do_routing(all_clients, connect_this, surface)
             all_clients.best_tours.append(best)
 
         handle_user_events(surface.process)
 
-    print('avoided double calculations: %d' % doubles)
+    if doubles: print('avoided double calculations: %d' % doubles)
 
     print('ASSOCIATED clients: %d' % count_with_state(all_clients.clients, state.ASSOCIATED))
     print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
