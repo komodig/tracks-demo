@@ -194,17 +194,25 @@ def calculate_all_tours(all_clients, SETTINGS):
         all_clients.add_best_tour(best)
 
     # FIXME:
-    # free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
+    # 1. free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
+    # 2. empty areas crash? or what?
 
+    single_members = len(lonesome)
     print('total length: %f' % all_clients.total_length)
-    print('singles: %d' % len(lonesome))
-    all_clients.final_print = True
+    print('singles: %d' % single_members)
+    all_clients.final_print = False
     #last_surface = new_surface(SETTINGS, True)
-    for bt in all_clients.best_tours:
-        print_route(all_clients, bt)
-
-    print('do you read me?')
+    #for bt in all_clients.best_tours:
+    #    print_route(all_clients, bt)
+    print_route(all_clients, all_clients.best_tours[0])
     sleep(3)
+    handle_user_events(surface.process)
+
+    if single_members > 1:
+        quit()
+        exit(single_members)
+
+    surface.process.state = ProcessControl.WAIT
     handle_user_events(surface.process)
 
 

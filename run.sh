@@ -3,7 +3,7 @@ while true
 do
     python tourplanner.py
 
-    if [ $? -gt 0 ] 
+    if [ $? -lt 2 ]
     then
         break
     fi
