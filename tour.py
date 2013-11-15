@@ -135,11 +135,18 @@ def new_surface(SETTINGS):
 
 def clients_have_state(all_clients, booh_str, booh_state, surface):
     booh_clients = []
-    for cli in all_clients.clients:
-        if cli.state == booh_state:
-            booh_clients.append(cli)
-    print('remaining %s clients: %d' % (booh_str, len(booh_clients)))
-    # print_clients(surface, booh_clients, False, True)
+    if booh_state == state.ASSOCIATED:
+        for all_tours in all_clients.best_tours:
+            for cli in all_tours.clients:
+                for cloned in all_clients.clients:
+                    if cli == cloned and cli.state == booh_state:
+                        booh_clients.append(cli)
+    else:
+        for cli in all_clients.clients:
+            if cli.state == booh_state:
+                booh_clients.append(cli)
+
+    print('%s clients: %d' % (booh_str, len(booh_clients)))
 
     return len(booh_clients)
 
@@ -176,7 +183,6 @@ def calculate_all_tours(all_clients, SETTINGS):
 
     print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
     print('average of %d members' % get_average_members(all_clients))
-    free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
     free_clients = clients_have_state(all_clients, 'CANDIDATE', state.CANDIDATE, surface)
     free_clients = clients_have_state(all_clients, 'FREE', state.FREE, surface)
 
@@ -194,8 +200,8 @@ def calculate_all_tours(all_clients, SETTINGS):
         all_clients.add_best_tour(best)
 
     # FIXME:
-    # 1. free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
-    # 2. empty areas crash? or what?
+    # why does it crash in assign() sometimes?!
+    free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
 
     single_members = len(lonesome)
     print('total length: %f' % all_clients.total_length)

@@ -20,6 +20,7 @@ class TourplannerSurface():
         self.surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
         self.client_color = pygame.Color(*tour.client_color)
         self.route_color = pygame.Color(*tour.route_color)
+        self.emph_color = pygame.Color(255,255,255)
         self.fps_clock = pygame.time.Clock()
 
 
@@ -37,8 +38,9 @@ class TourplannerSurface():
 def print_clients(tour_surface, clients, slow=False, circle=False):
     width = 2 if circle else 0
     radius = 16 if circle else 4
+    color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
-        pygame.draw.circle(tour_surface.surface, tour_surface.client_color, client.coords(), radius, width)
+        pygame.draw.circle(tour_surface.surface, color, client.coords(), radius, width)
         if slow:
             pygame.display.update()
             tour_surface.fps_clock.tick(30)
