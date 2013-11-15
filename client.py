@@ -44,7 +44,7 @@ class ClientsCollection():
         self.max_distance = 0.0
         self.avg_distance = 0.0
         self.total_length = 0
-        self.first_print = True
+        self.first_print = True if DISPLAY['clients_intro'] else False
         self.final_print = False
 
         for i in range(clusters * cluster_size):

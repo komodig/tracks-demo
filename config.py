@@ -20,6 +20,7 @@ DIMENSION = [
 ]
 
 DISPLAY = {
+    'clients_intro': False,
     'dimensions': True,
     'routing': {
         'all': False,
