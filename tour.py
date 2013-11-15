@@ -193,14 +193,17 @@ def calculate_all_tours(all_clients, SETTINGS):
         best = do_routing(all_clients, SETTINGS, brautpaare, surface)
         all_clients.add_best_tour(best)
 
-    free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
-    free_clients = clients_have_state(all_clients, 'CANDIDATE', state.CANDIDATE, surface)
-    free_clients = clients_have_state(all_clients, 'FREE', state.FREE, surface)
+    # FIXME:
+    # free_clients = clients_have_state(all_clients, 'ASSOCIATED ', state.ASSOCIATED, surface)
+
     print('total length: %f' % all_clients.total_length)
+    print('singles: %d' % len(lonesome))
     all_clients.final_print = True
     #last_surface = new_surface(SETTINGS, True)
     for bt in all_clients.best_tours:
         print_route(all_clients, bt)
+
+    print('do you read me?')
     sleep(3)
     handle_user_events(surface.process)
 

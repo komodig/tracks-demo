@@ -5,17 +5,17 @@ INFO = {
 
 
 SETTINGS = {
-    'clusters': 20,
-    'cluster_size': 6,
+    'clusters': 50,
+    'cluster_size': 10,
     'width': 1200,
-    'height': 800,
+    'height': 700,
 }
 
 
 DIMENSION = [
 {
-    'x_factor': 0.2,
-    'y_factor': 0.2,
+    'x_factor': 0.1,
+    'y_factor': 0.1,
 },
 ]
 
