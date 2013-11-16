@@ -180,6 +180,7 @@ def calculate_all_tours(all_clients, SETTINGS):
             break
         if DISPLAY['dimensions']: print_area(SETTINGS, all_clients, small_area.origin, small_area.end, surface)
         all_clients.small_areas.append(small_area)
+        handle_user_events(surface.process)
 
     print('results in %d areas on %d x %d screen' % (len(all_clients.small_areas), SETTINGS['width'], SETTINGS['height']))
     print('average of %d members' % get_average_members(all_clients))
@@ -187,17 +188,12 @@ def calculate_all_tours(all_clients, SETTINGS):
     free_clients = clients_have_state(all_clients, 'FREE', state.FREE, surface)
 
     lonesome = get_singles(all_clients)
-    print lonesome
-
     print_clients(surface, lonesome, False, True)
-    sleep(1)
-#    if free_clients:
-#        surface.process.state = ProcessControl.WAIT
-#    handle_user_events(surface.process)
 
     for brautpaare in all_clients.small_areas:
         best = do_routing(all_clients, SETTINGS, brautpaare, surface)
         all_clients.add_best_tour(best)
+        handle_user_events(surface.process)
 
     # FIXME:
     # why does it crash in assign() sometimes?!
@@ -207,19 +203,16 @@ def calculate_all_tours(all_clients, SETTINGS):
     print('total length: %f' % all_clients.total_length)
     print('singles: %d' % single_members)
     all_clients.final_print = False
-    #last_surface = new_surface(SETTINGS, True)
-    #for bt in all_clients.best_tours:
-    #    print_route(all_clients, bt)
     print_route(all_clients, all_clients.best_tours[0])
     sleep(3)
     handle_user_events(surface.process)
 
-    if single_members > 1:
+    if single_members < 1:
         quit()
-        exit(single_members)
+        exit(3)
 
-    surface.process.state = ProcessControl.WAIT
-    handle_user_events(surface.process)
+    #surface.process.state = ProcessControl.WAIT
+    #handle_user_events(surface.process)
 
 
 def do_routing(all_clients, SETTINGS, tour, tour_surface):
