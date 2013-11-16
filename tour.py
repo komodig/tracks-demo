@@ -74,6 +74,19 @@ class Tour():
         return count
 
 
+def do_routing(all_clients, SETTINGS, tour, tour_surface):
+    best_tour = None
+    for start_client in tour.clients:
+        tour = Tour(tour.origin, tour.end, tour.clients, start_client)
+        res_tour = find_best_route(all_clients, tour, SETTINGS['cluster_size'])
+        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
+        if best_tour is None or res_tour < best_tour:
+            best_tour = res_tour
+
+    print('best tour length: %f' % best_tour.length)
+    return best_tour
+
+
 def find_best_route(all_clients, tour, cluster_size):
     if len(tour.sorted_clients) < len(tour.clients):
         other_tour = deepcopy(tour)
@@ -213,18 +226,5 @@ def calculate_all_tours(all_clients, SETTINGS):
 
     #surface.process.state = ProcessControl.WAIT
     #handle_user_events(surface.process)
-
-
-def do_routing(all_clients, SETTINGS, tour, tour_surface):
-    best_tour = None
-    for start_client in tour.clients:
-        tour = Tour(tour.origin, tour.end, tour.clients, start_client)
-        res_tour = find_best_route(all_clients, tour, SETTINGS['cluster_size'])
-        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
-        if best_tour is None or res_tour < best_tour:
-            best_tour = res_tour
-
-    print('best tour length: %f' % best_tour.length)
-    return best_tour
 
 
