@@ -1,6 +1,7 @@
 from time import sleep
 import pygame
 from pygame.locals import *
+from random import randrange
 from config import SETTINGS, INFO
 
 
@@ -33,6 +34,10 @@ class TourplannerSurface():
             self.surface.blit(self.surface_msg, self.msg_rect)
 
         self.process = ProcessControl()
+
+    def change_route_color(self):
+        rgb = (randrange(0,255), randrange(0,255), randrange(0,255))
+        self.route_color = pygame.Color(*rgb)
 
 
 def print_clients(tour_surface, clients, slow=False, circle=False):

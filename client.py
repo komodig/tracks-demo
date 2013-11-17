@@ -36,7 +36,7 @@ class Client():
 
 
 class ClientsCollection():
-    def __init__(self, clusters, cluster_size, width, height):
+    def __init__(self, clients, cluster_size_min, cluster_size_max, width, height):
         self.clients = []
         self.small_areas = []
         self.init_tours = []
@@ -47,7 +47,7 @@ class ClientsCollection():
         self.first_print = True if DISPLAY['clients_intro'] else False
         self.final_print = False
 
-        for i in range(clusters * cluster_size):
+        for i in range(clients):
             self.clients.append(Client(randrange(1, width), randrange(1, height)))
 
         self.get_client_distances()
@@ -63,6 +63,7 @@ class ClientsCollection():
 
 
     def summarize_total_length(self):
+        self.total_length = 0.0
         for best in self.best_tours:
             self.total_length += best.length
         return self.total_length
