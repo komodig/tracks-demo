@@ -3,7 +3,7 @@ from tourplanner_graphics import print_route, print_area, print_clients, Tourpla
         handle_user_events, ProcessControl
 from client import find_next, count_with_state, get_with_state, ClientState as state
 from copy import copy, deepcopy
-from config import SETTINGS, INFO, DISPLAY, DIMENSION
+from config import SETTINGS, INFO, DISPLAY, DIMENSION, TEST
 from time import sleep
 from pygame import quit
 
@@ -112,7 +112,7 @@ def do_routing(all_clients, tour, tour_surface):
     for start_client in tour.clients:
         tour = Tour(tour.origin, tour.end, tour.clients, start_client)
         res_tour = find_best_route(all_clients, tour)
-        print('tour length: %f' % res_tour.length)
+        #print('tour length: %f' % res_tour.length)
         if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
@@ -319,7 +319,12 @@ def calculate_all_tours(all_clients):
     all_clients.final_print = False
     print_route(all_clients, all_clients.best_tours[0])
 
-    surface.process.state = ProcessControl.WAIT
-    handle_user_events(surface.process)
+    if TEST['long_term']:
+        sleep(3)
+        handle_user_events(surface.process)
+        exit(3)
+    else:
+        surface.process.state = ProcessControl.WAIT
+        handle_user_events(surface.process)
 
 

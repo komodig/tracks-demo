@@ -107,7 +107,7 @@ def handle_user_events(process):
         elif event.type == KEYDOWN:
             if event.key == K_ESCAPE:
                 pygame.quit()
-                exit(3)
+                exit(0)
             elif event.key == K_SPACE:
                 if process.state == ProcessControl.RUN:
                     print('  === paused ===')

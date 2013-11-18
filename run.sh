@@ -3,7 +3,7 @@ while true
 do
     python tourplanner.py
 
-    if [ $? -eq 3 ]
+    if [ $? -eq 0 ]
     then
         break
     fi
