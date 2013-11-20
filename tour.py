@@ -268,6 +268,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     all_clients.small_areas.append(best)
     surface.change_route_color()
     if DISPLAY['dimensions']: print_area(all_clients, best.origin, best.end, surface)
+    if DISPLAY['dimensions_slow']: sleep(1)
     return best
 
 

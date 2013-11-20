@@ -23,6 +23,7 @@ DIMENSION = [
 DISPLAY = {
     'clients_intro': False,
     'dimensions': True,
+    'dimensions_slow': True,
     'unite_areas': False,
     'routing': {
         'all': False,
