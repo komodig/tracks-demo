@@ -18,6 +18,7 @@ class Tour():
         self.length = 0.0
         self.valid = True
         self.can_unite = True
+        self.final = False
         self.first_assigned = None
 
         if clients:         # this is for clones in do_routing()
@@ -73,6 +74,7 @@ class Tour():
                 client = it # in case of cloned client
                 break
         assert client, 'FATAL! Trying to assing not-member-client!'
+        # FIXME: the following assertion failed sometimes.
         assert client.next_assigned is None, 'STRANGE! client to assign has next_assigned set!'
         if self.first_assigned is None:
             self.first_assigned = client
@@ -249,9 +251,9 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         if (len(nei.clients) + len(ass.clients)) > cluster_max:
             continue
         united = unite(ass, nei)
-        best_nei = do_routing(all_clients, united, surface)
-        if best is None or best_nei < best:
-            best = copy(united)
+        best_united = do_routing(all_clients, united, surface)
+        if best is None or best_united < best:
+            best = copy(best_united)
             chosen = copy(nei)
 
     if best is None:
@@ -265,6 +267,9 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         if area == ass: area.valid = False
         if area == chosen: area.valid = False
 
+    if len(best.clients) >= SETTINGS['cluster_size_max']:
+        print('final tour calculation done: %f' % best.length)
+        best.final = True
     all_clients.small_areas.append(best)
     surface.change_route_color()
     if DISPLAY['dimensions']: print_area(all_clients, best.origin, best.end, surface)
@@ -300,10 +305,19 @@ def calculate_all_tours(all_clients):
             break
         handle_user_events(surface.process)
 
+    print('\nstart final routing\n')
+    doubles = 0
     for brautpaare in get_valid_areas(all_clients):
+        if brautpaare.final: print('  pre-calculated: %f' % brautpaare.length)
         best = do_routing(all_clients, brautpaare, surface)
+        if brautpaare.final: 
+            print('calculated again: %f' % best.length)
+            assert best.length == brautpaare.length, 'second tour calculation different'
+            doubles += 1
         all_clients.best_tours.append(best)
         handle_user_events(surface.process)
+
+    print('double calculations: %d' % doubles)
 
     print('ASSOCIATED clients: %d' % count_with_state(all_clients.clients, state.ASSOCIATED))
     print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
