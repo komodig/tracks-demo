@@ -63,14 +63,12 @@ def print_earlier_tours(all_clients, surface):
 
 def print_route(all_clients, tour):
     if all_clients.first_print:
-        tour_surface = TourplannerSurface(True)
-        print_clients(tour_surface, all_clients.clients, True)
+        tour_surface = print_screen_set(TourplannerSurface(True), False, [None, all_clients.clients, True])
         all_clients.first_print = False
         sleep(2)
         handle_user_events(tour_surface.process)
     else:
-        tour_surface = TourplannerSurface(False)
-        print_clients(tour_surface, all_clients.clients, False)
+        tour_surface = print_screen_set(TourplannerSurface(), False, [None, all_clients.clients, False])
 
     assigned = tour.first_assigned
     while assigned.next_assigned:
@@ -85,7 +83,7 @@ def print_route(all_clients, tour):
     handle_user_events(tour_surface.process)
 
 
-def print_area(all_clients, origin, end, tour_surface):
+def print_area(tour_surface, all_clients, origin, end):
     print_clients(tour_surface, all_clients.clients, False)
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (end.x, origin.y), (end.x, end.y), 2)
@@ -93,6 +91,20 @@ def print_area(all_clients, origin, end, tour_surface):
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, end.y), (end.x, end.y), 2)
     pygame.display.update()
     tour_surface.fps_clock.tick(30)
+
+
+def print_screen_set(surface, exit, p_client_param=None, p_area_param=None, p_tour_param=None):
+    print('print_screen_set()')
+    if p_client_param:
+        p_client_param[0] = surface
+        print_clients(*p_client_param)
+    if p_area_param:
+        p_area_param[0] = surface
+        print_area(*p_area_param)
+    if p_tour_param: print_route(*p_tour_param)
+
+    if exit: exit(7)
+    return surface
 
 
 def handle_user_events(process):

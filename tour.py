@@ -1,6 +1,6 @@
 from client import Client
-from tourplanner_graphics import print_route, print_area, print_clients, TourplannerSurface, \
-        handle_user_events, ProcessControl
+from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
+        TourplannerSurface, handle_user_events, ProcessControl
 from client import find_next, count_with_state, get_with_state, ClientState as state
 from copy import copy, deepcopy
 from config import SETTINGS, INFO, DISPLAY, DIMENSION, TEST
@@ -30,6 +30,7 @@ class Tour():
         if start_client:
             for cli in self.clients:
                 if cli == start_client:
+                    print('assigning start_client')
                     self.assign(cli)
                     break
 
@@ -75,7 +76,12 @@ class Tour():
                 break
         assert client, 'FATAL! Trying to assing not-member-client!'
         # FIXME: the following assertion failed sometimes.
-        assert client.next_assigned is None, 'STRANGE! client to assign has next_assigned set!'
+        try:
+            assert client.next_assigned is None, 'STRANGE! client to assign has next_assigned set!'
+        except AssertionError:
+            print('duuh!')
+            return client
+
         if self.first_assigned is None:
             self.first_assigned = client
         else:
@@ -83,6 +89,7 @@ class Tour():
             self.length += client.distance_to(last)
             last.next_assigned = client
         client.state = state.ASSOCIATED
+        return None
 
 
     def add_area_clients(self, all_clients, add_them=True):
@@ -132,7 +139,7 @@ def find_best_route(all_clients, tour):
         next_client = find_next(latest, tour.clients)
         if next_client is None:
             return tour
-        tour.assign(next_client)
+        if tour.assign(next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])   
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
@@ -140,7 +147,7 @@ def find_best_route(all_clients, tour):
         if next_next_client is None:
             b = a
         else:
-            other_tour.assign(next_next_client)
+            if other_tour.assign(next_next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])   
             if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour)
 
@@ -243,7 +250,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
                 (tour.origin.x == ass.origin.x and tour.origin.y == ass.end.y) or \
                 (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
             neighbours.append(tour)
-            if DISPLAY['dimensions']: print_area(all_clients, tour.origin, tour.end, surface)
+            if DISPLAY['dimensions']: print_area(surface, all_clients, tour.origin, tour.end)
 
     best = None
     chosen = None
@@ -272,7 +279,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         best.final = True
     all_clients.small_areas.append(best)
     surface.change_route_color()
-    if DISPLAY['dimensions']: print_area(all_clients, best.origin, best.end, surface)
+    if DISPLAY['dimensions']: print_area(surface, all_clients, best.origin, best.end)
     if DISPLAY['dimensions_slow']: sleep(1)
     return best
 
@@ -285,7 +292,7 @@ def calculate_all_tours(all_clients):
         small_area = get_area(all_clients, small_area, surface)
         if small_area is None:
             break
-        if DISPLAY['dimensions']: print_area(all_clients, small_area.origin, small_area.end, surface)
+        if DISPLAY['dimensions']: print_area(surface, all_clients, small_area.origin, small_area.end)
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 
