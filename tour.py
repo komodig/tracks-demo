@@ -24,8 +24,7 @@ class Tour():
         if clients:         # this is for clones in do_routing()
             self.clients = deepcopy(clients)
             for cli in self.clients:
-                cli.next_assigned = None
-                cli.state = state.CANDIDATE
+                prepare_added_client(cli)
 
         if start_client:
             for cli in self.clients:
@@ -56,6 +55,12 @@ class Tour():
 
     def __repr__(self):
         return ('%s' % self.clients)
+
+
+    def add_clients(self, client_list):  # when areas unite
+        for cta in client_list:
+            prepare_added_client(cta)
+            self.clients.append(cta)
 
 
     def get_last_assigned(self):
@@ -224,10 +229,15 @@ def unite(one, other):
         end = one.end
 
     new = Tour(origin, end, one.clients)
-    new.clients.extend(other.clients)
+    new.add_clients(other.clients)
     if DISPLAY['unite_areas']: print('unite(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new.origin.x, new.origin.y, new.width, new.height, len(new.clients)))
     return new
+
+
+def prepare_added_client(c_to_add):
+    c_to_add.next_assigned = None
+    c_to_add.state = state.CANDIDATE
 
 
 def get_valid_areas(all_clients):
