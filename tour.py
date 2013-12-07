@@ -80,7 +80,7 @@ class Tour():
             assert client.next_assigned is None, 'STRANGE! client to assign has next_assigned set!'
         except AssertionError:
             print('duuh!')
-            return client
+            return None
 
         if self.first_assigned is None:
             self.first_assigned = client
@@ -89,7 +89,7 @@ class Tour():
             self.length += client.distance_to(last)
             last.next_assigned = client
         client.state = state.ASSOCIATED
-        return None
+        return client
 
 
     def add_area_clients(self, all_clients, add_them=True):
@@ -139,7 +139,7 @@ def find_best_route(all_clients, tour):
         next_client = find_next(latest, tour.clients)
         if next_client is None:
             return tour
-        if tour.assign(next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
+        if not tour.assign(next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
@@ -147,7 +147,7 @@ def find_best_route(all_clients, tour):
         if next_next_client is None:
             b = a
         else:
-            if other_tour.assign(next_next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
+            if not other_tour.assign(next_next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
             if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour)
 
