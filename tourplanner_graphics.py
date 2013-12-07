@@ -42,6 +42,7 @@ class TourplannerSurface():
 
 def print_clients(tour_surface, clients, slow=False, circle=False):
     width = 2 if circle else 0
+    dotsize = 3 if len(clients) <= 500 else 2
     radius = 16 if circle else 3
     color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
@@ -93,7 +94,7 @@ def print_area(tour_surface, all_clients, origin, end):
     tour_surface.fps_clock.tick(30)
 
 
-def print_screen_set(surface, exit, p_client_param=None, p_area_param=None, p_tour_param=None):
+def print_screen_set(surface, exit_afterwards, p_client_param=None, p_area_param=None, p_tour_param=None):
     print('print_screen_set()')
     if p_client_param:
         p_client_param[0] = surface
@@ -103,7 +104,7 @@ def print_screen_set(surface, exit, p_client_param=None, p_area_param=None, p_to
         print_area(*p_area_param)
     if p_tour_param: print_route(*p_tour_param)
 
-    if exit: exit(7)
+    if exit_afterwards: exit(7)
     return surface
 
 

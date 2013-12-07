@@ -30,7 +30,7 @@ class Tour():
         if start_client:
             for cli in self.clients:
                 if cli == start_client:
-                    print('assigning start_client')
+                    #print('assigning start_client')
                     self.assign(cli)
                     break
 
@@ -139,7 +139,7 @@ def find_best_route(all_clients, tour):
         next_client = find_next(latest, tour.clients)
         if next_client is None:
             return tour
-        if tour.assign(next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])   
+        if tour.assign(next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
@@ -147,7 +147,7 @@ def find_best_route(all_clients, tour):
         if next_next_client is None:
             b = a
         else:
-            if other_tour.assign(next_next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])   
+            if other_tour.assign(next_next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
             if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour)
 
@@ -184,6 +184,16 @@ def get_area(all_clients, last_tour, dim_surface):
         return None
     cli_sum = small_area.add_area_clients(all_clients)
     return small_area
+
+
+def get_min_max_members(all_clients):
+    min = len(all_clients.clients)
+    max = 0
+    for x in all_clients.small_areas:
+        this = len(x.clients)
+        if this < min: min = this
+        if this > max: max = this
+    return min, max
 
 
 def get_average_members(all_clients):
@@ -326,10 +336,12 @@ def calculate_all_tours(all_clients):
 
         handle_user_events(surface.process)
 
-    if doubles: print('avoided double calculations: %d' % doubles)
+    if doubles: print('avoided second tour calculation: %d' % doubles)
 
     print('ASSOCIATED clients: %d' % count_with_state(all_clients.clients, state.ASSOCIATED))
     print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
+    l_min, l_max = get_min_max_members(all_clients)
+    print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())
     all_clients.final_print = False
     print_route(all_clients, all_clients.best_tours[0])

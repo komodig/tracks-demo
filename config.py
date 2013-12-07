@@ -5,7 +5,7 @@ INFO = {
 
 
 SETTINGS = {
-    'clients': 400,
+    'clients': 1200,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
     'width': 1200,
@@ -15,12 +15,13 @@ SETTINGS = {
 
 DIMENSION = [
 {
-    'x_factor': 0.1,
-    'y_factor': 0.1,
+    'x_factor': 0.05,
+    'y_factor': 0.05,
 },
 ]
 
 DISPLAY = {
+    'intro': True,
     'clients_intro': False,
     'dimensions': True,
     'dimensions_slow': False,
@@ -36,6 +37,6 @@ DISPLAY = {
 }
 
 TEST = {
-    'long_term': True,
+    'long_term': False,
     'level': 1,
 }
