@@ -3,7 +3,8 @@ import pygame
 from pygame.locals import *
 from random import randrange
 from config import SETTINGS, INFO
-from client import count_with_state, get_with_state, ClientState as state
+from client import count_with_state, get_with_state, ClientState as state, Client
+from copy import copy
 
 class ProcessControl():
     WAIT  = 0
@@ -128,4 +129,35 @@ def handle_user_events(process):
                 elif process.state == ProcessControl.PAUSE:
                     process.state = ProcessControl.RUN
                     break
+
+def intro():
+    wd6 = SETTINGS['width'] / 6
+    hd6 = SETTINGS['height'] / 6
+    center = Client(SETTINGS['width'] / 2, SETTINGS['height'] / 2)
+    intro_clients = []
+    intro_clients.append(Client(center.x - wd6 - wd6/5, center.y + hd6))
+    intro_clients.append(Client(center.x - wd6, center.y - hd6 - hd6/7))
+    intro_clients.append(Client(center.x + wd6/10, center.y - int(2.3 * hd6)))
+    intro_clients.append(Client(center.x + wd6, center.y - hd6 + hd6/6))
+    intro_clients.append(Client(center.x + wd6 - wd6/4, center.y + hd6 - hd6/5))
+
+    order = (0, 1, 2, 3, 1, 4, 3, 0, 4)
+
+    intro_surface = print_screen_set(TourplannerSurface(), False, [None, intro_clients, False])
+    for cx in range(len(order)):
+        try:
+            ax = order[cx]
+            bx = order[cx + 1]
+        except IndexError:
+            sleep(3)
+            handle_user_events(intro_surface.process)
+            return
+
+        a = intro_clients[ax]
+        b = intro_clients[bx]
+        pygame.draw.line(intro_surface.surface, intro_surface.route_color, (a.x, a.y), (b.x, b.y), 2)
+        sleep(0.2)
+        pygame.display.update()
+        intro_surface.fps_clock.tick(30)
+
 
