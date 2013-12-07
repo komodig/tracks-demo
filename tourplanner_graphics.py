@@ -155,8 +155,8 @@ def intro():
 
         a = intro_clients[ax]
         b = intro_clients[bx]
-        pygame.draw.line(intro_surface.surface, intro_surface.route_color, (a.x, a.y), (b.x, b.y), 2)
-        sleep(0.2)
+        pygame.draw.line(intro_surface.surface, intro_surface.route_color, (a.x, a.y), (b.x, b.y), 8)
+        sleep(0.1)
         pygame.display.update()
         intro_surface.fps_clock.tick(30)
 
