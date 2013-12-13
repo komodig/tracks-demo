@@ -9,7 +9,7 @@ from pygame import quit
 
 
 class Tour():
-    def __init__(self, origin, end, clients, start_client=None):
+    def __init__(self, origin, end, log_str, clients, start_client=None):
         self.origin = origin
         self.end = end
         self.width = end.x - origin.x
@@ -20,9 +20,16 @@ class Tour():
         self.can_unite = True
         self.final = False
         self.first_assigned = None
+        self.logbook = []
+        self.warning = False
+
+        self.logbook.append(log_str)
 
         if clients:         # this is for clones in do_routing()
-            self.clients = deepcopy(clients)
+            # creating new clients better than using copy() ?
+            clone = lambda cc: Client(cc.x, cc.y, 'created in Tour.__init__ to copy client')
+            self.clients = [ clone(ccd) for ccd in clients ]
+
             for cli in self.clients:
                 prepare_added_client(cli)
 
@@ -30,6 +37,7 @@ class Tour():
             for cli in self.clients:
                 if cli == start_client:
                     #print('assigning start_client')
+                    cli.c_log('the following assignment is as start_client')
                     self.assign(cli)
                     break
 
@@ -60,6 +68,7 @@ class Tour():
     def add_clients(self, client_list):  # when areas unite
         for cta in client_list:
             prepare_added_client(cta)
+            cta.c_log('appended in add_clients')
             self.clients.append(cta)
 
 
@@ -74,25 +83,41 @@ class Tour():
 
 
     def assign(self, incoming):
+        self.tour_log('try to get client assigned...')
         client = None
         for it in self.clients:
             if it == incoming:
+                try:
+                    assert it.next_assigned is None, 'REALLY STRANGE! should it be assigned with next set?'
+                except AssertionError:
+                    it.c_log('matched incoming but have next_assigned set')
+                    self.warning = True
+                    continue
                 client = it # in case of cloned client
+                client.c_log('matched incoming and getting assigned')
                 break
+
         assert client, 'FATAL! Trying to assing not-member-client!'
         # FIXME: the following assertion failed sometimes.
         try:
             assert client.next_assigned is None, 'STRANGE! client to assign has next_assigned set!'
         except AssertionError:
             print('duuh!')
+            print('incoming Client L O G B O O K :')
+            incoming.print_logbook()
+            print('member Client L O G B O O K :')
+            client.print_logbook()
             return None
 
         if self.first_assigned is None:
             self.first_assigned = client
+            client.c_log('being assigned as first (%s)' % hex(id(client)))
         else:
             last = self.get_last_assigned()
             self.length += client.distance_to(last)
             last.next_assigned = client
+            last.c_log('next_assigned is set to: %s (my own: %s)' % (hex(id(client)), hex(id(last))))
+            client.c_log('being assigned next of: %s (my own: %s) assuming state ASSOCIATED' % (hex(id(last)), hex(id(client))))
         client.state = state.ASSOCIATED
         return client
 
@@ -107,6 +132,7 @@ class Tour():
                 count += 1
                 if add_them:
                     client.state = state.CANDIDATE
+                    client.c_log('assuming state CANDIDATE in add_area_clients')
                     self.clients.append(client)
                     if DISPLAY['clients']['append']: print('add_area_clients: appended client: %s' % client)
 
@@ -121,10 +147,15 @@ class Tour():
         return count
 
 
+    def tour_log(self, log_str):
+        self.logbook.append(log_str)
+
+
 def do_routing(all_clients, tour, tour_surface):
+    if tour.warning: print('warning! routing dangerous tour')
     best_tour = None
     for start_client in tour.clients:
-        tour = Tour(tour.origin, tour.end, tour.clients, start_client)
+        tour = Tour(tour.origin, tour.end, 'created in do_routing with clients and starter', tour.clients, start_client)
         res_tour = find_best_route(all_clients, tour)
         #print('tour length: %f' % res_tour.length)
         if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
@@ -132,12 +163,15 @@ def do_routing(all_clients, tour, tour_surface):
             best_tour = res_tour
 
     print('best tour length: %f' % best_tour.length)
+    best_tour.tour_log('yeah routing returned me as best tour')
     return best_tour
 
 
 def find_best_route(all_clients, tour):
     if count_with_state(tour.clients, state.ASSOCIATED) < len(tour.clients):
         other_tour = deepcopy(tour)
+        tour.tour_log('wtf they produced a clone of me to find best route')
+        other_tour.tour_log('wow i am a clone to find best route')
 
         latest = tour.get_last_assigned()
         assert latest, 'FATAL! No start_client found'
@@ -164,8 +198,8 @@ def find_best_route(all_clients, tour):
 def get_next_area_with_clients(origin, all_clients):
     area_width = SETTINGS['width'] * DIMENSION[0]['x_factor']
     area_height = SETTINGS['height'] * DIMENSION[0]['y_factor']
-    end = Client(origin.x + area_width, origin.y + area_height)
-    area = Tour(origin, end, None)
+    end = Client(origin.x + area_width, origin.y + area_height, 'created in get_next_area_with_clients used as end coords')
+    area = Tour(origin, end, 'created in get_next_area_with_clients but empty', None)
     while area.count_area_clients(all_clients) == 0:
         if area.end.x + area_width > SETTINGS['width']:
             if area.end.y + area_height > SETTINGS['height']:
@@ -183,7 +217,7 @@ def get_next_area_with_clients(origin, all_clients):
 
 
 def get_area(all_clients, last_tour, dim_surface):
-    last_end = Client(last_tour.end.x, last_tour.origin.y)
+    last_end = Client(last_tour.end.x, last_tour.origin.y, 'created in get_area used as upper right corner coords')
     small_area = get_next_area_with_clients(last_end, all_clients)
     if small_area is None:
         return None
@@ -217,6 +251,8 @@ def tours_with_count(all_clients, count):
 
 
 def unite(one, other):
+    one.tour_log('should unite with neighbour')
+    other.tour_log('should get united as neighbour')
     if DISPLAY['unite_areas']: print('unite(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
             (one.origin.x, one.origin.y, one.width, one.height, len(one.clients)))
     if DISPLAY['unite_areas']: print('unite(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
@@ -228,7 +264,9 @@ def unite(one, other):
         origin = other.origin
         end = one.end
 
-    new = Tour(origin, end, one.clients)
+    one.tour_log('deliver clients to assimilate neighbour!')
+    new = Tour(origin, end, 'created in unite with clients (first half)', one.clients)
+    other.tour_log('deliver clients to get assimilated as neighbour')
     new.add_clients(other.clients)
     if DISPLAY['unite_areas']: print('unite(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new.origin.x, new.origin.y, new.width, new.height, len(new.clients)))
@@ -236,6 +274,7 @@ def unite(one, other):
 
 
 def prepare_added_client(c_to_add):
+    c_to_add.c_log('getting prepared: next -> None, state -> CANDIDATE')
     c_to_add.next_assigned = None
     c_to_add.state = state.CANDIDATE
 
@@ -256,9 +295,13 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
 
     ass = None
     for it in to_assimilate:
+        it.tour_log('chosen to assimilate')
         if it.can_unite:
+            it.tour_log('...and can unite')
             ass = it
             break
+        else:
+            it.tour_log('...but can\'t unite')
 
     if ass is None: return None
 
@@ -269,6 +312,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
                 (tour.origin.x == ass.end.x and tour.end.y == ass.end.y) or \
                 (tour.origin.x == ass.origin.x and tour.origin.y == ass.end.y) or \
                 (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
+            tour.tour_log('append as neighbour area')
             neighbours.append(tour)
             if DISPLAY['dimensions']: print_area(surface, all_clients, tour.origin, tour.end)
 
@@ -286,16 +330,23 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
     if best is None:
         print('sorry, can\'t unite!')
         # TODO: is this final? don't route this again!!
+        ass.tour_log('can not unite any further')
         ass.can_unite = False
         return ass
 
+    best.tour_log('best united')
     # areas.remove(chosen) causes strange behaviour so remove differently
     for area in get_valid_areas(all_clients):
-        if area == ass: area.valid = False
-        if area == chosen: area.valid = False
+        if area == ass:
+            area.tour_log('not valid any more (ass)')
+            area.valid = False
+        if area == chosen:
+            area.tour_log('not valid any more (nei)')
+            area.valid = False
 
     if len(best.clients) >= SETTINGS['cluster_size_max']:
         print('final tour calculation done: %f' % best.length)
+        best.tour_log('final calculation done: %f' % best.length)
         best.final = True
     all_clients.small_areas.append(best)
     surface.change_route_color()
@@ -306,13 +357,15 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
 
 def calculate_all_tours(all_clients):
     surface = TourplannerSurface()
-    small_area = Tour(Client(0, 0), Client(0, 0), None)
+    small_area = Tour(Client(0, 0, 'created in calculate_all_tours zero-zero'),
+            Client(0, 0, 'created in calculate_all_tours zero-zero'), 'created in calculate_all_tours but empty just zero-zero-clients', None)
 
     while True:
         small_area = get_area(all_clients, small_area, surface)
         if small_area is None:
             break
         if DISPLAY['dimensions']: print_area(surface, all_clients, small_area.origin, small_area.end)
+        small_area.tour_log('put in all areas pool')
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 
@@ -333,6 +386,9 @@ def calculate_all_tours(all_clients):
         handle_user_events(surface.process)
 
     print('\nstart final routing\n')
+    for ttl in get_valid_areas(all_clients):
+        ttl.tour_log('may final routing begin')
+
     doubles = 0
     for connect_this in get_valid_areas(all_clients):
         if connect_this.final:
@@ -341,6 +397,7 @@ def calculate_all_tours(all_clients):
             doubles += 1
             all_clients.best_tours.append(connect_this)
         else:
+            connect_this.tour_log('ready for final routing')
             best = do_routing(all_clients, connect_this, surface)
             all_clients.best_tours.append(best)
 
@@ -348,8 +405,8 @@ def calculate_all_tours(all_clients):
 
     if doubles: print('avoided second tour calculation: %d' % doubles)
 
-    print('ASSOCIATED clients: %d' % count_with_state(all_clients.clients, state.ASSOCIATED))
-    print('results in %d areas on %d x %d screen' % (len(get_valid_areas(all_clients)), SETTINGS['width'], SETTINGS['height']))
+    tour_count = len(get_valid_areas(all_clients))
+    print('results in %d areas on %d x %d screen' % (tour_count, SETTINGS['width'], SETTINGS['height']))
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())

@@ -11,11 +11,14 @@ class ClientState():
 
 
 class Client():
-    def __init__(self, x=0, y=0):
+    def __init__(self, x=0, y=0, log_str=None):
         self.x = x
         self.y = y
         self.state = ClientState.FREE
         self.next_assigned = None
+        self.logbook = []
+
+        if log_str: self.logbook.append(log_str)
         if DISPLAY['clients']['init']: print('created new client at x:%d y:%d' % (self.x, self.y))
 
 
@@ -35,6 +38,14 @@ class Client():
         x = self.x - other.x
         y = self.y - other.y
         return sqrt(pow(x,2) + pow(y,2))
+
+
+    def c_log(self, log_str):
+        self.logbook.append(log_str)
+
+
+    def print_logbook(self):
+        for lstr in self.logbook: print lstr
 
 
 class ClientsCollection():

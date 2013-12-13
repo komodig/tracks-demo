@@ -96,7 +96,6 @@ def print_area(tour_surface, all_clients, origin, end):
 
 
 def print_screen_set(surface, exit_afterwards, p_client_param=None, p_area_param=None, p_tour_param=None):
-    print('print_screen_set()')
     if p_client_param:
         p_client_param[0] = surface
         print_clients(*p_client_param)
