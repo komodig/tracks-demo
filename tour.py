@@ -228,7 +228,7 @@ def get_area(all_clients, last_tour, dim_surface):
 def get_min_max_members(all_clients):
     min = len(all_clients.clients)
     max = 0
-    for x in all_clients.small_areas:
+    for x in get_valid_areas(all_clients):
         this = len(x.clients)
         if this < min: min = this
         if this > max: max = this
@@ -349,6 +349,8 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count
         best.tour_log('final calculation done: %f' % best.length)
         best.final = True
     all_clients.small_areas.append(best)
+    if DISPLAY['dimensions_slow']:
+        for nei in neighbours: print_area(surface, all_clients, nei.origin, nei.end)
     surface.change_route_color()
     if DISPLAY['dimensions']: print_area(surface, all_clients, best.origin, best.end)
     if DISPLAY['dimensions_slow']: sleep(1)
