@@ -129,6 +129,7 @@ def handle_user_events(process):
                     process.state = ProcessControl.RUN
                     break
 
+
 def intro():
     wd6 = SETTINGS['width'] / 6
     hd6 = SETTINGS['height'] / 6
