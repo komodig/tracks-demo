@@ -283,13 +283,13 @@ def get_valid_areas(all_clients):
     return [ area for area in all_clients.small_areas if area.valid ]
 
 
-def assimilate_the_weak(all_clients, cluster_min, cluster_max, with_member_count):
-    to_assimilate = tours_with_count(all_clients, with_member_count)
+def assimilate_the_weak(all_clients, cluster_min, cluster_max, mcount):
+    to_assimilate = tours_with_count(all_clients, mcount)
     surface = TourplannerSurface()
 
     if DISPLAY['dimensions']:
         print_clients(surface, all_clients.clients)
-        mark_these = tours_with_count(all_clients, with_member_count)
+        mark_these = tours_with_count(all_clients, mcount)
         for tour in mark_these:
             print_clients(surface, tour.clients, False, True)
 
