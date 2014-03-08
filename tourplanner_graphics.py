@@ -3,7 +3,7 @@ import pygame
 from pygame.locals import *
 from random import randrange
 from config import SETTINGS, INFO
-from client import count_with_state, get_with_state, ClientState as state, Client
+from client import Client
 from copy import copy
 
 class ProcessControl():

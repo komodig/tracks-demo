@@ -4,17 +4,10 @@ from config import DISPLAY, TEST
 from tourplanner_test import length_test_client_generator
 
 
-class ClientState():
-    FREE       = 1
-    ASSOCIATED = 2
-    CANDIDATE  = 3
-
-
 class Client():
     def __init__(self, x=0, y=0, log_str=None):
         self.x = x
         self.y = y
-        self.state = ClientState.FREE
         self.next_assigned = None
         self.logbook = []
 
@@ -96,11 +89,11 @@ class ClientsCollection():
         self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself
 
 
-def find_next(client, clientlist, skip_candidates=False):
+def find_next(client, clientlist, all_clients, skip_candidates=False):
     closest = None
     for x in clientlist:
-        if x == client or x.state == ClientState.ASSOCIATED \
-                or (skip_candidates and x.state == ClientState.CANDIDATE):
+        if x == client or has_area_and_tour(x, all_clients) \
+                or (skip_candidates and has_area_but_no_tour(x, all_clients)):
             continue
         elif closest is None or client.distance_to(x) < client.distance_to(closest):
             closest = x
@@ -108,11 +101,33 @@ def find_next(client, clientlist, skip_candidates=False):
     return closest
 
 
-def get_with_state(clients, booh_state):
-    return [x for x in clients if x.state == booh_state]
+def get_client_area(xclient, all_clients):
+    cli_area = [ xareas for xarea in get_valid_areas(all_clients) if xclient in xarea.clients ]
+    assert(len(cli_area) <= 1, 'FATAL: client can\'t be in more than one area!')
+    return cli_area
 
 
-def count_with_state(clients, booh_state):
-    return len(get_with_state(clients, booh_state))
+def has_no_area(xclient, all_clients):
+    client_area = get_client_area(xclient, all_clients)
+    return (len(client_area) == 0)
+
+
+def has_area_but_no_tour(xclient, all_clients):
+    pass
+
+
+def has_area_and_tour(xclient, all_clients):
+    client_area = get_client_area(xclient, all_clients)
+    if not client_area.first_assigned:
+        return False
+    else:
+        cli_it = client_area.first_assigned
+        while True:
+            if cli_it is xclient:
+                return True
+            elif not cli_it.next_assigned:
+                return False
+            else:
+                cli_it = cli_it.next_assigned
 
 

@@ -1,7 +1,7 @@
 from client import Client
 from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
         TourplannerSurface, handle_user_events, ProcessControl
-from client import find_next, count_with_state, get_with_state, ClientState as state
+from client import find_next, has_no_area
 from copy import copy, deepcopy
 from config import SETTINGS, INFO, DISPLAY, DIMENSION, TEST
 from time import sleep
@@ -118,21 +118,20 @@ class Tour():
             last.next_assigned = client
             last.c_log('next_assigned is set to: %s (my own: %s)' % (hex(id(client)), hex(id(last))))
             client.c_log('being assigned next of: %s (my own: %s) assuming state ASSOCIATED' % (hex(id(last)), hex(id(client))))
-        client.state = state.ASSOCIATED
+
         return client
 
 
     def add_area_clients(self, all_clients, add_them=True):
         count = 0
         for client in all_clients.clients:
-            if client.state != state.FREE:
+            if has_no_area(client, all_clients):
                 continue
             if (client.x > self.origin.x or client.x == self.origin.x == 0) and client.x <= self.end.x and \
                     (client.y > self.origin.y or client.y == self.origin.y == 0) and client.y <= self.end.y:
                 count += 1
                 if add_them:
-                    client.state = state.CANDIDATE
-                    client.c_log('assuming state CANDIDATE in add_area_clients')
+                    client.c_log('now has area without tour in add_area_clients')
                     self.clients.append(client)
                     if DISPLAY['clients']['append']: print('add_area_clients: appended client: %s' % client)
 
@@ -168,21 +167,21 @@ def do_routing(all_clients, tour, tour_surface):
 
 
 def find_best_route(all_clients, tour):
-    if count_with_state(tour.clients, state.ASSOCIATED) < len(tour.clients):
+    if tour_is_incomplete(tour):
         other_tour = deepcopy(tour)
         tour.tour_log('wtf they produced a clone of me to find best route')
         other_tour.tour_log('wow i am a clone to find best route')
 
         latest = tour.get_last_assigned()
         assert latest, 'FATAL! No start_client found'
-        next_client = find_next(latest, tour.clients)
+        next_client = find_next(latest, tour.clients, all_clients)
         if next_client is None:
             return tour
         if not tour.assign(next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
-        next_next_client = find_next(next_client, other_tour.clients)
+        next_next_client = find_next(next_client, other_tour.clients, all_clients)
         if next_next_client is None:
             b = a
         else:
@@ -193,6 +192,33 @@ def find_best_route(all_clients, tour):
         return a if a < b else b
     else:
         return tour
+
+
+def tour_is_incomplete(tour, all_clients):
+    members = 0
+    member = None
+
+    try:
+        assert(len(tour.clients) <= SETTINGS['cluster_size_max'], 'WARNING: area is too big!')
+        assert(len(tour.clients) >= SETTINGS['cluster_size_min'], 'WARNING: area is too small!')
+    except AssertionError:
+        pass
+
+    if tour.first_assigned is None:
+        return True
+    else:
+        members += 1
+        member = tour.first_assigned
+
+    while True:
+        assert(member in tour.clients, 'FATAL! non-area-client in area-tour!')
+        if not member.next_assigned:
+            break
+        member = member.next_assigned
+        members += 1
+
+    if members == len(tour.clients): print('TOUR COMPLETE!')
+    return members < len(tour.clients)
 
 
 def get_next_area_with_clients(origin, all_clients):
@@ -217,8 +243,8 @@ def get_next_area_with_clients(origin, all_clients):
     return area
 
 
-def get_area(all_clients, last_tour, dim_surface):
-    last_end = Client(last_tour.end.x, last_tour.origin.y, 'created in get_area used as upper right corner coords')
+def get_next_area(all_clients, last_tour, dim_surface):
+    last_end = Client(last_tour.end.x, last_tour.origin.y, 'created in get_next_area used as upper right corner coords')
     small_area = get_next_area_with_clients(last_end, all_clients)
     if small_area is None:
         return None
@@ -275,9 +301,8 @@ def unite(one, other):
 
 
 def prepare_added_client(c_to_add):
-    c_to_add.c_log('getting prepared: next -> None, state -> CANDIDATE')
+    c_to_add.c_log('getting prepared: has area but no tour')
     c_to_add.next_assigned = None
-    c_to_add.state = state.CANDIDATE
 
 
 def get_valid_areas(all_clients):
@@ -364,17 +389,15 @@ def calculate_all_tours(all_clients):
             Client(0, 0, 'created in calculate_all_tours zero-zero'), 'created in calculate_all_tours but empty just zero-zero-clients', None)
 
     while True:
-        small_area = get_area(all_clients, small_area, surface)
+        small_area = get_next_area(all_clients, small_area, surface)
         if small_area is None:
             break
         if DISPLAY['dimensions']: print_area(surface, all_clients, small_area.origin, small_area.end)
-        small_area.tour_log('put in all areas pool')
+        small_area.tour_log('thrown in all areas pool')
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 
     print('average of %d members' % get_average_members(all_clients))
-    print('CANDIDATE clients: %d' % count_with_state(all_clients.clients, state.CANDIDATE))
-    print('FREE clients: %d' % count_with_state(all_clients.clients, state.FREE))
 
     tour_size = 1
     while True:
