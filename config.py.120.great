@@ -1,12 +1,13 @@
 INFO = {
-    'version': '0.8.1',
+    'version': '0.9.2',
     'usage': 'use <ESC> to quit and <SPACE> to pause and continue',
 }
 
 
 SETTINGS = {
-    'clusters': 20,
-    'cluster_size': 6,
+    'clients': 120,
+    'cluster_size_min': 5,
+    'cluster_size_max': 7,
     'width': 1200,
     'height': 700,
 }
@@ -20,7 +21,11 @@ DIMENSION = [
 ]
 
 DISPLAY = {
+    'intro': True,
+    'clients_intro': False,
     'dimensions': True,
+    'dimensions_slow': True,
+    'unite_areas': False,
     'routing': {
         'all': False,
         'best_starter': False,
@@ -32,5 +37,6 @@ DISPLAY = {
 }
 
 TEST = {
-    'level': 1
+    'long_term': False,
+    'level': 1,
 }

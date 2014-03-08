@@ -205,6 +205,7 @@ def get_next_area_with_clients(origin, all_clients):
             if area.end.y + area_height > SETTINGS['height']:
                 print('END OF TOTAL AREA!')
                 return None
+            # time for \r:
             area.origin.x = 0
             area.origin.y += area_height
             area.end.x = area_width

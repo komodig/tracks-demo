@@ -5,7 +5,7 @@ INFO = {
 
 
 SETTINGS = {
-    'clients': 500,
+    'clients': 120,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
     'width': 1200,
@@ -15,8 +15,8 @@ SETTINGS = {
 
 DIMENSION = [
 {
-    'x_factor': 0.1,
-    'y_factor': 0.1,
+    'x_factor': 0.2,
+    'y_factor': 0.2,
 },
 ]
 
@@ -24,8 +24,8 @@ DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'dimensions': True,
-    'dimensions_slow': False,
-    'unite_areas': True,
+    'dimensions_slow': True,
+    'unite_areas': False,
     'routing': {
         'all': False,
         'best_starter': False,
