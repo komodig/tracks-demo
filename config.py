@@ -24,11 +24,11 @@ DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'dimensions': True,
-    'dimensions_slow': True,
-    'unite_areas': False,
+    'dimensions_slow': False,
+    'unite_areas': True,
     'routing': {
         'all': False,
-        'best_starter': True,
+        'best_starter': False,
     },
     'clients': {
         'init': False,
