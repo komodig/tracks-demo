@@ -89,6 +89,10 @@ class ClientsCollection():
         self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself
 
 
+    def get_valid_areas(self):
+        return [ area for area in self.small_areas if area.valid ]
+
+
 def find_next(client, clientlist, all_clients, skip_candidates=False):
     closest = None
     for x in clientlist:
@@ -102,7 +106,7 @@ def find_next(client, clientlist, all_clients, skip_candidates=False):
 
 
 def get_client_area(xclient, all_clients):
-    cli_area = [ xareas for xarea in get_valid_areas(all_clients) if xclient in xarea.clients ]
+    cli_area = [ xarea for xarea in all_clients.get_valid_areas() if xclient in xarea.clients ]
     assert(len(cli_area) <= 1, 'FATAL: client can\'t be in more than one area!')
     return cli_area
 
