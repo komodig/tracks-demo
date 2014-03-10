@@ -1,6 +1,7 @@
 from copy import copy, deepcopy
 from client import Client, ClientsCollection, find_next
 from tour import Tour
+from area import Area, get_clients_in_area
 from config import SETTINGS, INFO, TEST, DISPLAY, DIMENSION
 from tourplanner_test import edge_test_clients
 from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
@@ -8,7 +9,6 @@ from tourplanner_graphics import print_route, print_area, print_clients, print_s
 
 
 def do_routing(all_clients, tour, tour_surface):
-    if tour.warning: print('warning! routing dangerous tour')
     best_tour = None
     for start_client in tour.clients:
         tour = Tour(tour.origin, tour.end, 'created in do_routing with clients and starter', tour.clients, start_client, all_clients)
@@ -54,32 +54,24 @@ def find_best_route(all_clients, tour):
 def get_next_area_with_clients(origin, all_clients):
     area_width = SETTINGS['width'] * DIMENSION[0]['x_factor']
     area_height = SETTINGS['height'] * DIMENSION[0]['y_factor']
-    end = Client(origin.x + area_width, origin.y + area_height, 'created in get_next_area_with_clients used as end coords')
-    area = Tour(origin, end, 'created in get_next_area_with_clients but empty', None)
-    while area.count_area_clients(all_clients) == 0:
+    end = Client(origin.x + area_width, origin.y + area_height)
+    area = Area(origin, end)
+    while not len(get_clients_in_area(area, all_clients)):
         if area.end.x + area_width > SETTINGS['width']:
             if area.end.y + area_height > SETTINGS['height']:
                 print('END OF TOTAL AREA!')
                 return None
-            # time for \r:
+            # get first of lower row
             area.origin.x = 0
             area.origin.y += area_height
             area.end.x = area_width
             area.end.y += area_height
         else:
+            # get one to the right
             area.origin.x += area_width
             area.end.x += area_width
 
     return area
-
-
-def get_next_area(all_clients, last_tour, dim_surface):
-    last_end = Client(last_tour.end.x, last_tour.origin.y, 'created in get_next_area used as upper right corner coords')
-    small_area = get_next_area_with_clients(last_end, all_clients)
-    if small_area is None:
-        return None
-    cli_sum = small_area.add_clients_in_area(all_clients)
-    return small_area
 
 
 def get_min_max_members(all_clients):
@@ -109,8 +101,6 @@ def tours_with_count(all_clients, count):
 
 
 def unite_areas(one, other):
-    one.tour_log('should unite with neighbour')
-    other.tour_log('should get united as neighbour')
     if DISPLAY['unite_areas']: print('unite_areas(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
             (one.origin.x, one.origin.y, one.width, one.height, len(one.clients)))
     if DISPLAY['unite_areas']: print('unite_areas(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
@@ -122,12 +112,8 @@ def unite_areas(one, other):
         origin = other.origin
         end = one.end
 
-    one.tour_log('deliver clients to assimilate neighbour!')
-    other.tour_log('deliver clients to get assimilated as neighbour')
     united_clients = one.clients + other.clients
-    for uc in united_clients:
-        uc.c_log('getting new siblings to estimate best way to unite tours')
-    new = Tour(origin, end, 'created in unite with clients (first half)', united_clients)
+    new = Tour(origin, end, united_clients)
     if DISPLAY['unite_areas']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new.origin.x, new.origin.y, new.width, new.height, len(new.clients)))
     return new
@@ -188,15 +174,12 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, mcount):
     # areas.remove(chosen) causes strange behaviour so remove differently
     for area in all_clients.get_valid_areas():
         if area == ass:
-            area.tour_log('not valid any more (ass)')
             area.valid = False
         if area == chosen:
-            area.tour_log('not valid any more (nei)')
             area.valid = False
 
     if len(best.clients) >= SETTINGS['cluster_size_max']:
         print('final tour calculation done: %f' % best.length)
-        best.tour_log('final calculation done: %f' % best.length)
         best.final = True
     all_clients.small_areas.append(best)
     if DISPLAY['dimensions_slow']:
@@ -207,20 +190,23 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, mcount):
     return best
 
 
-def calculate_all_tours(all_clients):
-    surface = TourplannerSurface()
-    small_area = Tour(Client(0, 0, 'created in calculate_all_tours zero-zero'),
-            Client(0, 0, 'created in calculate_all_tours zero-zero'), 'created in calculate_all_tours but empty just zero-zero-clients', None)
+def prepare_areas_with_clients(all_clients, surface):
+    small_area = Area(Client(0, 0), Client(0, 0))
 
     while True:
-        small_area = get_next_area(all_clients, small_area, surface)
+        last_end = Client(small_area.end.x, small_area.origin.y)
+        small_area = get_next_area_with_clients(last_end, all_clients)
         if small_area is None:
             break
+        else:
+            small_area.add_clients_in_area(all_clients)
+
         if DISPLAY['dimensions']: print_area(surface, all_clients, small_area.origin, small_area.end)
-        small_area.tour_log('thrown in all areas pool')
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 
+
+def calculate_all_tours(all_clients):
 # FIXME: div by zero error
 #    print('average of %d members' % get_average_members(all_clients))
 
@@ -282,6 +268,9 @@ if __name__ == '__main__':
         edge_test_clients(all_clients)
     print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
     print('running %d clients...' % (len(all_clients.clients)))
-    calculate_all_tours(all_clients)
+    surface = TourplannerSurface()
+    prepare_areas_with_clients(all_clients, surface)
+    surface.process.state = ProcessControl.WAIT
+    handle_user_events(surface.process)
 
 

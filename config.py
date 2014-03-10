@@ -21,7 +21,7 @@ DIMENSION = [
 ]
 
 DISPLAY = {
-    'intro': True,
+    'intro': False,
     'clients_intro': True,
     'dimensions': True,
     'dimensions_slow': True,

@@ -8,10 +8,7 @@ class Client():
     def __init__(self, x=0, y=0, log_str=None):
         self.x = x
         self.y = y
-        self.next_assigned = None
-        self.logbook = []
 
-        if log_str: self.logbook.append(log_str)
         if DISPLAY['clients']['init']: print('created new client at x:%d y:%d' % (self.x, self.y))
 
 
@@ -31,14 +28,6 @@ class Client():
         x = self.x - other.x
         y = self.y - other.y
         return sqrt(pow(x,2) + pow(y,2))
-
-
-    def c_log(self, log_str):
-        self.logbook.append(log_str)
-
-
-    def print_logbook(self):
-        for lstr in self.logbook: print lstr
 
 
 class ClientsCollection():
@@ -90,14 +79,13 @@ class ClientsCollection():
 
 
     def get_valid_areas(self):
-        return [ area for area in self.small_areas if area.valid ]
+        return [ area for area in self.small_areas ]
 
 
-def find_next(client, clientlist, all_clients, skip_candidates=False):
+def find_next(client, clientlist, all_clients):
     closest = None
     for x in clientlist:
-        if x == client or has_area_and_tour(x, all_clients) \
-                or (skip_candidates and has_area_but_no_tour(x, all_clients)):
+        if x == client or has_area_and_tour(x, all_clients):
             continue
         elif closest is None or client.distance_to(x) < client.distance_to(closest):
             closest = x
