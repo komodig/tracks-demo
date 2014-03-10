@@ -1,8 +1,8 @@
-from copy import copy, deepcopy
+from copy import copy
 from config import SETTINGS, DISPLAY
 from time import sleep
 from pygame import quit
-from client import Client, has_no_area
+from client import Client, has_area
 
 
 class Tour():
@@ -28,7 +28,7 @@ class Tour():
             self.clients = [ clone(ccd) for ccd in clients ]
 
             for cli in self.clients:
-                prepare_added_client(cli)
+                reset_client(cli)
 
         if start_client:
             for cli in self.clients:
@@ -62,13 +62,6 @@ class Tour():
         return ('%s' % self.clients)
 
 
-    def add_clients(self, client_list):  # when areas unite
-        for cta in client_list:
-            prepare_added_client(cta)
-            cta.c_log('appended in add_clients')
-            self.clients.append(cta)
-
-
     def get_last_assigned(self):
         if self.first_assigned is None:
             return None
@@ -94,12 +87,17 @@ class Tour():
                 client.c_log('matched incoming and getting assigned')
                 break
 
-        assert client, 'FATAL! Trying to assing not-member-client!'
+        try:
+            assert client, 'FATAL! Trying to assing not-member-client!'
+        except AssertionError:
+            print('incoming Client L O G B O O K :')
+            incoming.print_logbook()
+            return None
+
         # FIXME: the following assertion failed sometimes.
         try:
             assert client.next_assigned is None, 'STRANGE! client to assign has next_assigned set!'
         except AssertionError:
-            print('duuh!')
             print('incoming Client L O G B O O K :')
             incoming.print_logbook()
             print('member Client L O G B O O K :')
@@ -119,20 +117,20 @@ class Tour():
         return client
 
 
-    def add_area_clients(self, all_clients, add_them=True):
+    def add_clients_in_area(self, all_clients, add_permanently=True):
         count = 0
         for client in all_clients.clients:
-            if has_no_area(client, all_clients):
+            if has_area(client, all_clients):
                 continue
             if (client.x > self.origin.x or client.x == self.origin.x == 0) and client.x <= self.end.x and \
                     (client.y > self.origin.y or client.y == self.origin.y == 0) and client.y <= self.end.y:
                 count += 1
-                if add_them:
-                    client.c_log('now has area without tour in add_area_clients')
+                if add_permanently:
+                    client.c_log('now has area without tour in add_clients_in_area')
                     self.clients.append(client)
-                    if DISPLAY['clients']['append']: print('add_area_clients: appended client: %s' % client)
+                    if DISPLAY['clients']['append']: print('add_clients_in_area: appended client: %s' % client)
 
-        if add_them:
+        if add_permanently:
             print('got area at (%d,%d) (%d x %d) with %d clients' % \
                     (self.origin.x, self.origin.y, self.width, self.height, len(self.clients)))
         return count
@@ -162,11 +160,11 @@ class Tour():
             members += 1
 
         if members == len(self.clients): print('TOUR COMPLETE!')
-        return members < len(self.clients)
+        return (members < len(self.clients))
 
 
     def count_area_clients(self, all_clients):
-        count = self.add_area_clients(all_clients, False)
+        count = self.add_clients_in_area(all_clients, False)
         return count
 
 
@@ -174,7 +172,7 @@ class Tour():
         self.logbook.append(log_str)
 
 
-def prepare_added_client(c_to_add):
+def reset_client(c_to_add):
     c_to_add.c_log('getting prepared: has area but no tour')
     c_to_add.next_assigned = None
 

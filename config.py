@@ -22,17 +22,17 @@ DIMENSION = [
 
 DISPLAY = {
     'intro': True,
-    'clients_intro': False,
+    'clients_intro': True,
     'dimensions': True,
     'dimensions_slow': True,
-    'unite_areas': False,
+    'unite_areas': True,
     'routing': {
         'all': False,
-        'best_starter': False,
+        'best_starter': True,
     },
     'clients': {
         'init': False,
-        'append':False,
+        'append': True,
     },
 }
 

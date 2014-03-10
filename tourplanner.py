@@ -1,3 +1,4 @@
+from copy import copy, deepcopy
 from client import Client, ClientsCollection, find_next
 from tour import Tour
 from config import SETTINGS, INFO, TEST, DISPLAY, DIMENSION
@@ -23,7 +24,7 @@ def do_routing(all_clients, tour, tour_surface):
 
 
 def find_best_route(all_clients, tour):
-    if tour.is_incomplete():
+    if tour.is_incomplete(all_clients):
         other_tour = deepcopy(tour)
         tour.tour_log('wtf they produced a clone of me to find best route')
         other_tour.tour_log('wow i am a clone to find best route')
@@ -77,7 +78,7 @@ def get_next_area(all_clients, last_tour, dim_surface):
     small_area = get_next_area_with_clients(last_end, all_clients)
     if small_area is None:
         return None
-    cli_sum = small_area.add_area_clients(all_clients)
+    cli_sum = small_area.add_clients_in_area(all_clients)
     return small_area
 
 
@@ -107,12 +108,12 @@ def tours_with_count(all_clients, count):
     return [ area for area in wanted if len(area.clients) == count ]
 
 
-def unite(one, other):
+def unite_areas(one, other):
     one.tour_log('should unite with neighbour')
     other.tour_log('should get united as neighbour')
-    if DISPLAY['unite_areas']: print('unite(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['unite_areas']: print('unite_areas(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
             (one.origin.x, one.origin.y, one.width, one.height, len(one.clients)))
-    if DISPLAY['unite_areas']: print('unite(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['unite_areas']: print('unite_areas(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
             (other.origin.x, other.origin.y, other.width, other.height, len(other.clients)))
     if one.origin.x < other.origin.x or one.origin.y < other.origin.y:
         origin = one.origin
@@ -122,10 +123,12 @@ def unite(one, other):
         end = one.end
 
     one.tour_log('deliver clients to assimilate neighbour!')
-    new = Tour(origin, end, 'created in unite with clients (first half)', one.clients)
     other.tour_log('deliver clients to get assimilated as neighbour')
-    new.add_clients(other.clients)
-    if DISPLAY['unite_areas']: print('unite(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
+    united_clients = one.clients + other.clients
+    for uc in united_clients:
+        uc.c_log('getting new siblings to estimate best way to unite tours')
+    new = Tour(origin, end, 'created in unite with clients (first half)', united_clients)
+    if DISPLAY['unite_areas']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new.origin.x, new.origin.y, new.width, new.height, len(new.clients)))
     return new
 
@@ -168,7 +171,7 @@ def assimilate_the_weak(all_clients, cluster_min, cluster_max, mcount):
     for nei in neighbours:
         if (len(nei.clients) + len(ass.clients)) > cluster_max:
             continue
-        united = unite(ass, nei)
+        united = unite_areas(ass, nei)
         best_united = do_routing(all_clients, united, surface)
         if best is None or best_united < best:
             best = copy(best_united)

@@ -2,6 +2,7 @@ import client
 import config
 
 def edge_test_clients(all_clients):
+    print('INCLUDING edge_test_clients')
     all_clients.clients[0].x = 0
     all_clients.clients[1].x = config.SETTINGS['width']
     all_clients.clients[2].y = 0
@@ -10,6 +11,7 @@ def edge_test_clients(all_clients):
 
 
 def length_test_client_generator():
+    print('INCLUDING length_test_client_generator')
     clients = []
     y = 10
     for x in range(1, 10):

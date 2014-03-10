@@ -108,12 +108,12 @@ def find_next(client, clientlist, all_clients, skip_candidates=False):
 def get_client_area(xclient, all_clients):
     cli_area = [ xarea for xarea in all_clients.get_valid_areas() if xclient in xarea.clients ]
     assert(len(cli_area) <= 1, 'FATAL: client can\'t be in more than one area!')
-    return cli_area
+    return cli_area[0] if len(cli_area) else None
 
 
-def has_no_area(xclient, all_clients):
+def has_area(xclient, all_clients):
     client_area = get_client_area(xclient, all_clients)
-    return (len(client_area) == 0)
+    return (client_area is not None)
 
 
 def has_area_but_no_tour(xclient, all_clients):
