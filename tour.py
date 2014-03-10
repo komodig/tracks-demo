@@ -92,6 +92,8 @@ class Tour():
         except AssertionError:
             print('incoming Client L O G B O O K :')
             incoming.print_logbook()
+            print('tour L O G B O O K :')
+            self.print_logbook()
             return None
 
         # FIXME: the following assertion failed sometimes.
@@ -170,6 +172,10 @@ class Tour():
 
     def tour_log(self, log_str):
         self.logbook.append(log_str)
+
+
+    def print_logbook(self):
+        for lstr in self.logbook: print lstr
 
 
 def reset_client(c_to_add):
