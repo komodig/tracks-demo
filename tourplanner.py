@@ -11,7 +11,7 @@ def do_routing(all_clients, tour, tour_surface):
     if tour.warning: print('warning! routing dangerous tour')
     best_tour = None
     for start_client in tour.clients:
-        tour = Tour(tour.origin, tour.end, 'created in do_routing with clients and starter', tour.clients, start_client)
+        tour = Tour(tour.origin, tour.end, 'created in do_routing with clients and starter', tour.clients, start_client, all_clients)
         res_tour = find_best_route(all_clients, tour)
         #print('tour length: %f' % res_tour.length)
         if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
@@ -34,7 +34,7 @@ def find_best_route(all_clients, tour):
         next_client = find_next(latest, tour.clients, all_clients)
         if next_client is None:
             return tour
-        if not tour.assign(next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
+        if not tour.assign(next_client, all_clients): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
@@ -42,7 +42,7 @@ def find_best_route(all_clients, tour):
         if next_next_client is None:
             b = a
         else:
-            if not other_tour.assign(next_next_client): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
+            if not other_tour.assign(next_next_client, all_clients): print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour.origin, tour.end])
             if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
             b = find_best_route(all_clients, other_tour)
 

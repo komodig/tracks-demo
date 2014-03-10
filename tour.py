@@ -2,11 +2,11 @@ from copy import copy
 from config import SETTINGS, DISPLAY
 from time import sleep
 from pygame import quit
-from client import Client, has_area
+from client import Client, has_area, get_client_area
 
 
 class Tour():
-    def __init__(self, origin, end, log_str, clients, start_client=None):
+    def __init__(self, origin, end, log_str, clients, start_client=None, all_clients=None):
         self.origin = origin
         self.end = end
         self.width = end.x - origin.x
@@ -35,7 +35,9 @@ class Tour():
                 if cli == start_client:
                     #print('assigning start_client')
                     cli.c_log('the following assignment is as start_client')
-                    self.assign(cli)
+                    self.tour_log('assign start_client...')
+                    assert(all_clients is not None, 'shit, forgot all_clients param in Tour init')
+                    self.assign(cli, all_clients)
                     break
 
 
@@ -72,7 +74,7 @@ class Tour():
             return last_assigned
 
 
-    def assign(self, incoming):
+    def assign(self, incoming, all_clients):
         self.tour_log('try to get client assigned...')
         client = None
         for it in self.clients:
@@ -80,11 +82,12 @@ class Tour():
                 try:
                     assert it.next_assigned is None, 'REALLY STRANGE! should it be assigned with next set?'
                 except AssertionError:
-                    it.c_log('matched incoming but have next_assigned set')
+                    ca = get_client_area(it, all_clients)
+                    it.c_log('matched incoming but have next assigned set in tour (%d,%d) (%d x %d) with %d clients' % (ca.origin.x, ca.origin.y, ca.width, ca.height, len(ca.clients)))
                     self.warning = True
                     continue
                 client = it # in case of cloned client
-                client.c_log('matched incoming and getting assigned')
+                client.c_log('matched incoming and getting assigned to area at (%d,%d) (%d x %d) with %d clients' % (self.origin.x, self.origin.y, self.width, self.height, len(self.clients)))
                 break
 
         try:
