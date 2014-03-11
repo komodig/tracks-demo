@@ -6,10 +6,17 @@ from client import Client, has_area, get_client_area
 
 
 class Tour():
-    def __init__(self, clients=None):
+    def __init__(self, clients, plan=None):
         self.clients = clients
         self.plan = []
         self.final_length = 0.0
+
+        if plan:
+            self.plan = plan
+
+
+    def __lt__(self, other):
+        return self.length() < other.length()
 
 
     def length(self):
@@ -22,11 +29,15 @@ class Tour():
                 tour_length += tcli.distance_to(last)
                 last = tcli
 
-        if len(plan) == len(clients):
+        if len(self.plan) == len(self.clients):
             self.final_length = tour_length
             print('tour length is final: %f' % self.final_length)
 
         return tour_length
+
+
+    def assign(self, next_client):
+        self.plan.append(next_client)
 
 
     def get_last_assigned(self):
@@ -35,4 +46,7 @@ class Tour():
         else:
             return self.plan[-1]
 
+
+    def is_incomplete(self):
+        return True if len(self.plan) < len(self.clients) else False
 

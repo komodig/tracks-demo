@@ -26,10 +26,6 @@ class Area():
             return -1
 
 
-    def __lt__(self, other):
-        return self.length < other.length
-
-
     def __repr__(self):
         return ('%s' % self.clients)
 

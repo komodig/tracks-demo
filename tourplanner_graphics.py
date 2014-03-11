@@ -56,14 +56,17 @@ def print_clients(tour_surface, clients, slow=False, circle=False):
 
 
 def print_earlier_tours(all_clients, surface):
+    previous = None
     for earlier in all_clients.best_tours:
-        assigned = earlier.first_assigned
-        while assigned.next_assigned:
-            pygame.draw.line(surface.surface, surface.route_color, assigned.coords(), assigned.next_assigned.coords(), 2)
-            assigned = assigned.next_assigned
+        area_tour = earlier.tours[0]
+        for assigned in area_tour.plan:
+            if previous is not None:
+                pygame.draw.line(surface.surface, surface.route_color, previous.coords(), assigned.coords(), 2)
+            previous = assigned
 
 
 def print_route(all_clients, tour):
+    tour_surface = None
     if all_clients.first_print:
         tour_surface = print_screen_set(TourplannerSurface(True), False, [None, all_clients.clients, True])
         all_clients.first_print = False
@@ -72,13 +75,17 @@ def print_route(all_clients, tour):
     else:
         tour_surface = print_screen_set(TourplannerSurface(), False, [None, all_clients.clients, False])
 
-    assigned = tour.first_assigned
-    while assigned.next_assigned:
+    prev = None
+    for rcli in tour.plan:
+        if not prev:
+            prev = rcli
+            continue
         print_earlier_tours(all_clients, tour_surface)
-        pygame.draw.line(tour_surface.surface, tour_surface.route_color, assigned.coords(), assigned.next_assigned.coords(), 2)
-        assigned = assigned.next_assigned
-        pygame.display.update()
-        tour_surface.fps_clock.tick(30)
+        pygame.draw.line(tour_surface.surface, tour_surface.route_color, prev.coords(), rcli.coords(), 2)
+        prev = rcli
+
+    pygame.display.update()
+    tour_surface.fps_clock.tick(30)
 
     if all_clients.final_print:
         tour_surface.process.state = ProcessControl.WAIT

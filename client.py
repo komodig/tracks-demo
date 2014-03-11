@@ -62,7 +62,7 @@ class ClientsCollection():
     def summarize_total_length(self):
         self.total_length = 0.0
         for best in self.best_tours:
-            self.total_length += best.length
+            self.total_length += best.tours[0].length()
         return self.total_length
 
 
@@ -110,16 +110,10 @@ def has_area_but_no_tour(xclient, all_clients):
 
 def has_area_and_tour(xclient, all_clients):
     client_area = get_client_area(xclient, all_clients)
-    if not client_area.first_assigned:
-        return False
-    else:
-        cli_it = client_area.first_assigned
-        while True:
-            if cli_it is xclient:
-                return True
-            elif not cli_it.next_assigned:
-                return False
-            else:
-                cli_it = cli_it.next_assigned
+    for clit in client_area.tours:
+        if xclient in clit.plan:
+            return True
+
+    return False
 
 

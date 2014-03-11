@@ -21,10 +21,10 @@ DIMENSION = [
 ]
 
 DISPLAY = {
-    'intro': False,
-    'clients_intro': True,
+    'intro': True,
+    'clients_intro': False,
     'dimensions': True,
-    'dimensions_slow': True,
+    'dimensions_slow': False,
     'unite_areas': True,
     'routing': {
         'all': False,
@@ -38,5 +38,5 @@ DISPLAY = {
 
 TEST = {
     'long_term': False,
-    'level': 1,
+    'level': 0,
 }
