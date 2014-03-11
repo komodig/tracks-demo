@@ -205,6 +205,8 @@ def calculate_all_tours(all_clients):
 
         handle_user_events(surface.process)
 
+
+def statistics():
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
     area_count = len(all_clients.get_valid_areas())
@@ -214,18 +216,10 @@ def calculate_all_tours(all_clients):
     print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())
     print('used colors:')
-    print(DISPLAY['color']['spot'])
-    print(DISPLAY['color']['line'])
+    print(DISPLAY['color1']['spot'])
+    print(DISPLAY['color1']['line'])
     all_clients.final_print = True
     print_route(all_clients, all_clients.best_tours[-1].tours[0])
-
-    if TEST['long_term']:
-        sleep(3)
-        handle_user_events(surface.process)
-        exit(3)
-    else:
-        surface.process.state = ProcessControl.WAIT
-        handle_user_events(surface.process)
 
 
 if __name__ == '__main__':
@@ -239,5 +233,15 @@ if __name__ == '__main__':
     print('running %d clients...' % (len(all_clients.clients)))
     surface = TourplannerSurface()
     prepare_areas_with_clients(all_clients, surface)
-    optimize_areas(all_clients, surface)
+ #   optimize_areas(all_clients, surface)
     calculate_all_tours(all_clients)
+    statistics()
+
+    if TEST['long_term']:
+        sleep(3)
+        handle_user_events(surface.process)
+        exit(3)
+    else:
+        surface.process.state = ProcessControl.WAIT
+        handle_user_events(surface.process)
+

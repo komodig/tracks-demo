@@ -41,6 +41,10 @@ DISPLAY = {
         'spot': (randrange(0,255), randrange(0,255), randrange(0,255)),
         'line': (randrange(0,255), randrange(0,255), randrange(0,255)),
     },
+    'color1': {
+        'spot': (41, 110, 27),
+        'line': (186, 58, 195),
+    },
 }
 
 TEST = {

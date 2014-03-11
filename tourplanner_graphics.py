@@ -19,8 +19,8 @@ class TourplannerSurface():
         pygame.init()
         self.show_msg = show_msg
         self.surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
-        self.client_color = pygame.Color(*DISPLAY['color']['spot'])
-        self.route_color = pygame.Color(*DISPLAY['color']['line'])
+        self.client_color = pygame.Color(*DISPLAY['color1']['spot'])
+        self.route_color = pygame.Color(*DISPLAY['color1']['line'])
         self.emph_color = pygame.Color(255,255,255)
         self.fps_clock = pygame.time.Clock()
 
