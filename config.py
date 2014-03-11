@@ -1,11 +1,13 @@
+from random import randrange
+
 INFO = {
-    'version': '0.9.2',
+    'version': '1.0.1',
     'usage': 'use <ESC> to quit and <SPACE> to pause and continue',
 }
 
 
 SETTINGS = {
-    'clients': 120,
+    'clients': 60,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
     'width': 1200,
@@ -15,8 +17,8 @@ SETTINGS = {
 
 DIMENSION = [
 {
-    'x_factor': 0.2,
-    'y_factor': 0.2,
+    'x_factor': 0.25,
+    'y_factor': 0.25,
 },
 ]
 
@@ -24,15 +26,20 @@ DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'dimensions': True,
-    'dimensions_slow': False,
+    'dimensions_slow': True,
     'unite_areas': True,
     'routing': {
         'all': False,
+        'slow': 0,
         'best_starter': True,
     },
     'clients': {
         'init': False,
         'append': True,
+    },
+    'color': {
+        'spot': (randrange(0,255), randrange(0,255), randrange(0,255)),
+        'line': (randrange(0,255), randrange(0,255), randrange(0,255)),
     },
 }
 

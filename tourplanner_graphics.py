@@ -1,8 +1,7 @@
 from time import sleep
 import pygame
 from pygame.locals import *
-from random import randrange
-from config import SETTINGS, INFO
+from config import SETTINGS, INFO, DISPLAY
 from client import Client
 from copy import copy
 
@@ -20,8 +19,8 @@ class TourplannerSurface():
         pygame.init()
         self.show_msg = show_msg
         self.surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
-        self.client_color = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
-        self.route_color = pygame.Color(randrange(0,255), randrange(0,255), randrange(0,255))
+        self.client_color = pygame.Color(*DISPLAY['color']['spot'])
+        self.route_color = pygame.Color(*DISPLAY['color']['line'])
         self.emph_color = pygame.Color(255,255,255)
         self.fps_clock = pygame.time.Clock()
 
@@ -63,7 +62,7 @@ def print_earlier_tours(all_clients, surface):
             if previous is not None:
                 pygame.draw.line(surface.surface, surface.route_color, previous.coords(), assigned.coords(), 2)
             previous = assigned
-
+        previous = None
 
 def print_route(all_clients, tour):
     tour_surface = None
@@ -86,6 +85,9 @@ def print_route(all_clients, tour):
 
     pygame.display.update()
     tour_surface.fps_clock.tick(30)
+    seconds = DISPLAY['routing']['slow']
+    if seconds:
+        sleep(seconds)
 
     if all_clients.final_print:
         tour_surface.process.state = ProcessControl.WAIT

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from time import sleep
 from client import Client, ClientsCollection, find_next, get_client_area
 from tour import Tour
@@ -24,22 +25,21 @@ def do_routing(all_clients, tour, tour_surface):
 
 def find_best_route(all_clients, tour):
     if tour.is_incomplete():
-        other_tour = Tour(tour.clients, tour.plan)
+        other_tour = deepcopy(tour)
 
         latest = tour.get_last_assigned()
         assert latest, 'FATAL! No start_client found'
-        next_client = find_next(latest, tour.clients, all_clients)
+        next_client = find_next(latest, tour, all_clients)
         if next_client is None:
             return tour
         else:
             tour.assign(next_client)
-
 #        tour_area = get_client_area(next_client, all_clients)
 #        print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour_area.origin, tour_area.end])
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
-        next_next_client = find_next(next_client, other_tour.clients, all_clients)
+        next_next_client = find_next(next_client, other_tour, all_clients)
         if next_next_client is None:
             b = a
         else:
@@ -163,10 +163,11 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
             break
     del all_areas[idx]
 
+    if DISPLAY['dimensions']: print_route(all_clients, final_area.tours[0])
     if DISPLAY['dimensions_slow']:
         for nei in neighbours: print_area(surface, all_clients, nei.origin, nei.end)
     surface.change_route_color()
-    if DISPLAY['dimensions']: print_area(surface, all_clients, willing_neighbour.origin, willing_neighbour.end)
+    if DISPLAY['dimensions']: print_area(surface, all_clients, final_area.origin, final_area.end)
     if DISPLAY['dimensions_slow']: sleep(1)
 
 
@@ -194,9 +195,6 @@ def optimize_areas(all_client, surface):
 
 
 def calculate_all_tours(all_clients):
-# FIXME: div by zero error
-#    print('average of %d members' % get_average_members(all_clients))
-
     print('\nstart final routing\n')
     for final_area in all_clients.get_valid_areas():
         if len(final_area.tours):
@@ -217,10 +215,11 @@ def calculate_all_tours(all_clients):
 
     area_count = len(all_clients.get_valid_areas())
     print('results in %d areas on %d x %d screen' % (area_count, SETTINGS['width'], SETTINGS['height']))
+    print('average of %d members' % get_average_members(all_clients))
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())
-    all_clients.final_print = False
+    all_clients.final_print = True
     print_route(all_clients, all_clients.best_tours[0].tours[0])
 
     if TEST['long_term']:
