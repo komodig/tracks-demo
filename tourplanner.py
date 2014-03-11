@@ -1,7 +1,7 @@
-from copy import copy, deepcopy
+from time import sleep
 from client import Client, ClientsCollection, find_next
 from tour import Tour
-from area import Area, get_clients_in_area
+from area import Area, get_clients_in_area, get_neighbours
 from config import SETTINGS, INFO, TEST, DISPLAY, DIMENSION
 from tourplanner_test import edge_test_clients
 from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
@@ -95,9 +95,9 @@ def get_average_members(all_clients):
     return avg/cnt
 
 
-def tours_with_count(all_clients, count):
+def areas_short_of_clients(all_clients, clients_minimum):
     wanted = all_clients.get_valid_areas()
-    return [ area for area in wanted if len(area.clients) == count ]
+    return [ area for area in wanted if len(area.clients) < clients_minimum ]
 
 
 def unite_areas(one, other):
@@ -112,70 +112,48 @@ def unite_areas(one, other):
         origin = other.origin
         end = one.end
 
-    united_clients = one.clients + other.clients
-    new = Tour(origin, end, united_clients)
+    # united_clients = one.clients + other.clients
+    new_area = Area(origin, end)
+    new_area.add_clients_in_area(all_clients)
     if DISPLAY['unite_areas']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new.origin.x, new.origin.y, new.width, new.height, len(new.clients)))
     return new
 
 
-def assimilate_the_weak(all_clients, cluster_min, cluster_max, mcount):
-    to_assimilate = tours_with_count(all_clients, mcount)
+def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
     surface = TourplannerSurface()
-
+    neighbours = get_neighbours(to_merge, all_clients, surface)
     if DISPLAY['dimensions']:
         print_clients(surface, all_clients.clients)
-        mark_these = tours_with_count(all_clients, mcount)
-        for tour in mark_these:
-            print_clients(surface, tour.clients, False, True)
+        mark_these = areas_short_of_clients(all_clients, cluster_min)
+        for xsarea in mark_these:
+            print_clients(surface, xsarea.clients, False, True)
 
-    ass = None
-    for it in to_assimilate:
-        it.tour_log('chosen to assimilate')
-        if it.can_unite:
-            it.tour_log('...and can unite')
-            ass = it
-            break
-        else:
-            it.tour_log('...but can\'t unite')
+    sleep(1)
+    return
 
-    if ass is None: return None
-
-    neighbours = []
-    for tour in all_clients.get_valid_areas():
-        # north, east, south, west
-        if (tour.origin.x == ass.origin.x and tour.end.y == ass.origin.y) or \
-                (tour.origin.x == ass.end.x and tour.end.y == ass.end.y) or \
-                (tour.origin.x == ass.origin.x and tour.origin.y == ass.end.y) or \
-                (tour.end.x == ass.origin.x and tour.end.y == ass.end.y):
-            tour.tour_log('append as neighbour area')
-            neighbours.append(tour)
-            if DISPLAY['dimensions']: print_area(surface, all_clients, tour.origin, tour.end)
-
-    best = None
-    chosen = None
+    top_united = None
+    willing_neighbour = None
     for nei in neighbours:
-        if (len(nei.clients) + len(ass.clients)) > cluster_max:
+        if (len(nei.clients) + len(to_merge.clients)) > cluster_max:
             continue
-        united = unite_areas(ass, nei)
+        united = unite_areas(to_merge, nei)
+        # here area -> tours needed
         best_united = do_routing(all_clients, united, surface)
-        if best is None or best_united < best:
-            best = copy(best_united)
-            chosen = copy(nei)
+        if top_united is None or best_united < top_united:
+            top_united = copy(best_united)
+            willing_neighbour = nei
 
     if best is None:
         print('sorry, can\'t unite!')
         # TODO: is this final? don't route this again!!
-        ass.tour_log('can not unite any further')
-        ass.can_unite = False
-        return ass
+        return to_merge
 
-    best.tour_log('best united')
-    # areas.remove(chosen) causes strange behaviour so remove differently
+    # areas.remove(willing_neighbour) causes strange behaviour so remove differently
     for area in all_clients.get_valid_areas():
-        if area == ass:
+        if area == to_merge:
             area.valid = False
-        if area == chosen:
+        if area == willing_neighbour:
             area.valid = False
 
     if len(best.clients) >= SETTINGS['cluster_size_max']:
@@ -206,41 +184,30 @@ def prepare_areas_with_clients(all_clients, surface):
         handle_user_events(surface.process)
 
 
+def optimize_areas(all_client, surface):
+    optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
+    for optimizable in optimize_these:
+        merge_with_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'])
+        handle_user_events(surface.process)
+
+
 def calculate_all_tours(all_clients):
 # FIXME: div by zero error
 #    print('average of %d members' % get_average_members(all_clients))
 
-    tour_size = 1
-    while True:
-        mark_these = tours_with_count(all_clients, tour_size)
-        if not len(mark_these):
-            if tour_size < SETTINGS['cluster_size_min']:
-                tour_size += 1
-            else:
-                break
-        if assimilate_the_weak(all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], tour_size) is None:
-            break
-        handle_user_events(surface.process)
-
     print('\nstart final routing\n')
-    for ttl in all_clients.get_valid_areas():
-        ttl.tour_log('may final routing begin')
+    for final_area in all_clients.get_valid_areas():
+        # here area -> tours needed
+        best = do_routing(all_clients, final_area, surface)
+        all_clients.best_tours.append(best)
 
-    doubles = 0
-    for connect_this in all_clients.get_valid_areas():
-        if connect_this.final:
-            print('  pre-calculated: %f' % connect_this.length)
-            #assert best.length == connect_this.length, 'second tour calculation different'
-            doubles += 1
-            all_clients.best_tours.append(connect_this)
-        else:
-            connect_this.tour_log('ready for final routing')
-            best = do_routing(all_clients, connect_this, surface)
-            all_clients.best_tours.append(best)
+        if calculation.length() > 0.0 and calculation.final_length:
+            print('  pre-calculated: %f' % calculation.final_length)
+            all_clients.best_tours.append(calculation)
 
         handle_user_events(surface.process)
 
-    if doubles: print('avoided second tour calculation: %d' % doubles)
+#    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
     tour_count = len(all_clients.get_valid_areas())
     print('results in %d areas on %d x %d screen' % (tour_count, SETTINGS['width'], SETTINGS['height']))
@@ -270,7 +237,5 @@ if __name__ == '__main__':
     print('running %d clients...' % (len(all_clients.clients)))
     surface = TourplannerSurface()
     prepare_areas_with_clients(all_clients, surface)
-    surface.process.state = ProcessControl.WAIT
-    handle_user_events(surface.process)
-
-
+    optimize_areas(all_clients, surface)
+    # calculate_all_tours(all_clients)

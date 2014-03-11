@@ -9,6 +9,7 @@ class Tour():
     def __init__(self, clients=None):
         self.clients = clients
         self.plan = []
+        self.final_length = 0.0
 
 
     def length(self):
@@ -19,6 +20,13 @@ class Tour():
                 last = tcli
             else:
                 tour_length += tcli.distance_to(last)
+                last = tcli
+
+        if len(plan) == len(clients):
+            self.final_length = tour_length
+            print('tour length is final: %f' % self.final_length)
+
+        return tour_length
 
 
     def get_last_assigned(self):

@@ -1,3 +1,6 @@
+from config import DISPLAY
+from tourplanner_graphics import print_area
+
 class Area():
     def __init__(self, origin, end):
         self.origin = origin
@@ -34,8 +37,8 @@ class Area():
     def add_clients_in_area(self, all_clients):
         self.clients = get_clients_in_area(self, all_clients)
         assert(len(self.clients), 'FATAL! there should be clients in this area')
-        print('%d clients in area at (%d,%d) (%d x %d)' % \
-                (len(self.clients), self.origin.x, self.origin.y, self.width, self.height))
+        print('%d clients in area: ORIG(%d,%d) END(%d,%d) (%d x %d)' % \
+                (len(self.clients), self.origin.x, self.origin.y, self.end.x, self.end.y, self.width, self.height))
 
 
 def located_in_area(client, area):
@@ -51,3 +54,16 @@ def get_clients_in_area(area, all_clients):
     return area_clients
 
 
+def get_neighbours(area, all_clients, surface):
+    neighbours = []
+    for xa in all_clients.get_valid_areas():
+        # north, east, south, west
+        if (xa.origin.x == area.origin.x and xa.end.y == area.origin.y) or \
+                (xa.origin.x == area.end.x and xa.end.y == area.end.y) or \
+                (xa.origin.x == area.origin.x and xa.origin.y == area.end.y) or \
+                (xa.end.x == area.origin.x and xa.end.y == area.end.y):
+            neighbours.append(xa)
+    for show in neighbours:
+        if DISPLAY['dimensions']: print_area(surface, all_clients, show.origin, show.end)
+
+    return neighbours
