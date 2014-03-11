@@ -79,7 +79,7 @@ class ClientsCollection():
 
 
     def get_valid_areas(self):
-        return [ area for area in self.small_areas ]
+        return [ area for area in self.small_areas if area.valid ]
 
 
 def find_next(client, tour, all_clients):

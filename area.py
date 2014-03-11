@@ -9,6 +9,7 @@ class Area():
         self.height = end.y - origin.y
         self.clients = []
         self.tours = []
+        self.valid = True
 
 
     def __eq__(self, other):

@@ -31,7 +31,6 @@ class Tour():
 
         if len(self.plan) == len(self.clients):
             self.final_length = tour_length
-            print('tour length is final: %f (%d clients)' % (self.final_length, len(self.clients)))
 
         return tour_length
 

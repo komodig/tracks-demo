@@ -90,7 +90,6 @@ def get_average_members(all_clients):
     all_areas = all_clients.get_valid_areas()
     cnt = len(all_areas)
     for sa in all_areas:
-        print('sa.clients: %d' % len(sa.clients))
         avg += len(sa.clients)
 
     return avg/cnt
@@ -114,8 +113,8 @@ def unite_areas(one, other):
         end = one.end
 
     new_area = Area(origin, end)
-    # better performance? try: united_clients = one.clients + other.clients
     new_area.add_clients_in_area(all_clients)
+    assert((one.clients + other.clients) == new_area.clients, 'DAMN IT! united_area clients not reliable')
     if DISPLAY['unite_areas']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new_area.origin.x, new_area.origin.y, new_area.width, new_area.height, len(new_area.clients)))
     return new_area
@@ -149,19 +148,14 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
         print('sorry, can\'t unite!')
         # TODO: is this final? don't route this again!!
         return to_merge
+    else:
+        all_clients.small_areas.append(final_area)
 
-    # areas.remove(willing_neighbour) caused strange behaviour once. Try something else...
+    # deleting still referenced objects is difficult, so we use valid-flag:
     all_areas = all_clients.get_valid_areas()
-    all_areas_count = len(all_areas)
-    for idx in range(all_areas_count):
-        if all_areas[idx] == to_merge: # replace with united_area
-            break
-    all_areas[idx] = final_area
-
-    for idx in range(all_areas_count):
-        if all_areas[idx] == willing_neighbour: # delete
-            break
-    del all_areas[idx]
+    for varea in all_areas:
+        if varea == to_merge or varea == willing_neighbour:
+            varea.valid = False
 
     if DISPLAY['dimensions']: print_route(all_clients, final_area.tours[0])
     if DISPLAY['dimensions_slow']:
@@ -219,8 +213,11 @@ def calculate_all_tours(all_clients):
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())
+    print('used colors:')
+    print(DISPLAY['color']['spot'])
+    print(DISPLAY['color']['line'])
     all_clients.final_print = True
-    print_route(all_clients, all_clients.best_tours[0].tours[0])
+    print_route(all_clients, all_clients.best_tours[-1].tours[0])
 
     if TEST['long_term']:
         sleep(3)
