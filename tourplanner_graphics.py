@@ -91,6 +91,9 @@ def print_route(all_clients, tour):
         sleep(seconds)
 
     if all_clients.final_print:
+        if DISPLAY['areas']['show_final']:
+            for fa in all_clients.final_areas:
+                print_area(tour_surface, all_clients, fa.origin, fa.end)
         tour_surface.process.state = ProcessControl.WAIT
     handle_user_events(tour_surface.process)
 
