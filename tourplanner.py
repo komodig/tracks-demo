@@ -196,6 +196,7 @@ def calculate_all_tours(all_clients):
             calculation = final_area.tours[0]
             if calculation.length() > 0.0 and calculation.final_length:
                 print('  pre-calculated: %f (%d clients)' % (calculation.final_length, len(calculation.plan)))
+                all_clients.final_areas.append(final_area)
                 continue
 
         # here area -> tours needed
