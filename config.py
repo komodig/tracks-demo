@@ -45,9 +45,13 @@ DISPLAY = {
         'spot': (41, 110, 127),
         'line': (255, 30, 255),
     },
+    'color2': {
+        'spot': (100, 60, 127),
+        'line': (70, 192, 248),
+    },
 }
 
 TEST = {
-    'long_term': True,
+    'long_term': False,
     'level': 1,
 }

@@ -19,7 +19,7 @@ def do_routing(all_clients, tour, tour_surface):
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
-    print('best tour length: %f' % best_tour.length())
+    print('best tour length: %f (%d clients)' % (best_tour.length(), len(best_tour.plan)))
     return best_tour
 
 
@@ -149,18 +149,19 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
         # TODO: is this final? don't route this again!!
         return to_merge
     else:
-        all_clients.small_areas.append(final_area)
+        # deleting still referenced objects is difficult, so we use valid-flag:
+        all_areas = all_clients.get_valid_areas()
+        for varea in all_areas:
+            if varea == to_merge or varea == willing_neighbour:
+                varea.valid = False
 
-    # deleting still referenced objects is difficult, so we use valid-flag:
-    all_areas = all_clients.get_valid_areas()
-    for varea in all_areas:
-        if varea == to_merge or varea == willing_neighbour:
-            varea.valid = False
+        all_clients.small_areas.append(final_area)
 
     if DISPLAY['dimensions']: print_route(all_clients, final_area.tours[0])
     if DISPLAY['dimensions_slow']:
-        for nei in neighbours: print_area(surface, all_clients, nei.origin, nei.end)
-    surface.change_route_color()
+        for nei in neighbours:
+            print_area(surface, all_clients, nei.origin, nei.end)
+        surface.change_route_color()
     if DISPLAY['dimensions']: print_area(surface, all_clients, final_area.origin, final_area.end)
     if DISPLAY['dimensions_slow']: sleep(1)
 
@@ -194,7 +195,7 @@ def calculate_all_tours(all_clients):
         if len(final_area.tours):
             calculation = final_area.tours[0]
             if calculation.length() > 0.0 and calculation.final_length:
-                print('  pre-calculated: %f' % calculation.final_length)
+                print('  pre-calculated: %f (%d clients)' % (calculation.final_length, len(calculation.plan)))
                 continue
 
         # here area -> tours needed
@@ -231,12 +232,22 @@ if __name__ == '__main__':
     print('running %d clients...' % (len(all_clients.clients)))
     surface = TourplannerSurface()
     prepare_areas_with_clients(all_clients, surface)
- #   optimize_areas(all_clients, surface)
+    optimize_areas(all_clients, surface)
     calculate_all_tours(all_clients)
     statistics()
 
     all_clients.final_print = False if TEST['long_term'] else True
     print_route(all_clients, all_clients.final_areas[-1].tours[0])
+
+    # TEST
+    for cl in all_clients.clients:
+        gotit = False
+        for fa in all_clients.final_areas:
+            if cl in fa.tours[0].clients:
+                gotit = True
+        if not gotit:
+            print('AAAAAAAAAAAAAAAH')
+    # TEST END
 
     if TEST['long_term']:
         sleep(3)
