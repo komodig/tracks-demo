@@ -150,16 +150,15 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
 
     if final_area is None:
         print('sorry, can\'t unite!')
-        # TODO: is this final? don't route this again!!
-        return to_merge
-    else:
-        # deleting still referenced objects is difficult, so we use valid-flag:
-        all_areas = all_clients.get_valid_areas()
-        for varea in all_areas:
-            if varea == to_merge or varea == willing_neighbour:
-                varea.valid = False
+        return None
 
-        all_clients.small_areas.append(final_area)
+    # deleting still referenced objects is difficult, so we use valid-flag:
+    all_areas = all_clients.get_valid_areas()
+    for varea in all_areas:
+        if varea == to_merge or varea == willing_neighbour:
+            varea.valid = False
+
+    all_clients.small_areas.append(final_area)
 
     if DISPLAY['dimensions']: mark_short_area_clients(surface, all_clients, cluster_min)
     if DISPLAY['routing']['best_starter']: print_route(all_clients, final_area.tours[0])
@@ -169,6 +168,8 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
         surface.change_route_color()
     if DISPLAY['dimensions']: print_area(surface, all_clients, final_area.origin, final_area.end)
     if DISPLAY['dimensions_slow']: sleep(1)
+
+    return final_area
 
 
 def prepare_areas_with_clients(all_clients, surface):
@@ -188,10 +189,19 @@ def prepare_areas_with_clients(all_clients, surface):
 
 
 def optimize_areas(all_client, surface):
-    optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
-    for optimizable in optimize_these:
-        merge_with_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'])
-        handle_user_events(surface.process)
+    not_mergebles = []
+    while True:
+        optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
+        if len(optimize_these) - len(not_mergebles) == 0:
+            break
+        for optimizable in optimize_these:
+            if not optimizable.valid or optimizable in not_mergebles:
+                continue
+            result = merge_with_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'])
+            if result is None:
+                not_mergebles.append(optimizable)
+
+            handle_user_events(surface.process)
 
 
 def calculate_all_tours(all_clients):
@@ -244,16 +254,6 @@ if __name__ == '__main__':
 
     all_clients.final_print = False if TEST['long_term'] else True
     print_route(all_clients, all_clients.final_areas[-1].tours[0])
-
-    # TEST
-    for cl in all_clients.clients:
-        gotit = False
-        for fa in all_clients.final_areas:
-            if cl in fa.tours[0].clients:
-                gotit = True
-        if not gotit:
-            print('AAAAAAAAAAAAAAAH')
-    # TEST END
 
     if TEST['long_term']:
         sleep(3)
