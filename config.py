@@ -29,7 +29,7 @@ DISPLAY = {
         'init': True,
         'slow': True,
         'unite_info': True,
-        'final_areas': True,
+        'show_final': True,
     },
     'routing': {
         'all': False,
