@@ -61,6 +61,6 @@ def get_neighbours(area, all_clients, surface):
                 (xa.end.x == area.origin.x and xa.end.y == area.end.y):
             neighbours.append(xa)
     for show in neighbours:
-        if DISPLAY['dimensions']: print_area(surface, all_clients, show.origin, show.end)
+        if DISPLAY['areas']['init']: print_area(surface, all_clients, show.origin, show.end)
 
     return neighbours

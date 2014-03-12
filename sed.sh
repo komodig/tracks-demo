@@ -11,7 +11,7 @@ for f in $file_list_cmd; do
     [ -f $f ] || continue
 
     echo "tuuuut: $f"
-    sed -i "s/DISPLAY..dimensions..:/DISPLAY['areas']['init']:/g" $f
+    sed -i "s/DISPLAY..dimensions_slow..:/DISPLAY['areas']['slow']:/g" $f
 
 #    git checkout $f
 done

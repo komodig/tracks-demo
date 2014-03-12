@@ -130,7 +130,7 @@ def mark_short_area_clients(surface, all_clients, cluster_min):
 def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
     surface = TourplannerSurface()
     neighbours = get_neighbours(to_merge, all_clients, surface)
-    if DISPLAY['dimensions']:
+    if DISPLAY['areas']['init']:
         mark_short_area_clients(surface, all_clients, cluster_min)
 
     final_area = None
@@ -160,13 +160,13 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
 
     all_clients.small_areas.append(final_area)
 
-    if DISPLAY['dimensions']: mark_short_area_clients(surface, all_clients, cluster_min)
+    if DISPLAY['areas']['init']: mark_short_area_clients(surface, all_clients, cluster_min)
     if DISPLAY['routing']['best_starter']: print_route(all_clients, final_area.tours[0])
     if DISPLAY['dimensions_slow']:
         for nei in neighbours:
             print_area(surface, all_clients, nei.origin, nei.end)
         surface.change_route_color()
-    if DISPLAY['dimensions']: print_area(surface, all_clients, final_area.origin, final_area.end)
+    if DISPLAY['areas']['init']: print_area(surface, all_clients, final_area.origin, final_area.end)
     if DISPLAY['dimensions_slow']: sleep(1)
 
     return final_area
@@ -183,7 +183,7 @@ def prepare_areas_with_clients(all_clients, surface):
         else:
             small_area.add_clients_in_area(all_clients)
 
-        if DISPLAY['dimensions']: print_area(surface, all_clients, small_area.origin, small_area.end)
+        if DISPLAY['areas']['init']: print_area(surface, all_clients, small_area.origin, small_area.end)
         all_clients.small_areas.append(small_area)
         handle_user_events(surface.process)
 
