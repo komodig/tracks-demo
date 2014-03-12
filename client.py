@@ -34,7 +34,7 @@ class ClientsCollection():
     def __init__(self, clients, cluster_size_min, cluster_size_max, width, height):
         self.clients = []
         self.small_areas = []
-        self.best_tours = []
+        self.final_areas = []
         self.max_distance = 0.0
         self.avg_distance = 0.0
         self.total_length = 0.0
@@ -61,7 +61,7 @@ class ClientsCollection():
 
     def summarize_total_length(self):
         self.total_length = 0.0
-        for best in self.best_tours:
+        for best in self.final_areas:
             self.total_length += best.tours[0].length()
         return self.total_length
 

@@ -201,7 +201,7 @@ def calculate_all_tours(all_clients):
         final_tour = Tour(final_area.clients)
         best_tour = do_routing(all_clients, final_tour, surface)
         final_area.tours = [best_tour,]
-        all_clients.best_tours.append(final_area)
+        all_clients.final_areas.append(final_area)
 
         handle_user_events(surface.process)
 
@@ -236,7 +236,7 @@ if __name__ == '__main__':
     statistics()
 
     all_clients.final_print = False if TEST['long_term'] else True
-    print_route(all_clients, all_clients.best_tours[-1].tours[0])
+    print_route(all_clients, all_clients.final_areas[-1].tours[0])
 
     if TEST['long_term']:
         sleep(3)

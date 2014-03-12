@@ -56,7 +56,7 @@ def print_clients(tour_surface, clients, slow=False, circle=False):
 
 def print_earlier_tours(all_clients, surface):
     previous = None
-    for earlier in all_clients.best_tours:
+    for earlier in all_clients.final_areas:
         area_tour = earlier.tours[0]
         for assigned in area_tour.plan:
             if previous is not None:
