@@ -31,7 +31,7 @@ DISPLAY = {
     'routing': {
         'all': False,
         'slow': 0,
-        'best_starter': True,
+        'best_starter': False,
     },
     'clients': {
         'init': False,
