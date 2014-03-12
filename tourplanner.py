@@ -101,9 +101,9 @@ def areas_short_of_clients(all_clients, clients_minimum):
 
 
 def unite_areas(one, other):
-    if DISPLAY['unite_areas']: print('unite_areas(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['areas']['unite_info']: print('unite_areas(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
             (one.origin.x, one.origin.y, one.width, one.height, len(one.clients)))
-    if DISPLAY['unite_areas']: print('unite_areas(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['areas']['unite_info']: print('unite_areas(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
             (other.origin.x, other.origin.y, other.width, other.height, len(other.clients)))
     if one.origin.x < other.origin.x or one.origin.y < other.origin.y:
         origin = one.origin
@@ -115,7 +115,7 @@ def unite_areas(one, other):
     new_area = Area(origin, end)
     new_area.add_clients_in_area(all_clients)
     assert((one.clients + other.clients) == new_area.clients, 'DAMN IT! united_area clients not reliable')
-    if DISPLAY['unite_areas']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
+    if DISPLAY['areas']['unite_info']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new_area.origin.x, new_area.origin.y, new_area.width, new_area.height, len(new_area.clients)))
     return new_area
 
