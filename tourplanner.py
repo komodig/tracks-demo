@@ -162,12 +162,12 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
 
     if DISPLAY['areas']['init']: mark_short_area_clients(surface, all_clients, cluster_min)
     if DISPLAY['routing']['best_starter']: print_route(all_clients, final_area.tours[0])
-    if DISPLAY['dimensions_slow']:
+    if DISPLAY['areas']['slow']:
         for nei in neighbours:
             print_area(surface, all_clients, nei.origin, nei.end)
         surface.change_route_color()
     if DISPLAY['areas']['init']: print_area(surface, all_clients, final_area.origin, final_area.end)
-    if DISPLAY['dimensions_slow']: sleep(1)
+    if DISPLAY['areas']['slow']: sleep(1)
 
     return final_area
 

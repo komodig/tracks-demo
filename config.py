@@ -28,7 +28,7 @@ DISPLAY = {
     'areas': {
         'init': True,
         'slow': True,
-        'unite_areas': True,
+        'unite_info': True,
         'final_areas': True,
     },
     'routing': {
