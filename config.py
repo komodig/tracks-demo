@@ -7,18 +7,18 @@ INFO = {
 
 
 SETTINGS = {
-    'clients': 60,
+    'clients': 350,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
-    'width': 1200,
-    'height': 700,
+    'width': 600,
+    'height': 400,
 }
 
 
 DIMENSION = [
 {
-    'x_factor': 0.25,
-    'y_factor': 0.25,
+    'x_factor': 0.1,
+    'y_factor': 0.1,
 },
 ]
 
@@ -42,12 +42,12 @@ DISPLAY = {
         'line': (randrange(0,255), randrange(0,255), randrange(0,255)),
     },
     'color1': {
-        'spot': (41, 110, 27),
-        'line': (186, 58, 195),
+        'spot': (41, 110, 127),
+        'line': (255, 30, 255),
     },
 }
 
 TEST = {
     'long_term': False,
-    'level': 0,
+    'level': 1,
 }
