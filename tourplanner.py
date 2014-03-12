@@ -216,8 +216,8 @@ def statistics():
     print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())
     print('used colors:')
-    print(DISPLAY['color1']['spot'])
-    print(DISPLAY['color1']['line'])
+    print(DISPLAY['color']['spot'])
+    print(DISPLAY['color']['line'])
 
 
 if __name__ == '__main__':
