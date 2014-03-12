@@ -85,7 +85,7 @@ class ClientsCollection():
 def find_next(client, tour, all_clients):
     closest = None
     for x in tour.clients:
-        if x == client or x in tour.plan or has_area_and_tour(x, all_clients):
+        if x == client or x in tour.plan:
             continue
         elif closest is None or client.distance_to(x) < client.distance_to(closest):
             closest = x
