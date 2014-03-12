@@ -218,15 +218,13 @@ def statistics():
     print('used colors:')
     print(DISPLAY['color1']['spot'])
     print(DISPLAY['color1']['line'])
-    all_clients.final_print = True
-    print_route(all_clients, all_clients.best_tours[-1].tours[0])
 
 
 if __name__ == '__main__':
-    if DISPLAY['intro']:
-        intro()
+    if DISPLAY['intro']: intro()
 
     all_clients = ClientsCollection(**SETTINGS)
+
     if TEST['level'] == 1:
         edge_test_clients(all_clients)
     print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
@@ -236,6 +234,9 @@ if __name__ == '__main__':
  #   optimize_areas(all_clients, surface)
     calculate_all_tours(all_clients)
     statistics()
+
+    all_clients.final_print = False if TEST['long_term'] else True
+    print_route(all_clients, all_clients.best_tours[-1].tours[0])
 
     if TEST['long_term']:
         sleep(3)

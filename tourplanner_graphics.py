@@ -64,6 +64,7 @@ def print_earlier_tours(all_clients, surface):
             previous = assigned
         previous = None
 
+
 def print_route(all_clients, tour):
     tour_surface = None
     if all_clients.first_print:
