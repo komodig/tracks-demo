@@ -19,7 +19,7 @@ class Area():
     def __cmp__(self, other):
         if len(self.clients) < len(other.clients):
             return -1
-        elif len(self.clients) == len(other.clients):
+        elif self.clients == other.clients and self.origin == other.origin and self.end == other.end:
             return 0
         elif len(self.clients) > len(other.clients):
             return 1
