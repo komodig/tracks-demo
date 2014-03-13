@@ -114,7 +114,7 @@ def unite_areas(one, other):
 
     new_area = Area(origin, end)
     new_area.add_clients_in_area(all_clients)
-    assert((one.clients + other.clients) == new_area.clients, 'DAMN IT! united_area clients not reliable')
+    assert (one.clients + other.clients) == new_area.clients, 'DAMN IT! united_area clients not reliable'
     if DISPLAY['areas']['unite_info']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
             (new_area.origin.x, new_area.origin.y, new_area.width, new_area.height, len(new_area.clients)))
     return new_area
@@ -144,7 +144,7 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
         best_united = do_routing(all_clients, united_tour, surface)
         if final_area is None or best_united < final_area.tours[0]:
             united_area.tours = [best_united,]
-            assert(len(united_area.tours) == 1, 'BUT HOW? multi-tours not implemented yet!')
+            assert len(united_area.tours) == 1, 'BUT HOW? multi-tours not implemented yet!'
             final_area = united_area
             willing_neighbour = nei
 
@@ -253,7 +253,9 @@ if __name__ == '__main__':
     print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
     statistics()
 
-    all_clients.final_print = False if TEST['long_term'] else True
+    assert len(all_clients.get_valid_areas()) == len(all_clients.final_areas), 'SHIT! i someone is missing'
+
+    all_clients.final_print = True if not TEST['long_term'] else False
     print_route(all_clients, all_clients.final_areas[-1].tours[0])
 
     if TEST['long_term']:

@@ -95,7 +95,7 @@ def find_next(client, tour, all_clients):
 
 def get_client_area(xclient, all_clients):
     cli_area = [ xarea for xarea in all_clients.get_valid_areas() if xclient in xarea.clients ]
-    assert(len(cli_area) == 1, 'FATAL: client must belong to exactly one area!')
+    assert len(cli_area) == 1, 'FATAL: client must belong to exactly one area!'
     return cli_area[0] if len(cli_area) else None
 
 

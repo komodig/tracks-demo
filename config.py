@@ -7,18 +7,18 @@ INFO = {
 
 
 SETTINGS = {
-    'clients': 300,
+    'clients': 20,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
-    'width': 1200,
-    'height': 700,
+    'width': 800,
+    'height': 500,
 }
 
 
 DIMENSION = [
 {
-    'x_factor': 0.1,
-    'y_factor': 0.1,
+    'x_factor': 0.2,
+    'y_factor': 0.2,
 },
 ]
 
@@ -28,15 +28,15 @@ DISPLAY = {
     'areas': {
         'init': True,
         'add_info': True,
-        'slow': False,
+        'slow': True,
         'merge': True,
         'unite_info': False,
-        'show_final': False,
+        'show_final': True,
     },
     'routing': {
         'all': False,
         'slow': 0,
-        'best_starter': False,
+        'best_starter': True,
     },
     'clients': {
         'init': False,
@@ -52,6 +52,10 @@ DISPLAY = {
     'color2': {
         'spot': (100, 60, 127),
         'line': (70, 192, 248),
+    },
+    'color3': {
+        'spot': (202, 102, 123),
+        'line': (89, 28, 160),
     },
 }
 

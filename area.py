@@ -33,7 +33,7 @@ class Area():
 
     def add_clients_in_area(self, all_clients):
         self.clients = get_clients_in_area(self, all_clients)
-        assert(len(self.clients), 'FATAL! there should be clients in this area')
+        assert len(self.clients), 'FATAL! there should be clients in this area'
         if DISPLAY['areas']['add_info']: print('%d clients in area: ORIG(%d,%d) END(%d,%d) (%d x %d)' % \
                 (len(self.clients), self.origin.x, self.origin.y, self.end.x, self.end.y, self.width, self.height))
 
