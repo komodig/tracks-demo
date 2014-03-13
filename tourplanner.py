@@ -130,7 +130,7 @@ def mark_short_area_clients(surface, all_clients, cluster_min):
 def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
     surface = TourplannerSurface()
     neighbours = get_neighbours(to_merge, all_clients, surface)
-    if DISPLAY['areas']['init']:
+    if DISPLAY['areas']['merge']:
         mark_short_area_clients(surface, all_clients, cluster_min)
 
     final_area = None
@@ -160,14 +160,14 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
 
     all_clients.small_areas.append(final_area)
 
-    if DISPLAY['areas']['init']: mark_short_area_clients(surface, all_clients, cluster_min)
-    if DISPLAY['routing']['best_starter']: print_route(all_clients, final_area.tours[0])
-    if DISPLAY['areas']['slow']:
+    if DISPLAY['areas']['merge']:
+        mark_short_area_clients(surface, all_clients, cluster_min)
+        if DISPLAY['routing']['best_starter']: print_route(all_clients, final_area.tours[0])
         for nei in neighbours:
             print_area(surface, all_clients, nei.origin, nei.end)
         surface.change_route_color()
-    if DISPLAY['areas']['init']: print_area(surface, all_clients, final_area.origin, final_area.end)
-    if DISPLAY['areas']['slow']: sleep(1)
+        print_area(surface, all_clients, final_area.origin, final_area.end)
+        if DISPLAY['areas']['slow']: sleep(1)
 
     return final_area
 
@@ -189,6 +189,7 @@ def prepare_areas_with_clients(all_clients, surface):
 
 
 def optimize_areas(all_client, surface):
+    print('\noptimizing\n')
     not_mergebles = []
     while True:
         optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
@@ -244,12 +245,12 @@ if __name__ == '__main__':
 
     if TEST['level'] == 1:
         edge_test_clients(all_clients)
-    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
-    print('running %d clients...' % (len(all_clients.clients)))
+    print('init %d clients' % (len(all_clients.clients)))
     surface = TourplannerSurface()
     prepare_areas_with_clients(all_clients, surface)
     optimize_areas(all_clients, surface)
     calculate_all_tours(all_clients)
+    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
     statistics()
 
     all_clients.final_print = False if TEST['long_term'] else True

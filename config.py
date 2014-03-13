@@ -1,24 +1,24 @@
 from random import randrange
 
 INFO = {
-    'version': '1.0.1',
-    'usage': 'use <ESC> to quit and <SPACE> to pause and continue',
+    'version': '1.0.5',
+    'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
 
 SETTINGS = {
-    'clients': 20,
+    'clients': 300,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
-    'width': 800,
-    'height': 500,
+    'width': 1200,
+    'height': 700,
 }
 
 
 DIMENSION = [
 {
-    'x_factor': 0.25,
-    'y_factor': 0.25,
+    'x_factor': 0.1,
+    'y_factor': 0.1,
 },
 ]
 
@@ -27,9 +27,11 @@ DISPLAY = {
     'clients_intro': False,
     'areas': {
         'init': True,
-        'slow': True,
-        'unite_info': True,
-        'show_final': True,
+        'add_info': True,
+        'slow': False,
+        'merge': True,
+        'unite_info': False,
+        'show_final': False,
     },
     'routing': {
         'all': False,
@@ -38,7 +40,6 @@ DISPLAY = {
     },
     'clients': {
         'init': False,
-        'append': True,
     },
     'color': {
         'spot': (randrange(0,255), randrange(0,255), randrange(0,255)),

@@ -34,7 +34,7 @@ class Area():
     def add_clients_in_area(self, all_clients):
         self.clients = get_clients_in_area(self, all_clients)
         assert(len(self.clients), 'FATAL! there should be clients in this area')
-        print('%d clients in area: ORIG(%d,%d) END(%d,%d) (%d x %d)' % \
+        if DISPLAY['areas']['add_info']: print('%d clients in area: ORIG(%d,%d) END(%d,%d) (%d x %d)' % \
                 (len(self.clients), self.origin.x, self.origin.y, self.end.x, self.end.y, self.width, self.height))
 
 
@@ -61,6 +61,6 @@ def get_neighbours(area, all_clients, surface):
                 (xa.end.x == area.origin.x and xa.end.y == area.end.y):
             neighbours.append(xa)
     for show in neighbours:
-        if DISPLAY['areas']['init']: print_area(surface, all_clients, show.origin, show.end)
+        if DISPLAY['areas']['merge']: print_area(surface, all_clients, show.origin, show.end)
 
     return neighbours
