@@ -52,6 +52,17 @@ def find_best_route(all_clients, tour):
         return tour
 
 
+def factorize(clients, cluster_size_min, cluster_size_max, width, height):
+    xf = DIMENSION[0]['x_factor']
+    yf = DIMENSION[0]['y_factor']
+
+    partial_width = width * xf
+    partial_height = height * yf
+
+    assert width % partial_width == 0, 'BAD x_factor!'
+    assert height % partial_height == 0, 'BAD y_factor!'
+
+
 def get_next_area_with_clients(origin, all_clients):
     area_width = SETTINGS['width'] * DIMENSION[0]['x_factor']
     area_height = SETTINGS['height'] * DIMENSION[0]['y_factor']
@@ -246,6 +257,7 @@ def statistics():
 
 
 if __name__ == '__main__':
+    factorize(**SETTINGS)
     if DISPLAY['intro']: intro()
 
     all_clients = ClientsCollection(**SETTINGS)

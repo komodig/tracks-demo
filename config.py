@@ -1,24 +1,24 @@
 from random import randrange
 
 INFO = {
-    'version': '1.0.5',
+    'version': '1.1.0',
     'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
 
 SETTINGS = {
-    'clients': 20,
+    'clients': 500,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
-    'width': 800,
-    'height': 500,
+    'width': 1000,
+    'height': 700,
 }
 
 
 DIMENSION = [
 {
-    'x_factor': 0.2,
-    'y_factor': 0.2,
+    'x_factor': 0.1,
+    'y_factor': 0.1,
 },
 ]
 
@@ -26,17 +26,17 @@ DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'areas': {
-        'init': True,
+        'init': False,
         'add_info': True,
         'slow': False,
-        'merge': True,
+        'merge': False,
         'unite_info': True,
         'show_final': False,  # inaccurate when final merged area is not a rectangle
     },
     'routing': {
         'all': False,
         'slow': 0,
-        'best_starter': True,
+        'best_starter': False,
     },
     'clients': {
         'init': False,
@@ -57,9 +57,15 @@ DISPLAY = {
         'spot': (202, 102, 123),
         'line': (89, 28, 160),
     },
+    'blau-violett': {
+        'spot': (15, 101, 89),
+        'line': (178, 36, 199),
+    },
+    
+    
 }
 
 TEST = {
-    'long_term': False,
+    'long_term': True,
     'level': 1,
 }
