@@ -35,7 +35,7 @@ def find_best_route(all_clients, tour):
         else:
             tour.assign(next_client)
 #        tour_area = get_client_area(next_client, all_clients)
-#        print_screen_set(TourplannerSurface(), True, [None, [next_client,], True], [None, all_clients, tour_area.origin, tour_area.end])
+#        print_screen_set(TourplannerSurface(), 'ExIt', [None, [next_client,], True], [None, all_clients, tour_area.origin, tour_area.end])
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
@@ -101,10 +101,10 @@ def areas_short_of_clients(all_clients, clients_minimum):
 
 
 def unite_areas(one, other):
-    if DISPLAY['areas']['unite_info']: print('unite_areas(): 1. area at (%d,%d) (%d x %d) with %d clients' % \
-            (one.origin.x, one.origin.y, one.width, one.height, len(one.clients)))
-    if DISPLAY['areas']['unite_info']: print('unite_areas(): 2. area at (%d,%d) (%d x %d) with %d clients' % \
-            (other.origin.x, other.origin.y, other.width, other.height, len(other.clients)))
+    if DISPLAY['areas']['unite_info']: print('unite_areas(): 1. area ORIG(%d,%d) END(%d,%d) (%d x %d) with %d clients' % \
+                (one.origin.x, one.origin.y, one.end.x, one.end.y, one.width, one.height, len(one.clients)))
+    if DISPLAY['areas']['unite_info']: print('unite_areas(): 2. area ORIG(%d,%d) END(%d,%d) (%d x %d) with %d clients' % \
+                (other.origin.x, other.origin.y, other.end.x, other.end.y, other.width, other.height, len(other.clients)))
     if one.origin.x < other.origin.x or one.origin.y < other.origin.y:
         origin = one.origin
         end = other.end
@@ -113,10 +113,9 @@ def unite_areas(one, other):
         end = one.end
 
     new_area = Area(origin, end)
-    new_area.add_clients_in_area(all_clients)
-    assert (one.clients + other.clients) == new_area.clients, 'DAMN IT! united_area clients not reliable'
-    if DISPLAY['areas']['unite_info']: print('unite_areas(): 3. area at (%d,%d) (%d x %d) with %d clients' % \
-            (new_area.origin.x, new_area.origin.y, new_area.width, new_area.height, len(new_area.clients)))
+    new_area.clients = (one.clients + other.clients)
+    if DISPLAY['areas']['unite_info']: print('unite_areas(): 3. area ORIG(%d,%d) END(%d,%d) (%d x %d) with %d clients' % \
+                (new_area.origin.x, new_area.origin.y, new_area.end.x, new_area.end.y, new_area.width, new_area.height, len(new_area.clients)))
     return new_area
 
 
@@ -162,12 +161,20 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
 
     if DISPLAY['areas']['merge']:
         mark_short_area_clients(surface, all_clients, cluster_min)
-        if DISPLAY['routing']['best_starter']: print_route(all_clients, final_area.tours[0])
+        res_surface = print_route(all_clients, final_area.tours[0])
+        surface.change_color('color')
         for nei in neighbours:
             print_area(surface, all_clients, nei.origin, nei.end)
-        surface.change_route_color()
-        print_area(surface, all_clients, final_area.origin, final_area.end)
         if DISPLAY['areas']['slow']: sleep(1)
+        res_surface.change_color('color3')
+        print_screen_set(res_surface, 'GoOn', [None, to_merge.clients] , [None, None, to_merge.origin, to_merge.end], None)
+        res_surface.change_color('color2')
+        print_screen_set(res_surface, 'GoOn', [None, willing_neighbour.clients] , [None, None, willing_neighbour.origin, willing_neighbour.end], None)
+        if DISPLAY['areas']['slow']: sleep(1)
+        res_surface.change_color('color')
+
+    if DISPLAY['areas']['slow']: sleep(1)
+    handle_user_events(surface.process)
 
     return final_area
 

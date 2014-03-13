@@ -28,10 +28,10 @@ DISPLAY = {
     'areas': {
         'init': True,
         'add_info': True,
-        'slow': True,
+        'slow': False,
         'merge': True,
-        'unite_info': False,
-        'show_final': True,
+        'unite_info': True,
+        'show_final': False,  # inaccurate when final merged area is not a rectangle
     },
     'routing': {
         'all': False,

@@ -35,9 +35,9 @@ class TourplannerSurface():
 
         self.process = ProcessControl()
 
-    def change_route_color(self):
-        rgb = (0,255,0)
-        self.route_color = pygame.Color(*rgb)
+    def change_color(self, color_scheme):
+        self.client_color = pygame.Color(*DISPLAY[color_scheme]['spot'])
+        self.route_color = pygame.Color(*DISPLAY[color_scheme]['line'])
 
 
 def print_clients(tour_surface, clients, slow=False, circle=False):
@@ -68,12 +68,12 @@ def print_earlier_tours(all_clients, surface):
 def print_route(all_clients, tour):
     tour_surface = None
     if all_clients.first_print:
-        tour_surface = print_screen_set(TourplannerSurface(True), False, [None, all_clients.clients, True])
+        tour_surface = print_screen_set(TourplannerSurface(True), 'GoOn', [None, all_clients.clients, True])
         all_clients.first_print = False
         sleep(2)
         handle_user_events(tour_surface.process)
     else:
-        tour_surface = print_screen_set(TourplannerSurface(), False, [None, all_clients.clients, False])
+        tour_surface = print_screen_set(TourplannerSurface(), 'GoOn', [None, all_clients.clients, False])
 
     prev = None
     for rcli in tour.plan:
@@ -92,15 +92,16 @@ def print_route(all_clients, tour):
 
     if all_clients.final_print:
         if DISPLAY['areas']['show_final']:
-            tour_surface.change_route_color()
+            tour_surface.change_color('color1')
             for fa in all_clients.final_areas:
                 print_area(tour_surface, all_clients, fa.origin, fa.end)
         tour_surface.process.state = ProcessControl.WAIT
     handle_user_events(tour_surface.process)
+    return tour_surface
 
 
-def print_area(tour_surface, all_clients, origin, end):
-    print_clients(tour_surface, all_clients.clients, False)
+def print_area(tour_surface, clients_inside, origin, end):
+    if clients_inside: print_clients(tour_surface, clients_inside.clients, False)
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (end.x, origin.y), (end.x, end.y), 2)
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (origin.x, end.y), 2)
@@ -109,7 +110,7 @@ def print_area(tour_surface, all_clients, origin, end):
     tour_surface.fps_clock.tick(30)
 
 
-def print_screen_set(surface, exit_afterwards, p_client_param=None, p_area_param=None, p_tour_param=None):
+def print_screen_set(surface, final_action, p_client_param=None, p_area_param=None, p_tour_param=None):
     if p_client_param:
         p_client_param[0] = surface
         print_clients(*p_client_param)
@@ -118,8 +119,12 @@ def print_screen_set(surface, exit_afterwards, p_client_param=None, p_area_param
         print_area(*p_area_param)
     if p_tour_param: print_route(*p_tour_param)
 
-    if exit_afterwards: exit(7)
-    return surface
+    if final_action == 'ExIt': exit(7)
+    elif final_action == 'HaLt':
+        surface.process.state = ProcessControl.WAIT
+        handle_user_events(surface.process)
+    else:
+        return surface
 
 
 def handle_user_events(process):
@@ -157,7 +162,7 @@ def intro():
 
     order = (0, 1, 2, 3, 1, 4, 3, 0, 4)
 
-    intro_surface = print_screen_set(TourplannerSurface(), False, [None, intro_clients, False])
+    intro_surface = print_screen_set(TourplannerSurface(), 'GoOn', [None, intro_clients, False])
     for cx in range(len(order)):
         try:
             ax = order[cx]
