@@ -31,8 +31,9 @@ class Client():
 
 
 class ClientsCollection():
-    def __init__(self, clients, cluster_size_min, cluster_size_max, width, height):
+    def __init__(self, factor, num_of_clients, width, height):
         self.clients = []
+        self.factor = factor
         self.small_areas = []
         self.final_areas = []
         self.max_distance = 0.0
@@ -44,7 +45,7 @@ class ClientsCollection():
         if TEST['level'] == 2:
             self.clients = length_test_client_generator()
         else:
-            while len(self.clients) < clients:
+            while len(self.clients) < num_of_clients:
                 self.clients.append(Client(randrange(1, width), randrange(1, height)))
 
         self.get_client_distances()
@@ -102,10 +103,6 @@ def get_client_area(xclient, all_clients):
 def has_area(xclient, all_clients):
     client_area = get_client_area(xclient, all_clients)
     return (client_area is not None)
-
-
-def has_area_but_no_tour(xclient, all_clients):
-    pass
 
 
 def has_area_and_tour(xclient, all_clients):

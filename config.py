@@ -1,32 +1,25 @@
 from random import randrange
 
 INFO = {
-    'version': '1.1.0',
+    'version': '1.1.2',
     'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
 
 SETTINGS = {
-    'clients': 500,
+    'clients': 200,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
-    'width': 1000,
+    'width': 700,
     'height': 700,
 }
 
-
-DIMENSION = [
-{
-    'x_factor': 0.1,
-    'y_factor': 0.1,
-},
-]
 
 DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'areas': {
-        'init': False,
+        'init': True,
         'add_info': True,
         'slow': False,
         'merge': False,
@@ -61,11 +54,9 @@ DISPLAY = {
         'spot': (15, 101, 89),
         'line': (178, 36, 199),
     },
-    
-    
 }
 
 TEST = {
-    'long_term': True,
-    'level': 1,
+    'long_term': False,
+    'level': 0,
 }

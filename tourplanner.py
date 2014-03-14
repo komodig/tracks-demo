@@ -1,9 +1,10 @@
 from copy import deepcopy
 from time import sleep
+from math import sqrt, pow
 from client import Client, ClientsCollection, find_next, get_client_area
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
-from config import SETTINGS, INFO, TEST, DISPLAY, DIMENSION
+from config import SETTINGS, INFO, TEST, DISPLAY
 from tourplanner_test import edge_test_clients
 from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
         TourplannerSurface, handle_user_events, ProcessControl, intro
@@ -52,20 +53,23 @@ def find_best_route(all_clients, tour):
         return tour
 
 
-def factorize(clients, cluster_size_min, cluster_size_max, width, height):
-    xf = DIMENSION[0]['x_factor']
-    yf = DIMENSION[0]['y_factor']
+def factorize_float(clients, cluster_size_min, cluster_size_max, width, height):
+    factors = []
+    assert width == height, 'to use sqrt and pow here we assume width == height'
+    print('\n%d clients to go...\n' % clients)
+    for avg_clients in range(1,cluster_size_max):
+        factor = 1 / sqrt(clients / avg_clients)
+        print('factor: %f' % factor)
+        retour = clients / pow(1 / factor, 2)
+        print('avg-clients: %f' % retour)
+        factors.append(factor)
 
-    partial_width = width * xf
-    partial_height = height * yf
-
-    assert width % partial_width == 0, 'BAD x_factor!'
-    assert height % partial_height == 0, 'BAD y_factor!'
+    return factors
 
 
 def get_next_area_with_clients(origin, all_clients):
-    area_width = SETTINGS['width'] * DIMENSION[0]['x_factor']
-    area_height = SETTINGS['height'] * DIMENSION[0]['y_factor']
+    area_width = SETTINGS['width'] * all_clients.factor #DIMENSION[0]['x_factor']
+    area_height = SETTINGS['height'] * all_clients.factor #DIMENSION[0]['y_factor']
     end = Client(origin.x + area_width, origin.y + area_height)
     area = Area(origin, end)
     while not len(get_clients_in_area(area, all_clients)):
@@ -206,7 +210,7 @@ def prepare_areas_with_clients(all_clients, surface):
         handle_user_events(surface.process)
 
 
-def optimize_areas(all_client, surface):
+def optimize_areas(all_clients, surface):
     print('\noptimizing\n')
     not_mergebles = []
     while True:
@@ -224,7 +228,8 @@ def optimize_areas(all_client, surface):
 
 
 def calculate_all_tours(all_clients):
-    print('\nstart final routing\n')
+    avg = len(all_clients.clients) / pow(1 / all_clients.factor, 2)
+    print('\nstart final routing (avg: %d)\n' % avg)
     for final_area in all_clients.get_valid_areas():
         if len(final_area.tours):
             calculation = final_area.tours[0]
@@ -242,7 +247,7 @@ def calculate_all_tours(all_clients):
         handle_user_events(surface.process)
 
 
-def statistics():
+def statistics(all_clients):
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
     area_count = len(all_clients.get_valid_areas())
@@ -251,37 +256,56 @@ def statistics():
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())
+
+
+def run(all_clients, surface):
+    prepare_areas_with_clients(all_clients, surface)
+    optimize_areas(all_clients, surface)
+    calculate_all_tours(all_clients)
+
+    assert len(all_clients.get_valid_areas()) == len(all_clients.final_areas), 'SHIT! i someone is missing'
+
+    print_route(all_clients, all_clients.final_areas[-1].tours[0])
+
+
+if __name__ == '__main__':
+    if DISPLAY['intro']: intro()
+
+    factors = factorize_float(**SETTINGS)
+    print('init %d clients' % SETTINGS['clients'])
+    surface = TourplannerSurface()
+
+    all_collections = []
+    for fact in factors:
+        collection = ClientsCollection(fact, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
+        if TEST['level'] == 1:
+            edge_test_clients(collection)
+        total_length = run(collection, surface)
+        all_collections.append(collection)
+        sleep(2)
+
+    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
+
+    best_of_best = None
+    for col in all_collections:
+        if best_of_best is None or col.total_length < best_of_best.total_length:
+            best_of_best = col
+
+        statistics(col)
+        print('\n///////////////////////////////////////\n')
+
+    best_of_best.final_print = True if not TEST['long_term'] else False
+    print_route(best_of_best, best_of_best.final_areas[-1].tours[0])
+
     print('used colors:')
     print(DISPLAY['color']['spot'])
     print(DISPLAY['color']['line'])
 
-
-if __name__ == '__main__':
-    factorize(**SETTINGS)
-    if DISPLAY['intro']: intro()
-
-    all_clients = ClientsCollection(**SETTINGS)
-
-    if TEST['level'] == 1:
-        edge_test_clients(all_clients)
-    print('init %d clients' % (len(all_clients.clients)))
-    surface = TourplannerSurface()
-    prepare_areas_with_clients(all_clients, surface)
-    optimize_areas(all_clients, surface)
-    calculate_all_tours(all_clients)
-    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
-    statistics()
-
-    assert len(all_clients.get_valid_areas()) == len(all_clients.final_areas), 'SHIT! i someone is missing'
-
-    all_clients.final_print = True if not TEST['long_term'] else False
-    print_route(all_clients, all_clients.final_areas[-1].tours[0])
-
     if TEST['long_term']:
-        sleep(3)
         handle_user_events(surface.process)
         exit(3)
     else:
         surface.process.state = ProcessControl.WAIT
         handle_user_events(surface.process)
+
 
