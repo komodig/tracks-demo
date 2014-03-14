@@ -73,8 +73,8 @@ def get_next_area_with_clients(origin, all_clients):
     end = Client(origin.x + area_width, origin.y + area_height)
     area = Area(origin, end)
     while not len(get_clients_in_area(area, all_clients)):
-        if area.end.x + area_width > SETTINGS['width']:
-            if area.end.y + area_height > SETTINGS['height']:
+        if area.origin.x > SETTINGS['width']:
+            if area.origin.y > SETTINGS['height']:
                 print('END OF TOTAL AREA!')
                 return None
             # get first of lower row
