@@ -1,5 +1,4 @@
 from math import sqrt, pow
-from random import randrange
 from config import DISPLAY, TEST
 from tourplanner_test import length_test_client_generator
 
@@ -31,8 +30,8 @@ class Client():
 
 
 class ClientsCollection():
-    def __init__(self, factor, num_of_clients, width, height):
-        self.clients = []
+    def __init__(self, clients, factor, num_of_clients, width, height):
+        self.clients = clients
         self.factor = factor
         self.small_areas = []
         self.final_areas = []
@@ -44,9 +43,6 @@ class ClientsCollection():
 
         if TEST['level'] == 2:
             self.clients = length_test_client_generator()
-        else:
-            while len(self.clients) < num_of_clients:
-                self.clients.append(Client(randrange(1, width), randrange(1, height)))
 
         self.get_client_distances()
         print('\nmaximum client distance: %f\naverage client distance: %f' %(self.max_distance, self.avg_distance))

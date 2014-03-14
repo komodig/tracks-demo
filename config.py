@@ -1,17 +1,17 @@
 from random import randrange
 
 INFO = {
-    'version': '1.1.4',
+    'version': '1.1.5',
     'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
 
 SETTINGS = {
-    'clients': 200,
+    'clients': 500,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
-    'width': 700,
-    'height': 700,
+    'width': 1000,
+    'height': 1000,
 }
 
 

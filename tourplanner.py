@@ -1,3 +1,4 @@
+from random import randrange
 from copy import deepcopy
 from time import sleep
 from math import sqrt, pow
@@ -121,6 +122,11 @@ def get_average_members(all_clients):
 def areas_short_of_clients(all_clients, clients_minimum):
     wanted = all_clients.get_valid_areas()
     return [ area for area in wanted if len(area.clients) < clients_minimum ]
+
+
+def areas_too_heavy_of_clients(all_clients, clients_maximum):
+    wanted = all_clients.get_valid_areas()
+    return [ area for area in wanted if len(area.clients) > clients_maximum ]
 
 
 def unite_areas(one, other):
@@ -263,6 +269,9 @@ def statistics(all_clients):
     print('average of %d members' % get_average_members(all_clients))
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
+    too_small_areas = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
+    too_big_areas = areas_too_heavy_of_clients(all_clients, SETTINGS['cluster_size_max'])
+    print('off clustersize: %d (%d too small / %d too big)' % (len(too_small_areas) + len(too_big_areas), len(too_small_areas), len(too_big_areas)))
     print('total length: %f' % all_clients.summarize_total_length())
 
 
@@ -283,9 +292,13 @@ if __name__ == '__main__':
     print('init %d clients' % SETTINGS['clients'])
     surface = TourplannerSurface()
 
+    base_clients = []
+    while len(base_clients) < SETTINGS['clients']:
+        base_clients.append(Client(randrange(1, SETTINGS['width']), randrange(1, SETTINGS['height'])))
+
     all_collections = []
     for fact in factors:
-        collection = ClientsCollection(fact, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
+        collection = ClientsCollection(base_clients, fact, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
         if TEST['level'] == 1:
             edge_test_clients(collection)
         total_length = run(collection, surface)
