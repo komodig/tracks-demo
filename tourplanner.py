@@ -271,7 +271,8 @@ def statistics(all_clients):
     print('area members min: %d  max %d' % (l_min, l_max))
     too_small_areas = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
     too_big_areas = areas_too_heavy_of_clients(all_clients, SETTINGS['cluster_size_max'])
-    print('off clustersize: %d (%d too small / %d too big)' % (len(too_small_areas) + len(too_big_areas), len(too_small_areas), len(too_big_areas)))
+    all_clients.off_size = (len(too_small_areas) + len(too_big_areas))
+    print('off clustersize: %d (%d too small / %d too big)' % (all_clients.off_size, len(too_small_areas), len(too_big_areas)))
     print('total length: %f' % all_clients.summarize_total_length())
 
 
@@ -307,16 +308,27 @@ if __name__ == '__main__':
 
     print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
 
-    best_of_best = None
+    least_off_size = None
+    best_length = None
     for col in all_collections:
-        if best_of_best is None or col.total_length < best_of_best.total_length:
-            best_of_best = col
-
         statistics(col)
+        assert col.off_size is not None, 'CRAZY! final statistics missing: off_size!'
+        assert col.total_length, 'CRAZY! final statistics missing: total_length!'
+        if least_off_size  is None or col.off_size < least_off_size.off_size:
+            least_off_size = col
+        if best_length is None or col.total_length < best_length.total_length:
+            best_length = col
+
         print('\n///////////////////////////////////////\n')
 
-    best_of_best.final_print = True if not TEST['long_term'] else False
-    print_route(best_of_best, best_of_best.final_areas[-1].tours[0])
+    print('\nand the winner is...\n')
+    statistics(least_off_size)
+    print('\n')
+    if least_off_size == best_length:
+        print('AWESOME! best in length and least areas off-size\n')
+
+    least_off_size.final_print = True if not TEST['long_term'] else False
+    print_route(least_off_size, least_off_size.final_areas[-1].tours[0])
 
     print('used colors:')
     print(DISPLAY['color']['spot'])

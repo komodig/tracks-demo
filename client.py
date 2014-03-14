@@ -35,8 +35,7 @@ class ClientsCollection():
         self.factor = factor
         self.small_areas = []
         self.final_areas = []
-        self.max_distance = 0.0
-        self.avg_distance = 0.0
+        self.off_size = None
         self.total_length = 0.0
         self.first_print = True if DISPLAY['clients_intro'] else False
         self.final_print = False
@@ -44,8 +43,12 @@ class ClientsCollection():
         if TEST['level'] == 2:
             self.clients = length_test_client_generator()
 
-        self.get_client_distances()
-        print('\nmaximum client distance: %f\naverage client distance: %f' %(self.max_distance, self.avg_distance))
+
+    def __eq__(self, other):
+        if self.summarize_total_length() == other.summarize_total_length():
+            return True
+        else:
+            return False
 
 
     def __len__(self):
@@ -57,22 +60,12 @@ class ClientsCollection():
 
 
     def summarize_total_length(self):
-        self.total_length = 0.0
+        total_length = 0.0
         for best in self.final_areas:
-            self.total_length += best.tours[0].length()
-        return self.total_length
-
-
-    def get_client_distances(self):
-        for client in self.clients:
-            for other in self.clients:
-                dist = client.distance_to(other)
-                if dist:                            # omit zero-distance to client itself
-                    self.avg_distance += dist
-                if dist > self.max_distance:
-                    self.max_distance = dist
-
-        self.avg_distance /= (pow(len(self.clients), 2) - len(self.clients)) # minus iterations with zero-distance to client itself
+            total_length += best.tours[0].length()
+        if len(self.final_areas) == len(self.get_valid_areas()):
+            self.total_length = total_length
+        return total_length
 
 
     def get_valid_areas(self):
