@@ -87,6 +87,14 @@ def get_next_area_with_clients(origin, all_clients):
             area.origin.x += area_width
             area.end.x += area_width
 
+    while True:
+        area_clients = get_clients_in_area(area, all_clients)
+        if len(area_clients) <= SETTINGS['cluster_size_max'] or (area.end.x - area.origin.x) < area_width * 0.75:
+            break
+        else:
+            area.end.x -= area_width/10
+            print('shrinking...')
+
     return area
 
 
