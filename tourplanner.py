@@ -88,8 +88,6 @@ def get_next_area_with_clients(origin, all_clients):
             area.origin.x += area_width
             area.end.x += area_width
 
-    return area
-'''
     while True:
         area_clients = get_clients_in_area(area, all_clients)
         if len(area_clients) <= SETTINGS['cluster_size_max'] or (area.end.x - area.origin.x) < area_width * 0.75:
@@ -99,7 +97,6 @@ def get_next_area_with_clients(origin, all_clients):
             print('shrinking...')
 
     return area
-'''
 
 
 def get_min_max_members(all_clients):
@@ -124,17 +121,14 @@ def get_average_members(all_clients):
 
 def areas_overloaded_with_clients(all_clients, clients_maximum):
     wanted = all_clients.get_valid_areas()
-    return [ area for area in wanted if len(area.clients) > clients_maximum ]
+    big_areas = [ area for area in wanted if len(area.clients) > clients_maximum ]
+    return big_areas
 
 
 def areas_short_of_clients(all_clients, clients_minimum):
     wanted = all_clients.get_valid_areas()
-    return [ area for area in wanted if len(area.clients) < clients_minimum ]
-
-
-def areas_too_heavy_of_clients(all_clients, clients_maximum):
-    wanted = all_clients.get_valid_areas()
-    return [ area for area in wanted if len(area.clients) > clients_maximum ]
+    short_areas = [ area for area in wanted if len(area.clients) < clients_minimum ]
+    return short_areas
 
 
 def unite_areas(one, other):
@@ -215,8 +209,7 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
     return final_area
 
 
-def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max):
-    surface = TourplannerSurface()
+def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, recursion_max, surface):
     neighbours = get_neighbours(to_shrink, all_clients, surface)
 
     push_client = None
@@ -237,8 +230,16 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max):
                 push_client = give_away_client
 
     if best_neighbour is None:
-        print('sorry, can\'t push any clients!')
-        return None
+        if recursion_max > 0:
+            print('recursion_max: %d' % recursion_max)
+            for nei in neighbours:
+                push_res = push_to_neighbours(nei, all_clients, cluster_min, cluster_max, (recursion_max - 1), surface)
+                if push_res:
+                    return push_res
+            return None
+        else:
+            print('sorry, can\'t push any clients!')
+            return None
 
     # i append the shrinked tour to area tours instead of replacing the old tour.
     # not sure, what's the benefit besides tour history
@@ -284,6 +285,7 @@ def optimize_areas(all_clients, surface):
     print('\noptimizing by merging areas\n')
     impossibles = []
     while True:
+        print('running merge loop...')
         optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
         if len(optimize_these) - len(impossibles) == 0:
             break
@@ -295,17 +297,21 @@ def optimize_areas(all_clients, surface):
                 impossibles.append(optimizable)
 
     print('\noptimizing by pushing clients away\n')
-    impossibles = []
-    while True:
+    repetitions = 0
+    optimizations = None
+    while repetitions < 2:
+        print('running push loop...')
         optimize_these = areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max'])
-        if len(optimize_these) - len(impossibles) == 0:
-            break
+        opt_count = len(optimize_these)
+        if optimizations is not None:
+            if opt_count == optimizations:
+                repetitions += 1
+            else:
+                repetitions = 0
+        optimizations = opt_count
         for optimizable in optimize_these:
-            if optimizable in impossibles:
-                continue
-            result_push = push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'])
-            if result_push is None:
-                impossibles.append(optimizable)
+            push_surface = TourplannerSurface()
+            result_push = push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], len(all_clients.get_valid_areas()), push_surface)
 
 
 def calculate_all_tours(all_clients):
@@ -336,15 +342,19 @@ def statistics(all_clients):
     print('average of %d members' % get_average_members(all_clients))
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
-    too_small_areas = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
-    too_big_areas = areas_too_heavy_of_clients(all_clients, SETTINGS['cluster_size_max'])
-    all_clients.off_size = (len(too_small_areas) + len(too_big_areas))
-    print('off clustersize: %d (%d too small / %d too big)' % (all_clients.off_size, len(too_small_areas), len(too_big_areas)))
+
+    if all_clients.areas_too_small is not None:
+        print('off clustersize: %d (%d too small / %d too big)' % ((all_clients.areas_too_small + all_clients.areas_too_big), all_clients.areas_too_small, all_clients.areas_too_big))
+        print('now:')
+    all_clients.areas_too_small = len(areas_short_of_clients(all_clients, SETTINGS['cluster_size_min']))
+    all_clients.areas_too_big = len(areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max']))
+    print('off clustersize: %d (%d too small / %d too big)' % ((all_clients.areas_too_small + all_clients.areas_too_big), all_clients.areas_too_small, all_clients.areas_too_big))
     print('total length: %f' % all_clients.summarize_total_length())
 
 
 def run(all_clients, surface):
     prepare_areas_with_clients(all_clients, surface)
+    statistics(all_clients)
     optimize_areas(all_clients, surface)
     calculate_all_tours(all_clients)
 
@@ -389,9 +399,9 @@ if __name__ == '__main__':
     for col in all_collections:
         statistics(col)
         check_clients_unique(col)
-        assert col.off_size is not None, 'CRAZY! final statistics missing: off_size!'
+        assert col.areas_off_size() is not None, 'CRAZY! final statistics missing: off_size!'
         assert col.total_length, 'CRAZY! final statistics missing: total_length!'
-        if least_off_size  is None or col.off_size < least_off_size.off_size:
+        if least_off_size  is None or col.areas_off_size() < least_off_size.areas_off_size():
             least_off_size = col
         if best_length is None or col.total_length < best_length.total_length:
             best_length = col
@@ -405,7 +415,9 @@ if __name__ == '__main__':
         print('AWESOME! best in length and least areas off-size\n')
 
     least_off_size.final_print = True if not TEST['long_term'] else False
-    print_route(least_off_size, least_off_size.final_areas[-1].tours[-1])
+    final_surface = TourplannerSurface()
+    final_surface.change_color('gruen-violett')
+    print_screen_set(final_surface, 'GoOn', None, None, [least_off_size, least_off_size.final_areas[-1].tours[-1]])
 
     print('used colors:')
     print(DISPLAY['color']['spot'])

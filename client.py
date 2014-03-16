@@ -35,7 +35,8 @@ class ClientsCollection():
         self.factor = factor
         self.small_areas = []
         self.final_areas = []
-        self.off_size = None
+        self.areas_too_big = None
+        self.areas_too_small = None
         self.total_length = 0.0
         self.first_print = True if DISPLAY['clients_intro'] else False
         self.final_print = False
@@ -70,6 +71,13 @@ class ClientsCollection():
 
     def get_valid_areas(self):
         return [ area for area in self.small_areas if area.valid ]
+
+
+    def areas_off_size(self):
+        if self.areas_too_big is not None and self.areas_too_small is not None:
+            return (self.areas_too_big + self.areas_too_small)
+        else:
+            return None
 
 
 def find_next(client, tour, all_clients):
