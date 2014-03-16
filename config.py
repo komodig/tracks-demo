@@ -18,7 +18,8 @@ SETTINGS = {
 OPTIMIZE = {
     'shrink_areas': True,
     'merge_areas': True,
-    'push_clients': True,
+    'push_clients': False,
+    'steal_clients': True,
 }
 
 
@@ -31,6 +32,7 @@ DISPLAY = {
         'slow': False,
         'merge': False,
         'client_push': False,
+        'client_steal': False,
         'unite_info': False,
         'show_final': False,  # inaccurate when final merged area is not a rectangle
     },
@@ -65,6 +67,10 @@ DISPLAY = {
     'gruen-violett': {
         'spot': (43, 131, 50),
         'line': (157, 14, 227),
+    },
+    'violett-rot': {
+        'spot': (55, 64, 206),
+        'line': (183, 30, 41),
     },
 }
 

@@ -16,12 +16,10 @@ def do_routing(all_clients, tour, tour_surface):
     for start_client in tour.clients:
         new_tour = Tour(tour.clients, [start_client,])
         res_tour = find_best_route(all_clients, new_tour)
-        #print('tour length: %f' % res_tour.length)
         if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
-    print('best tour length: %f (%d clients)' % (best_tour.length(), len(best_tour.plan)))
     return best_tour
 
 
@@ -217,7 +215,7 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, recursi
     best_tour = None
     best_neighbour = None
     for nei in neighbours:
-        if (len(nei.clients) + 1) >= cluster_max:
+        if (len(nei.clients) + 1) > cluster_max:
             continue
 
         for give_away_client in to_shrink.clients:
@@ -244,16 +242,63 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, recursi
 
     # i append the shrinked tour to area tours instead of replacing the old tour.
     # not sure, what's the benefit besides tour history
-    best_neighbour.tours.append(best_tour)
-    best_neighbour.clients = best_tour.clients
     to_shrink.clients.remove(push_client)
     shrinked_tour = Tour(to_shrink.clients)
     best_shrinked = do_routing(all_clients, shrinked_tour, surface)
     to_shrink.tours.append(best_shrinked)
+    best_neighbour.clients.append(push_client)
+    best_neighbour.tours.append(best_tour)
 
     if DISPLAY['areas']['client_push']:
         surface.change_color('color3')
         print_screen_set(surface, 'GoOn', [None, to_shrink.clients] , [None, None, to_shrink.origin, to_shrink.end], [all_clients, to_shrink.tours[-1]])
+        if DISPLAY['areas']['slow']: sleep(1)
+        surface.change_color('color2')
+        print_screen_set(surface, 'GoOn', [None, best_neighbour.clients] , [None, None, best_neighbour.origin, best_neighbour.end], [all_clients, best_neighbour.tours[-1]])
+        if DISPLAY['areas']['slow']: sleep(1)
+        surface.change_color('color')
+
+    if DISPLAY['areas']['slow']: sleep(1)
+    handle_user_events(surface.process)
+
+    return best_neighbour
+
+
+def steal_clients_from_neighbours(thief, all_clients, cluster_min, cluster_max, surface):
+    neighbours = get_neighbours(thief, all_clients, surface)
+
+    wanted_client = None
+    best_tour = None
+    best_neighbour = None
+    for nei in neighbours:
+        if (len(nei.clients) - 1) < cluster_min:
+            continue
+
+        for steal_this in nei.clients:
+            new_clients = (thief.clients + [steal_this,])
+            bigger_tour = Tour(new_clients)
+            res_tour = do_routing(all_clients, bigger_tour, surface)
+
+            if best_tour is None or res_tour < best_tour:
+                best_neighbour = nei
+                best_tour = res_tour
+                wanted_client = steal_this
+
+    if best_neighbour is None:
+        return None
+
+    test_len = len(best_neighbour.clients)
+    best_neighbour.clients.remove(wanted_client)
+    assert len(best_neighbour.clients) + 1 == test_len, 'FUCK! failed to remove client'
+    new_neighbour_tour = Tour(best_neighbour.clients)
+    res_tour = do_routing(all_clients, new_neighbour_tour, surface)
+    best_neighbour.tours.append(res_tour)
+    thief.clients.append(wanted_client)
+    thief.tours.append(best_tour)
+
+    if DISPLAY['areas']['client_steal']:
+        surface.change_color('color3')
+        print_screen_set(surface, 'GoOn', [None, thief.clients] , [None, None, thief.origin, thief.end], [all_clients, thief.tours[-1]])
         if DISPLAY['areas']['slow']: sleep(1)
         surface.change_color('color2')
         print_screen_set(surface, 'GoOn', [None, best_neighbour.clients] , [None, None, best_neighbour.origin, best_neighbour.end], [all_clients, best_neighbour.tours[-1]])
@@ -301,20 +346,38 @@ def optimize_areas(all_clients, surface):
     if OPTIMIZE['push_clients']:
         print('\noptimizing by pushing clients away\n')
         repetitions = 0
-        optimizations = None
+        opt_count_before = None
         while repetitions < 2:
             print('running push loop...')
             optimize_these = areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max'])
             opt_count = len(optimize_these)
-            if optimizations is not None:
-                if opt_count == optimizations:
+            if opt_count_before is not None:
+                if opt_count == opt_count_before:
                     repetitions += 1
                 else:
                     repetitions = 0
-            optimizations = opt_count
+            opt_count_before = opt_count
             for optimizable in optimize_these:
                 push_surface = TourplannerSurface()
-                result_push = push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], len(all_clients.get_valid_areas()), push_surface)
+                push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], 100, push_surface)
+
+    if OPTIMIZE['steal_clients']:
+        print('\noptimizing by stealing clients\n')
+        no_success = 0
+        while no_success < 3:
+            print('running steal loop...')
+            failed = success = 0
+            optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
+            for optimizable in optimize_these:
+                steal_surface = TourplannerSurface()
+                res_steal = steal_clients_from_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], steal_surface)
+                if res_steal:
+                    success += 1
+                else:
+                    failed += 1
+            print('successful: %d failed: %d' % (success, failed))
+            if success == 0:
+                no_success += 1
 
 
 def calculate_all_tours(all_clients):
@@ -331,6 +394,7 @@ def calculate_all_tours(all_clients):
         # here area -> tours needed
         final_tour = Tour(final_area.clients)
         best_tour = do_routing(all_clients, final_tour, surface)
+        print('best tour length: %f (%d clients)' % (best_tour.length(), len(best_tour.plan)))
         final_area.tours = [best_tour,]
         all_clients.final_areas.append(final_area)
 
@@ -373,7 +437,13 @@ def check_clients_unique(clients_collection):
         for fin_area in clients_collection.final_areas:
             if xcli in fin_area.tours[-1].plan:
                 found += 1
-        assert found == 1, 'FATAL! Client in multiple plans'
+                if xcli not in fin_area.clients:
+                    print('OOOPS! plan-client not in area-clients')
+        try:
+            assert found == 1, 'FATAL! Client in multiple plans'
+        except AssertionError:
+            print('FATAL! Client in multiple plans')
+            exit(1)
 
 
 if __name__ == '__main__':
@@ -420,7 +490,7 @@ if __name__ == '__main__':
 
     least_off_size.final_print = True if not TEST['long_term'] else False
     final_surface = TourplannerSurface()
-    final_surface.change_color('gruen-violett')
+    final_surface.change_color('violett-rot')
     print_screen_set(final_surface, 'GoOn', None, None, [least_off_size, least_off_size.final_areas[-1].tours[-1]])
 
     print('used colors:')
