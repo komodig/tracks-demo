@@ -439,11 +439,7 @@ def check_clients_unique(clients_collection):
                 found += 1
                 if xcli not in fin_area.clients:
                     print('OOOPS! plan-client not in area-clients')
-        try:
-            assert found == 1, 'FATAL! Client in multiple plans'
-        except AssertionError:
-            print('FATAL! Client in multiple plans')
-            exit(1)
+        assert found == 1, 'FATAL! Client in multiple plans'
 
 
 if __name__ == '__main__':
