@@ -57,7 +57,7 @@ def print_clients(tour_surface, clients, slow=False, circle=False):
 def print_earlier_tours(all_clients, surface):
     previous = None
     for earlier in all_clients.final_areas:
-        area_tour = earlier.tours[0]
+        area_tour = earlier.tours[-1]
         for assigned in area_tour.plan:
             if previous is not None:
                 pygame.draw.line(surface.surface, surface.route_color, previous.coords(), assigned.coords(), 2)
@@ -65,15 +65,19 @@ def print_earlier_tours(all_clients, surface):
         previous = None
 
 
-def print_route(all_clients, tour):
-    tour_surface = None
+def print_route(all_clients, tour, tour_surface=None):
+    slowly = False
     if all_clients.first_print:
-        tour_surface = print_screen_set(TourplannerSurface(True), 'GoOn', [None, all_clients.clients, True])
+        tour_surface = TourplannerSurface(True)
+        slowly = True
         all_clients.first_print = False
         sleep(2)
         handle_user_events(tour_surface.process)
-    else:
-        tour_surface = print_screen_set(TourplannerSurface(), 'GoOn', [None, all_clients.clients, False])
+
+    if tour_surface is None:
+        tour_surface = TourplannerSurface()
+
+    tour_surface = print_screen_set(tour_surface, 'GoOn', [None, all_clients.clients, slowly])
 
     prev = None
     for rcli in tour.plan:
@@ -117,7 +121,12 @@ def print_screen_set(surface, final_action, p_client_param=None, p_area_param=No
     if p_area_param:
         p_area_param[0] = surface
         print_area(*p_area_param)
-    if p_tour_param: print_route(*p_tour_param)
+    if p_tour_param:
+        if len(p_tour_param) == 2:
+            p_tour_param.append(surface)
+        else:
+            p_tour_param[2] = surface
+        print_route(*p_tour_param)
 
     if final_action == 'ExIt': exit(7)
     elif final_action == 'HaLt':

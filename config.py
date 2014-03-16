@@ -11,7 +11,7 @@ SETTINGS = {
     'cluster_size_min': 5,
     'cluster_size_max': 7,
     'width': 1000,
-    'height': 1000,
+    'height': 700,
 }
 
 
@@ -19,11 +19,12 @@ DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'areas': {
-        'init': True,
+        'init': False,
         'add_info': True,
         'slow': False,
         'merge': False,
-        'unite_info': True,
+        'client_push': False,
+        'unite_info': False,
         'show_final': False,  # inaccurate when final merged area is not a rectangle
     },
     'routing': {
@@ -54,9 +55,13 @@ DISPLAY = {
         'spot': (15, 101, 89),
         'line': (178, 36, 199),
     },
+    'gruen-violett': {
+        'spot': (43, 131, 50),
+        'line': (157, 14, 227),
+    },
 }
 
 TEST = {
-    'long_term': False,
+    'long_term': True,
     'level': 0,
 }

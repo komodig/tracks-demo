@@ -62,7 +62,7 @@ class ClientsCollection():
     def summarize_total_length(self):
         total_length = 0.0
         for best in self.final_areas:
-            total_length += best.tours[0].length()
+            total_length += best.tours[-1].length()
         if len(self.final_areas) == len(self.get_valid_areas()):
             self.total_length = total_length
         return total_length
