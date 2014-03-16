@@ -18,7 +18,7 @@ SETTINGS = {
 OPTIMIZE = {
     'shrink_areas': True,
     'merge_areas': True,
-    'push_clients': False,
+    'push_clients': True,
     'steal_clients': True,
 }
 

@@ -179,7 +179,6 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
             willing_neighbour = nei
 
     if final_area is None:
-        print('sorry, can\'t unite!')
         return None
 
     # deleting still referenced objects is difficult, so we use valid-flag:
@@ -208,7 +207,15 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
     return final_area
 
 
-def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, recursion_max, surface):
+def was_in_tour_before(client, area):
+    for at in area.tours:
+        if client in at.clients:
+            return True
+
+    return False
+
+
+def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, surface):
     neighbours = get_neighbours(to_shrink, all_clients, surface)
 
     push_client = None
@@ -219,6 +226,8 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, recursi
             continue
 
         for give_away_client in to_shrink.clients:
+            if was_in_tour_before(give_away_client, nei):
+                break
             new_neighbour_clients = nei.clients + [give_away_client,]
             nei_tour = Tour(new_neighbour_clients)
             res_tour = do_routing(all_clients, nei_tour, surface)
@@ -229,16 +238,7 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, recursi
                 push_client = give_away_client
 
     if best_neighbour is None:
-        if recursion_max > 0:
-            print('recursion_max: %d' % recursion_max)
-            for nei in neighbours:
-                push_res = push_to_neighbours(nei, all_clients, cluster_min, cluster_max, (recursion_max - 1), surface)
-                if push_res:
-                    return push_res
-            return None
-        else:
-            print('sorry, can\'t push any clients!')
-            return None
+        return None
 
     # i append the shrinked tour to area tours instead of replacing the old tour.
     # not sure, what's the benefit besides tour history
@@ -345,21 +345,21 @@ def optimize_areas(all_clients, surface):
 
     if OPTIMIZE['push_clients']:
         print('\noptimizing by pushing clients away\n')
-        repetitions = 0
-        opt_count_before = None
-        while repetitions < 2:
+        no_success = 0
+        while no_success < 3:
             print('running push loop...')
+            failed = success = 0
             optimize_these = areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max'])
-            opt_count = len(optimize_these)
-            if opt_count_before is not None:
-                if opt_count == opt_count_before:
-                    repetitions += 1
-                else:
-                    repetitions = 0
-            opt_count_before = opt_count
             for optimizable in optimize_these:
                 push_surface = TourplannerSurface()
-                push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], 100, push_surface)
+                res_push = push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], push_surface)
+                if res_push:
+                    success += 1
+                else:
+                    failed += 1
+            print('successful: %d failed: %d' % (success, failed))
+            if success == 0:
+                no_success += 1
 
     if OPTIMIZE['steal_clients']:
         print('\noptimizing by stealing clients\n')
