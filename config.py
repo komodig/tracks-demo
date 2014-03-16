@@ -15,6 +15,13 @@ SETTINGS = {
 }
 
 
+OPTIMIZE = {
+    'shrink_areas': True,
+    'merge_areas': True,
+    'push_clients': True,
+}
+
+
 DISPLAY = {
     'intro': True,
     'clients_intro': False,
@@ -60,6 +67,7 @@ DISPLAY = {
         'line': (157, 14, 227),
     },
 }
+
 
 TEST = {
     'long_term': True,

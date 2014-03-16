@@ -5,7 +5,7 @@ from math import sqrt, pow
 from client import Client, ClientsCollection, find_next, get_client_area
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
-from config import SETTINGS, INFO, TEST, DISPLAY
+from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
 from tourplanner_test import edge_test_clients
 from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
         TourplannerSurface, handle_user_events, ProcessControl, intro
@@ -88,13 +88,14 @@ def get_next_area_with_clients(origin, all_clients):
             area.origin.x += area_width
             area.end.x += area_width
 
-    while True:
-        area_clients = get_clients_in_area(area, all_clients)
-        if len(area_clients) <= SETTINGS['cluster_size_max'] or (area.end.x - area.origin.x) < area_width * 0.75:
-            break
-        else:
-            area.end.x -= area_width/10
-            print('shrinking...')
+    if OPTIMIZE['shrink_areas']:
+        while True:
+            area_clients = get_clients_in_area(area, all_clients)
+            if len(area_clients) <= SETTINGS['cluster_size_max'] or (area.end.x - area.origin.x) < area_width * 0.75:
+                break
+            else:
+                area.end.x -= area_width/10
+                print('shrinking...')
 
     return area
 
@@ -282,36 +283,38 @@ def prepare_areas_with_clients(all_clients, surface):
 
 
 def optimize_areas(all_clients, surface):
-    print('\noptimizing by merging areas\n')
-    impossibles = []
-    while True:
-        print('running merge loop...')
-        optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
-        if len(optimize_these) - len(impossibles) == 0:
-            break
-        for optimizable in optimize_these:
-            if not optimizable.valid or optimizable in impossibles:
-                continue
-            result = merge_with_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'])
-            if result is None:
-                impossibles.append(optimizable)
+    if OPTIMIZE['merge_areas']:
+        print('\noptimizing by merging areas\n')
+        impossibles = []
+        while True:
+            print('running merge loop...')
+            optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
+            if len(optimize_these) - len(impossibles) == 0:
+                break
+            for optimizable in optimize_these:
+                if not optimizable.valid or optimizable in impossibles:
+                    continue
+                result = merge_with_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'])
+                if result is None:
+                    impossibles.append(optimizable)
 
-    print('\noptimizing by pushing clients away\n')
-    repetitions = 0
-    optimizations = None
-    while repetitions < 2:
-        print('running push loop...')
-        optimize_these = areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max'])
-        opt_count = len(optimize_these)
-        if optimizations is not None:
-            if opt_count == optimizations:
-                repetitions += 1
-            else:
-                repetitions = 0
-        optimizations = opt_count
-        for optimizable in optimize_these:
-            push_surface = TourplannerSurface()
-            result_push = push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], len(all_clients.get_valid_areas()), push_surface)
+    if OPTIMIZE['push_clients']:
+        print('\noptimizing by pushing clients away\n')
+        repetitions = 0
+        optimizations = None
+        while repetitions < 2:
+            print('running push loop...')
+            optimize_these = areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max'])
+            opt_count = len(optimize_these)
+            if optimizations is not None:
+                if opt_count == optimizations:
+                    repetitions += 1
+                else:
+                    repetitions = 0
+            optimizations = opt_count
+            for optimizable in optimize_these:
+                push_surface = TourplannerSurface()
+                result_push = push_to_neighbours(optimizable, all_clients, SETTINGS['cluster_size_min'], SETTINGS['cluster_size_max'], len(all_clients.get_valid_areas()), push_surface)
 
 
 def calculate_all_tours(all_clients):
@@ -343,6 +346,7 @@ def statistics(all_clients):
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
 
+    # FIXME: how can areas off-clustersize count more than total area_count?!?
     if all_clients.areas_too_small is not None:
         print('off clustersize: %d (%d too small / %d too big)' % ((all_clients.areas_too_small + all_clients.areas_too_big), all_clients.areas_too_small, all_clients.areas_too_big))
         print('now:')
