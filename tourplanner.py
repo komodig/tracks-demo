@@ -129,6 +129,14 @@ def areas_short_of_clients(all_clients, clients_minimum):
     return short_areas
 
 
+def areas_with_client_count(all_clients, count):
+    wanted = all_clients.get_valid_areas()
+    wanted_areas = [ area for area in wanted if len(area.clients) == count ]
+    for war in wanted_areas:
+        assert len(war.clients) == len(war.tours[-1].clients), 'OOOPS! amount of clients differs area != tour'
+    return wanted_areas
+
+
 def unite_areas(one, other):
     if DISPLAY['areas']['unite_info']: print('unite_areas(): 1. area ORIG(%d,%d) END(%d,%d) (%d x %d) with %d clients' % \
                 (one.origin.x, one.origin.y, one.end.x, one.end.y, one.width, one.height, len(one.clients)))
@@ -213,6 +221,7 @@ def was_in_tour_before(client, area):
     return False
 
 
+# NOTE: this function may result in area-clients with physical location beyond area dimension
 def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, surface):
     neighbours = get_neighbours(to_shrink, all_clients, surface)
 
@@ -260,6 +269,7 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, surface
     return best_neighbour
 
 
+# NOTE: this function may result in area-clients with physical location beyond area dimension
 def steal_clients_from_neighbours(thief, all_clients, cluster_min, cluster_max, surface):
     neighbours = get_neighbours(thief, all_clients, surface)
 
@@ -342,7 +352,7 @@ def optimize_areas(all_clients, surface):
     if OPTIMIZE['push_clients']:
         print('\noptimizing by pushing clients away\n')
         no_success = 0
-        while no_success < 3:
+        while no_success < 2:
             print('running push loop...')
             failed = success = 0
             optimize_these = areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max'])
@@ -360,7 +370,7 @@ def optimize_areas(all_clients, surface):
     if OPTIMIZE['steal_clients']:
         print('\noptimizing by stealing clients\n')
         no_success = 0
-        while no_success < 3:
+        while no_success < 2:
             print('running steal loop...')
             failed = success = 0
             optimize_these = areas_short_of_clients(all_clients, SETTINGS['cluster_size_min'])
@@ -401,22 +411,31 @@ def statistics(all_clients, replay=False):
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
     area_count = len(all_clients.get_valid_areas())
-    print('results in %d areas with %d clients' % (area_count, len(all_clients.clients)))
+    print(' %d areas/tours and %d clients' % (area_count, len(all_clients.clients)))
     fac = SETTINGS['clients'] / pow(1 / all_clients.factor, 2)
-    print('average of %d members (%d by factor)' % (get_average_members(all_clients), fac))
+    print(' average of %d members (%d by factor)' % (get_average_members(all_clients), fac))
     l_min, l_max = get_min_max_members(all_clients)
-    print('area members min: %d  max %d' % (l_min, l_max))
-    print('total length: %f' % all_clients.summarize_total_length())
+    print(' tour members min: %d  max %d' % (l_min, l_max))
+    print('\n total length: %f' % all_clients.summarize_total_length())
 
     if not replay:
         too_short = len(areas_short_of_clients(all_clients, SETTINGS['cluster_size_min']))
         too_big = len(areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max']))
         all_clients.areas_too_small.append(too_short)
         all_clients.areas_too_big.append(too_big)
-    print('\n all areas progression:')
+    print('\n tour size progression:')
     for his in range(len(all_clients.areas_too_small)):
-        print(' areas off-size: %d (%d too small / %d too big)' % \
+        print(' tours off-size: %d (%d too small / %d too big)' % \
                 ((all_clients.areas_too_small[his] + all_clients.areas_too_big[his]), all_clients.areas_too_small[his], all_clients.areas_too_big[his]))
+    if replay:
+        print('')
+        cmin = l_min if l_min < SETTINGS['cluster_size_min'] else SETTINGS['cluster_size_min']
+        cmax = l_max if l_max > SETTINGS['cluster_size_max'] else SETTINGS['cluster_size_max']
+        for cnt in range(cmin, cmax + 1):
+            acount = len(areas_with_client_count(all_clients, cnt))
+            if cnt == SETTINGS['cluster_size_min']: print('- - - - - - - - - - - - - - - -')
+            print(' tours with size %d = %d' % (cnt, acount))
+            if cnt == SETTINGS['cluster_size_max']: print('- - - - - - - - - - - - - - - -')
 
 
 def run_client_collection(all_clients, surface):
@@ -478,7 +497,7 @@ if __name__ == '__main__':
 
         print('\n///////////////////////////////////////\n')
 
-    print('\nand the winner is...\n')
+    print('\n and the winner is...\n')
     statistics(least_off_size, True)
     print('\n')
     if least_off_size == best_length:
