@@ -1,7 +1,7 @@
 from random import randrange
 
 INFO = {
-    'version': '1.1.6',
+    'version': '1.1.7',
     'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
