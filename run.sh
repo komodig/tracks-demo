@@ -1,11 +1,27 @@
 #!/bin/bash
+
+runs=1
+
 while true
 do
-    python tourplanner.py
+    echo ""
+    echo "  beginning run $runs"
+    echo ""
 
-    if [ $? -eq 0 -o $? -eq 1 -o $? -eq 7 ]
+    python tourplanner.py
+    ret=$?
+
+    echo ""
+    echo "================================="
+    echo "  finished run $runs  (exit($ret))"
+    echo "================================="
+
+    if [ $ret -eq 0 -o $ret -eq 1 -o $ret -eq 7 ]
     then
         break
     fi
+
+    sleep 2
+    let runs++
 done
 

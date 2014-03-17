@@ -494,7 +494,7 @@ if __name__ == '__main__':
     print(DISPLAY['color']['line'])
 
     if TEST['long_term']:
-        sleep(3)
+        sleep(2)
         handle_user_events(surface.process)
         exit(3)
     else:
