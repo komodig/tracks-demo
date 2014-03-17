@@ -7,11 +7,11 @@ INFO = {
 
 
 SETTINGS = {
-    'clients': 500,
+    'clients': 200,
     'cluster_size_min': 5,
     'cluster_size_max': 7,
-    'width': 1000,
-    'height': 700,
+    'width': 1400,
+    'height': 1000,
 }
 
 
@@ -27,7 +27,7 @@ DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'areas': {
-        'init': False,
+        'init': True,
         'add_info': True,
         'slow': False,
         'merge': False,

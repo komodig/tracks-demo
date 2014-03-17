@@ -11,12 +11,12 @@ from tourplanner_graphics import print_route, print_area, print_clients, print_s
         TourplannerSurface, handle_user_events, ProcessControl, intro
 
 
-def do_routing(all_clients, tour, tour_surface):
+def do_routing(all_clients, tour):
     best_tour = None
     for start_client in tour.clients:
         new_tour = Tour(tour.clients, [start_client,])
         res_tour = find_best_route(all_clients, new_tour)
-        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour) #, tour_surface)
+        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
@@ -34,8 +34,7 @@ def find_best_route(all_clients, tour):
             return tour
         else:
             tour.assign(next_client)
-#        tour_area = get_client_area(next_client, all_clients)
-#        print_screen_set(TourplannerSurface(), 'ExIt', [None, [next_client,], True], [None, all_clients, tour_area.origin, tour_area.end])
+
         if DISPLAY['routing']['all']: print_route(all_clients, tour)
         a = find_best_route(all_clients, tour)
 
@@ -59,8 +58,6 @@ def factorize_float(clients, cluster_size_min, cluster_size_max, width, height):
     for avg_clients in range(2, cluster_size_max):
         factor = 1 / sqrt(clients / avg_clients)
         print('factor: %f' % factor)
-        retour = clients / pow(1 / factor, 2)
-        print('avg-clients (approximately): %f' % retour)
         factors.append(factor)
 
     return factors
@@ -89,7 +86,9 @@ def get_next_area_with_clients(origin, all_clients):
     if OPTIMIZE['shrink_areas']:
         while True:
             area_clients = get_clients_in_area(area, all_clients)
-            if len(area_clients) <= SETTINGS['cluster_size_max'] or (area.end.x - area.origin.x) < area_width * 0.75:
+            if len(area_clients) <= SETTINGS['cluster_size_max'] \
+                    or (area.end.x - area.origin.x) < area_width * 0.75 \
+                    or area.end.x >= SETTINGS['width']:
                 break
             else:
                 area.end.x -= area_width/10
@@ -171,10 +170,9 @@ def merge_with_neighbours(to_merge, all_clients, cluster_min, cluster_max):
         united_area = unite_areas(to_merge, nei)
         # here area -> tours needed
         united_tour = Tour(united_area.clients)
-        best_united = do_routing(all_clients, united_tour, surface)
+        best_united = do_routing(all_clients, united_tour)
         if final_area is None or best_united < final_area.tours[-1]:
             united_area.tours = [best_united,]
-            assert len(united_area.tours) == 1, 'BUT HOW? multi-tours not implemented yet!'
             final_area = united_area
             willing_neighbour = nei
 
@@ -230,7 +228,7 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, surface
                 break
             new_neighbour_clients = nei.clients + [give_away_client,]
             nei_tour = Tour(new_neighbour_clients)
-            res_tour = do_routing(all_clients, nei_tour, surface)
+            res_tour = do_routing(all_clients, nei_tour)
 
             if best_tour is None or res_tour < best_tour:
                 best_neighbour = nei
@@ -240,11 +238,9 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, surface
     if best_neighbour is None:
         return None
 
-    # i append the shrinked tour to area tours instead of replacing the old tour.
-    # not sure, what's the benefit besides tour history
     to_shrink.clients.remove(push_client)
     shrinked_tour = Tour(to_shrink.clients)
-    best_shrinked = do_routing(all_clients, shrinked_tour, surface)
+    best_shrinked = do_routing(all_clients, shrinked_tour)
     to_shrink.tours.append(best_shrinked)
     best_neighbour.clients.append(push_client)
     best_neighbour.tours.append(best_tour)
@@ -277,7 +273,7 @@ def steal_clients_from_neighbours(thief, all_clients, cluster_min, cluster_max, 
         for steal_this in nei.clients:
             new_clients = (thief.clients + [steal_this,])
             bigger_tour = Tour(new_clients)
-            res_tour = do_routing(all_clients, bigger_tour, surface)
+            res_tour = do_routing(all_clients, bigger_tour)
 
             if best_tour is None or res_tour < best_tour:
                 best_neighbour = nei
@@ -291,7 +287,7 @@ def steal_clients_from_neighbours(thief, all_clients, cluster_min, cluster_max, 
     best_neighbour.clients.remove(wanted_client)
     assert len(best_neighbour.clients) + 1 == test_len, 'FUCK! failed to remove client'
     new_neighbour_tour = Tour(best_neighbour.clients)
-    res_tour = do_routing(all_clients, new_neighbour_tour, surface)
+    res_tour = do_routing(all_clients, new_neighbour_tour)
     best_neighbour.tours.append(res_tour)
     thief.clients.append(wanted_client)
     thief.tours.append(best_tour)
@@ -393,7 +389,7 @@ def calculate_all_tours(all_clients):
 
         # here area -> tours needed
         final_tour = Tour(final_area.clients)
-        best_tour = do_routing(all_clients, final_tour, surface)
+        best_tour = do_routing(all_clients, final_tour)
         print('best tour length: %f (%d clients)' % (best_tour.length(), len(best_tour.plan)))
         final_area.tours = [best_tour,]
         all_clients.final_areas.append(final_area)
@@ -405,19 +401,22 @@ def statistics(all_clients):
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
     area_count = len(all_clients.get_valid_areas())
-    print('results in %d areas on %d x %d screen' % (area_count, SETTINGS['width'], SETTINGS['height']))
-    print('average of %d members' % get_average_members(all_clients))
+    print('results in %d areas with %d clients' % (area_count, len(all_clients.clients)))
+    fac = SETTINGS['clients'] / pow(1 / all_clients.factor, 2)
+    print('average of %d members (%d by factor)' % (get_average_members(all_clients), fac))
     l_min, l_max = get_min_max_members(all_clients)
     print('area members min: %d  max %d' % (l_min, l_max))
-
-    # FIXME: how can areas off-clustersize count more than total area_count?!?
-    if all_clients.areas_too_small is not None:
-        print('off clustersize: %d (%d too small / %d too big)' % ((all_clients.areas_too_small + all_clients.areas_too_big), all_clients.areas_too_small, all_clients.areas_too_big))
-        print('now:')
-    all_clients.areas_too_small = len(areas_short_of_clients(all_clients, SETTINGS['cluster_size_min']))
-    all_clients.areas_too_big = len(areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max']))
-    print('off clustersize: %d (%d too small / %d too big)' % ((all_clients.areas_too_small + all_clients.areas_too_big), all_clients.areas_too_small, all_clients.areas_too_big))
     print('total length: %f' % all_clients.summarize_total_length())
+
+    too_short = len(areas_short_of_clients(all_clients, SETTINGS['cluster_size_min']))
+    too_big = len(areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max']))
+    if all_clients.areas_too_small is not None:
+        print('before:\noff clustersize: %d (%d too small / %d too big)' % ((all_clients.areas_too_small + all_clients.areas_too_big), all_clients.areas_too_small, all_clients.areas_too_big))
+        print('after optimizing:')
+    else:
+        all_clients.areas_too_small = too_short
+        all_clients.areas_too_big = too_big
+    print('off clustersize: %d (%d too small / %d too big)' % ((too_short + too_big), too_short, too_big))
 
 
 def run(all_clients, surface):
