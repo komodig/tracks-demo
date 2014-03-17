@@ -425,7 +425,7 @@ def run(all_clients, surface):
     optimize_areas(all_clients, surface)
     calculate_all_tours(all_clients)
 
-    assert len(all_clients.get_valid_areas()) == len(all_clients.final_areas), 'SHIT! i someone is missing'
+    assert len(all_clients.get_valid_areas()) == len(all_clients.final_areas), 'SHIT! someone is missing'
 
     print_route(all_clients, all_clients.final_areas[-1].tours[-1])
 
@@ -470,7 +470,8 @@ if __name__ == '__main__':
         check_clients_unique(col)
         assert col.areas_off_size() is not None, 'CRAZY! final statistics missing: off_size!'
         assert col.total_length, 'CRAZY! final statistics missing: total_length!'
-        if least_off_size  is None or col.areas_off_size() < least_off_size.areas_off_size():
+        if least_off_size is None or col.areas_off_size() < least_off_size.areas_off_size() \
+                or (col.areas_off_size() == least_off_size.areas_off_size() and col.total_length < least_off_size.total_length):
             least_off_size = col
         if best_length is None or col.total_length < best_length.total_length:
             best_length = col
@@ -478,6 +479,7 @@ if __name__ == '__main__':
         print('\n///////////////////////////////////////\n')
 
     print('\nand the winner is...\n')
+    # FIXME: doesn't show collection with real least-off-size areas :-(
     statistics(least_off_size)
     print('\n')
     if least_off_size == best_length:

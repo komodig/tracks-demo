@@ -1,15 +1,15 @@
 from random import randrange
 
 INFO = {
-    'version': '1.1.5',
+    'version': '1.1.6',
     'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
 
 SETTINGS = {
-    'clients': 200,
-    'cluster_size_min': 5,
-    'cluster_size_max': 7,
+    'clients': 1200,
+    'cluster_size_min': 4,
+    'cluster_size_max': 8,
     'width': 1400,
     'height': 1000,
 }
@@ -27,7 +27,7 @@ DISPLAY = {
     'intro': True,
     'clients_intro': False,
     'areas': {
-        'init': True,
+        'init': False,
         'add_info': True,
         'slow': False,
         'merge': False,
