@@ -397,7 +397,7 @@ def calculate_all_tours(all_clients):
         handle_user_events(surface.process)
 
 
-def statistics(all_clients):
+def statistics(all_clients, replay=False):
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
     area_count = len(all_clients.get_valid_areas())
@@ -408,18 +408,18 @@ def statistics(all_clients):
     print('area members min: %d  max %d' % (l_min, l_max))
     print('total length: %f' % all_clients.summarize_total_length())
 
-    too_short = len(areas_short_of_clients(all_clients, SETTINGS['cluster_size_min']))
-    too_big = len(areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max']))
-    if all_clients.areas_too_small is not None:
-        print('before:\noff clustersize: %d (%d too small / %d too big)' % ((all_clients.areas_too_small + all_clients.areas_too_big), all_clients.areas_too_small, all_clients.areas_too_big))
-        print('after optimizing:')
-    else:
-        all_clients.areas_too_small = too_short
-        all_clients.areas_too_big = too_big
-    print('off clustersize: %d (%d too small / %d too big)' % ((too_short + too_big), too_short, too_big))
+    if not replay:
+        too_short = len(areas_short_of_clients(all_clients, SETTINGS['cluster_size_min']))
+        too_big = len(areas_overloaded_with_clients(all_clients, SETTINGS['cluster_size_max']))
+        all_clients.areas_too_small.append(too_short)
+        all_clients.areas_too_big.append(too_big)
+    print('\n all areas progression:')
+    for his in range(len(all_clients.areas_too_small)):
+        print(' areas off-size: %d (%d too small / %d too big)' % \
+                ((all_clients.areas_too_small[his] + all_clients.areas_too_big[his]), all_clients.areas_too_small[his], all_clients.areas_too_big[his]))
 
 
-def run(all_clients, surface):
+def run_client_collection(all_clients, surface):
     prepare_areas_with_clients(all_clients, surface)
     statistics(all_clients)
     optimize_areas(all_clients, surface)
@@ -457,7 +457,7 @@ if __name__ == '__main__':
         collection = ClientsCollection(base_clients, fact, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
         if TEST['level'] == 1:
             edge_test_clients(collection)
-        total_length = run(collection, surface)
+        total_length = run_client_collection(collection, surface)
         all_collections.append(collection)
         sleep(2)
 
@@ -479,8 +479,7 @@ if __name__ == '__main__':
         print('\n///////////////////////////////////////\n')
 
     print('\nand the winner is...\n')
-    # FIXME: doesn't show collection with real least-off-size areas :-(
-    statistics(least_off_size)
+    statistics(least_off_size, True)
     print('\n')
     if least_off_size == best_length:
         print('AWESOME! best in length and least areas off-size\n')

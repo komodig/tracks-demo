@@ -35,8 +35,8 @@ class ClientsCollection():
         self.factor = factor
         self.small_areas = []
         self.final_areas = []
-        self.areas_too_big = None
-        self.areas_too_small = None
+        self.areas_too_big = []
+        self.areas_too_small = []
         self.total_length = 0.0
         self.first_print = True if DISPLAY['clients_intro'] else False
         self.final_print = False
@@ -74,8 +74,8 @@ class ClientsCollection():
 
 
     def areas_off_size(self):
-        if self.areas_too_big is not None and self.areas_too_small is not None:
-            return (self.areas_too_big + self.areas_too_small)
+        if len(self.areas_too_big) and len(self.areas_too_small):
+            return (self.areas_too_big[-1] + self.areas_too_small[-1])
         else:
             return None
 
