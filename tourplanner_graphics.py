@@ -40,10 +40,20 @@ class TourplannerSurface():
         self.route_color = pygame.Color(*DISPLAY[color_scheme]['line'])
 
 
+def scaled_radius(clients, cluster_size_min, cluster_size_max, width, height):
+    space_per_client = width * height / clients
+    print('space per client: %d' % space_per_client)
+    if space_per_client < 500:
+        return 1
+    elif space_per_client < 1000:
+        return 2
+    else:
+        return 3
+
+
 def print_clients(tour_surface, clients, slow=False, circle=False):
     width = 2 if circle else 0
-    dotsize = 3 if len(clients) <= 500 else 2
-    radius = 16 if circle else 3
+    radius = 16 if circle else scaled_radius(**SETTINGS)
     color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
         pygame.draw.circle(tour_surface.surface, color, client.coords(), radius, width)
