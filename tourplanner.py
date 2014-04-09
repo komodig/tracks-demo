@@ -221,7 +221,7 @@ def was_in_tour_before(client, area):
     return False
 
 
-# NOTE: this function may result in area-clients with physical location beyond area dimension
+# NOTE: this function may result in area-clients with physical location in another area
 def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, surface):
     neighbours = get_neighbours(to_shrink, all_clients, surface)
 
@@ -269,7 +269,7 @@ def push_to_neighbours(to_shrink, all_clients, cluster_min, cluster_max, surface
     return best_neighbour
 
 
-# NOTE: this function may result in area-clients with physical location beyond area dimension
+# NOTE: this function may result in area-clients with physical location in another area
 def steal_clients_from_neighbours(thief, all_clients, cluster_min, cluster_max, surface):
     neighbours = get_neighbours(thief, all_clients, surface)
 

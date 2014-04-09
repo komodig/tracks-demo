@@ -10,8 +10,8 @@ SETTINGS = {
     'clients': 600,
     'cluster_size_min': 5,
     'cluster_size_max': 8,
-    'width': 1400,
-    'height': 1000,
+    'width': 500,
+    'height': 400,
 }
 
 
