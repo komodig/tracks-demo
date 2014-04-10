@@ -7,11 +7,11 @@ INFO = {
 
 
 SETTINGS = {
-    'clients': 600,
+    'clients': 500,
     'cluster_size_min': 5,
     'cluster_size_max': 8,
-    'width': 500,
-    'height': 400,
+    'width': 700,
+    'height': 500,
 }
 
 
@@ -76,6 +76,6 @@ DISPLAY = {
 
 
 TEST = {
-    'long_term': True,
+    'long_term': False,
     'level': 0,
 }

@@ -385,6 +385,15 @@ def optimize_areas(all_clients, surface):
             if success == 0:
                 no_success += 1
 
+'''
+    if OPTIMIZE['client_exchange']:
+        print('\noptimizing by client exchange\n')
+        for x_of_all in all_clients.get_valid_areas():
+            surface = TourplannerSurface()
+            neighbours = get_neighbours(x_of_all, all_clients, surface)
+            for n_area in neighbours:
+'''
+
 
 def calculate_all_tours(all_clients):
     avg = len(all_clients.clients) / pow(1 / all_clients.factor, 2)

@@ -29,7 +29,7 @@ class Tour():
                 tour_length += tcli.distance_to(last)
                 last = tcli
 
-        if len(self.plan) == len(self.clients):
+        if not self.final_length and len(self.plan) == len(self.clients):
             self.final_length = tour_length
 
         return tour_length
