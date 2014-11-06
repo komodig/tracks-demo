@@ -3,6 +3,7 @@ from copy import deepcopy
 from time import sleep
 from math import sqrt, pow
 from client import Client, ClientsCollection, find_next, get_client_area
+from utils import hash_client_list, load_clients_file, save_clients_file
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
 from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
@@ -447,6 +448,22 @@ def statistics(all_clients, replay=False):
             if cnt == SETTINGS['cluster_size_max']: print('- - - - - - - - - - - - - - - -')
 
 
+def load_or_create_clients_list():
+    unpickled = load_clients_file()
+    if unpickled is None:
+        base_clients = []
+        while len(base_clients) < SETTINGS['clients']:
+            newc = Client(randrange(1, SETTINGS['width']), randrange(1, SETTINGS['height']))
+            if newc not in base_clients:
+                base_clients.append(newc)
+
+        save_clients_file(base_clients)
+
+        return base_clients
+    else:
+        return unpickled
+
+
 def run_client_collection(all_clients, surface):
     prepare_areas_with_clients(all_clients, surface)
     statistics(all_clients)
@@ -476,9 +493,10 @@ if __name__ == '__main__':
     print('init %d clients' % SETTINGS['clients'])
     surface = TourplannerSurface()
 
-    base_clients = []
-    while len(base_clients) < SETTINGS['clients']:
-        base_clients.append(Client(randrange(1, SETTINGS['width']), randrange(1, SETTINGS['height'])))
+    base_clients = load_or_create_clients_list()
+
+    base_hash = hash_client_list(base_clients)
+    print("base hash: %d" % base_hash)
 
     all_collections = []
     for fact in factors:

@@ -19,6 +19,11 @@ class Client():
         return False if other is None else (self.x == other.x and self.y == other.y)
 
 
+    def __hash__(self):
+        hstr = '%d%d%d%d' % (self.x, int(pow(self.x,2)), self.y, int(pow(self.y,2)))
+        return int(hstr)
+
+
     def coords(self):
         return (self.x, self.y)
 

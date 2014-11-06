@@ -6,12 +6,17 @@ INFO = {
 }
 
 
+FILES = {
+    'pickled_clients': 'clients.bin',
+}
+
+
 SETTINGS = {
-    'clients': 500,
-    'cluster_size_min': 5,
-    'cluster_size_max': 8,
-    'width': 700,
-    'height': 500,
+    'clients': 300,
+    'cluster_size_min': 4,
+    'cluster_size_max': 7,
+    'width': 1024,
+    'height': 768,
 }
 
 
