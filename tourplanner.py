@@ -513,7 +513,7 @@ if __name__ == '__main__':
         collection = ClientsCollection(base_clients, fact, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
         if TEST['level'] == 1:
             edge_test_clients(collection)
-        total_length = run_client_collection(collection, surface)
+        run_client_collection(collection, surface)
         all_collections.append(collection)
         sleep(2)
 
