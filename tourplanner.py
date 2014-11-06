@@ -334,7 +334,7 @@ def prepare_areas_with_clients(all_clients, surface):
         handle_user_events(surface.process)
 
 
-def optimize_areas(all_clients, surface):
+def optimize_areas_merge(all_clients):
     if OPTIMIZE['merge_areas']:
         print('\noptimizing by merging areas\n')
         impossibles = []
@@ -350,6 +350,8 @@ def optimize_areas(all_clients, surface):
                 if result is None:
                     impossibles.append(optimizable)
 
+
+def optimize_areas_push(all_clients):
     if OPTIMIZE['push_clients']:
         print('\noptimizing by pushing clients away\n')
         no_success = 0
@@ -368,6 +370,8 @@ def optimize_areas(all_clients, surface):
             if success == 0:
                 no_success += 1
 
+
+def optimize_areas_steal(all_clients):
     if OPTIMIZE['steal_clients']:
         print('\noptimizing by stealing clients\n')
         no_success = 0
@@ -385,6 +389,12 @@ def optimize_areas(all_clients, surface):
             print('successful: %d failed: %d' % (success, failed))
             if success == 0:
                 no_success += 1
+
+
+def optimize_areas(all_clients, surface):
+    optimize_areas_merge(all_clients)
+    optimize_areas_push(all_clients)
+    optimize_areas_steal(all_clients)
 
 '''
     if OPTIMIZE['client_exchange']:
