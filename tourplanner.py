@@ -3,7 +3,7 @@ from copy import deepcopy
 from time import sleep
 from math import sqrt, pow
 from client import Client, ClientsCollection, find_next, get_client_area
-from utils import hash_client_list, load_clients_file, save_clients_file
+from utils import load_clients_file, save_clients_file
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
 from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
@@ -504,9 +504,6 @@ if __name__ == '__main__':
     surface = TourplannerSurface()
 
     base_clients = load_or_create_clients_list()
-
-    base_hash = hash_client_list(base_clients)
-    print("base hash: %d" % base_hash)
 
     all_collections = []
     for fact in factors:
