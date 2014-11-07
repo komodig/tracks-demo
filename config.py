@@ -1,7 +1,7 @@
 from random import randrange
 
 INFO = {
-    'version': '1.2.0',
+    'version': '1.2.1',
     'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
@@ -12,7 +12,7 @@ FILES = {
 
 
 SETTINGS = {
-    'clients': 300,
+    'clients': 311,
     'cluster_size_min': 4,
     'cluster_size_max': 7,
     'width': 1024,
