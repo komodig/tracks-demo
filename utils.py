@@ -1,4 +1,5 @@
 import pickle
+import json
 from config import SETTINGS, INFO, FILES
 
 
@@ -69,3 +70,17 @@ def save_clients_file(clients_list):
         pickle.dump(tpb, fh)
 
     print('saved clients to file: \'%s\'' % FILES['pickled_clients'])
+
+
+def load_json_file():
+    with open('/tmp/tour.json') as jf:
+        user_data = jf.readline()
+
+
+def export_clients_json(clients_list):
+    cli_dicts = {}
+    for cl in clients_list:
+        cli_dicts.update(cl.__dict__)
+    print json.dumps(cli_dicts)
+
+

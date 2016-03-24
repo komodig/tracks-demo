@@ -48,7 +48,7 @@ class TourplannerSurface():
 
 def scaled_radius(clients, cluster_size_min, cluster_size_max, width, height):
     space_per_client = width * height / clients
-    print('space per client: %d' % space_per_client)
+    #print('space per client: %d' % space_per_client)
     if space_per_client < 500:
         return 1
     elif space_per_client < 1000:

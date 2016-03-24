@@ -2,7 +2,7 @@ from random import randrange
 from copy import deepcopy
 from time import sleep
 from client import Client, ClientsCollection, find_next, get_client_area
-from utils import load_clients_file, save_clients_file
+from utils import load_clients_file, save_clients_file, load_json_file, export_clients_json
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
 from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
@@ -94,33 +94,6 @@ def areas_with_client_count(all_clients, count):
     return wanted_areas
 
 
-def unite_areas(one, other):
-    if DISPLAY['areas']['unite_info']: print('unite_areas(): 1. area ORIG(%d,%d) END(%d,%d) (%d x %d) with %d clients' % \
-                (one.origin.x, one.origin.y, one.end.x, one.end.y, one.width, one.height, len(one.clients)))
-    if DISPLAY['areas']['unite_info']: print('unite_areas(): 2. area ORIG(%d,%d) END(%d,%d) (%d x %d) with %d clients' % \
-                (other.origin.x, other.origin.y, other.end.x, other.end.y, other.width, other.height, len(other.clients)))
-    if one.origin.x < other.origin.x or one.origin.y < other.origin.y:
-        origin = one.origin
-        end = other.end
-    else:
-        origin = other.origin
-        end = one.end
-
-    new_area = Area(origin, end)
-    new_area.clients = (one.clients + other.clients)
-    # TODO: accurate dimensions for non-rectangular areas
-    if DISPLAY['areas']['unite_info']: print('unite_areas(): 3. area ORIG(%d,%d) END(%d,%d) (%d x %d) with %d clients' % \
-                (new_area.origin.x, new_area.origin.y, new_area.end.x, new_area.end.y, new_area.width, new_area.height, len(new_area.clients)))
-    return new_area
-
-
-def mark_short_area_clients(surface, all_clients, cluster_min):
-    print_clients(surface, all_clients.clients)
-    mark_these = areas_short_of_clients(all_clients, cluster_min)
-    for xsarea in mark_these:
-        print_clients(surface, xsarea.clients, False, True)
-
-
 def calculate_all_tours(all_clients):
     avg = len(all_clients.clients) / pow(1 / all_clients.factor, 2)
     print('\nstart final routing (avg: %d)\n' % avg)
@@ -173,7 +146,7 @@ def statistics(all_clients, replay=False):
             if cnt == SETTINGS['cluster_size_max']: print('- - - - - - - - - - - - - - - -')
 
 
-def load_or_create_clients_list():
+def load_clients_list():
     unpickled = load_clients_file()
     if unpickled is None:
         base_clients = []
@@ -187,6 +160,10 @@ def load_or_create_clients_list():
         return base_clients
     else:
         return unpickled
+
+
+def get_user_clients():
+    pass
 
 
 def check_clients_unique(clients_collection):
@@ -214,7 +191,8 @@ if __name__ == '__main__':
 
     print('init %d clients' % SETTINGS['clients'])
     surface = TourplannerSurface()
-    base_clients = load_or_create_clients_list()
+    base_clients = load_clients_list()   #get_user_clients()
+    export_clients_json(base_clients)
     collection = ClientsCollection(base_clients, 1, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
     area = Area(Client(0,0), Client(SETTINGS['width'], SETTINGS['height']))
     collection.small_areas = [area,]
