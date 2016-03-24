@@ -9,6 +9,9 @@ from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
 from tourplanner_test import edge_test_clients
 from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
         TourplannerSurface, handle_user_events, ProcessControl, intro
+from pygame import image, Surface # save image to disk
+from StringIO import StringIO     # save image to disk
+from PIL import Image             # save image to disk
 
 
 def do_routing(all_clients, tour):
@@ -197,6 +200,15 @@ def check_clients_unique(clients_collection):
         assert found == 1, 'FATAL! Client in multiple plans'
 
 
+def export_as_file(surface, fs_path):
+    print('saveing result as image: \'%s\'' % fs_path)
+    image.save(surface.surface, '/tmp/pygame.jpg')
+    data = image.tostring(surface.surface, 'RGBA')
+    img = Image.fromstring('RGBA', (SETTINGS['width'], SETTINGS['height']), data)
+    zdata = StringIO()
+    img.save(zdata, 'JPEG')
+
+
 if __name__ == '__main__':
     if DISPLAY['intro']: intro()
 
@@ -214,14 +226,7 @@ if __name__ == '__main__':
     surface.change_color('violett-rot')
     print_screen_set(surface, 'GoOn', [None, collection.clients] , None, [collection, collection.final_areas[-1].tours[-1]])
 
-    from pygame import image, Surface
-    from StringIO import StringIO
-    from PIL import Image
-    image.save(surface.surface, '/tmp/pygame.jpg')
-    data = image.tostring(surface.surface, 'RGBA')
-    img = Image.fromstring('RGBA', (1024,768), data)
-    zdata = StringIO()
-    img.save(zdata, 'JPEG')
+    export_as_file(surface, '/tmp/pygame.jpg')
 
     #surface.process.state = ProcessControl.WAIT
     #handle_user_events(surface.process)
