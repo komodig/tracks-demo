@@ -439,7 +439,16 @@ if __name__ == '__main__':
     surface.change_color('violett-rot')
     print_screen_set(surface, 'GoOn', [None, collection.clients] , None, [collection, collection.final_areas[-1].tours[-1]])
 
-    surface.process.state = ProcessControl.WAIT
-    handle_user_events(surface.process)
+    from pygame import image, Surface
+    from StringIO import StringIO
+    from PIL import Image
+    image.save(surface.surface, '/tmp/pygame.jpg')
+    data = image.tostring(surface.surface, 'RGBA')
+    img = Image.fromstring('RGBA', (1024,768), data)
+    zdata = StringIO()
+    img.save(zdata, 'JPEG')
+
+    #surface.process.state = ProcessControl.WAIT
+    #handle_user_events(surface.process)
 
 
