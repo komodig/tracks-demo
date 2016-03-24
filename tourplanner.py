@@ -1,7 +1,6 @@
 from random import randrange
 from copy import deepcopy
 from time import sleep
-from math import sqrt, pow
 from client import Client, ClientsCollection, find_next, get_client_area
 from utils import load_clients_file, save_clients_file
 from tour import Tour
@@ -50,52 +49,6 @@ def find_best_route(all_clients, tour):
         return a if a < b else b
     else:
         return tour
-
-
-def factorize_float(clients, cluster_size_min, cluster_size_max, width, height):
-    factors = []
-    #assert width == height, 'to use sqrt and pow here we assume width == height'
-    print('\n%d clients to go...\n' % clients)
-    for avg_clients in range(2, cluster_size_max):
-        factor = 1 / sqrt(clients / avg_clients)
-        print('factor: %f' % factor)
-        factors.append(factor)
-
-    return factors
-
-
-def get_next_area_with_clients(origin, all_clients):
-    area_width = SETTINGS['width'] * all_clients.factor #DIMENSION[0]['x_factor']
-    area_height = SETTINGS['height'] * all_clients.factor #DIMENSION[0]['y_factor']
-    end = Client(origin.x + area_width, origin.y + area_height)
-    area = Area(origin, end)
-    while not len(get_clients_in_area(area, all_clients)):
-        if area.origin.x > SETTINGS['width']:
-            if area.origin.y > SETTINGS['height']:
-                print('END OF TOTAL AREA!')
-                return None
-            # get first of lower row
-            area.origin.x = 0
-            area.origin.y += area_height
-            area.end.x = area_width
-            area.end.y += area_height
-        else:
-            # get one to the right
-            area.origin.x += area_width
-            area.end.x += area_width
-
-    if OPTIMIZE['shrink_areas']:
-        while True:
-            area_clients = get_clients_in_area(area, all_clients)
-            if len(area_clients) <= SETTINGS['cluster_size_max'] \
-                    or (area.end.x - area.origin.x) < area_width * 0.75 \
-                    or area.end.x >= SETTINGS['width']:
-                break
-            else:
-                area.end.x -= area_width/10
-                print('shrinking...')
-
-    return area
 
 
 def get_min_max_members(all_clients):
@@ -318,22 +271,6 @@ def steal_clients_from_neighbours(thief, all_clients, cluster_min, cluster_max, 
     return best_neighbour
 
 
-def prepare_areas_with_clients(all_clients, surface):
-    small_area = Area(Client(0, 0), Client(0, 0))
-
-    while True:
-        last_end = Client(small_area.end.x, small_area.origin.y)
-        small_area = get_next_area_with_clients(last_end, all_clients)
-        if small_area is None:
-            break
-        else:
-            small_area.add_clients_in_area(all_clients)
-
-        if DISPLAY['areas']['init']: print_area(surface, all_clients, small_area.origin, small_area.end)
-        all_clients.small_areas.append(small_area)
-        handle_user_events(surface.process)
-
-
 def optimize_areas_merge(all_clients):
     if OPTIMIZE['merge_areas']:
         print('\noptimizing by merging areas\n')
@@ -392,10 +329,10 @@ def optimize_areas_steal(all_clients):
 
 
 def optimize_areas(all_clients, surface):
-    optimize_areas_merge(all_clients)
-    optimize_areas_push(all_clients)
-    optimize_areas_steal(all_clients)
-
+    #optimize_areas_merge(all_clients)
+    #optimize_areas_push(all_clients)
+    #optimize_areas_steal(all_clients)
+    pass
 '''
     if OPTIMIZE['client_exchange']:
         print('\noptimizing by client exchange\n')
@@ -474,17 +411,6 @@ def load_or_create_clients_list():
         return unpickled
 
 
-def run_client_collection(all_clients, surface):
-    prepare_areas_with_clients(all_clients, surface)
-    statistics(all_clients)
-    optimize_areas(all_clients, surface)
-    calculate_all_tours(all_clients)
-
-    assert len(all_clients.get_valid_areas()) == len(all_clients.final_areas), 'SHIT! someone is missing'
-
-    print_route(all_clients, all_clients.final_areas[-1].tours[-1])
-
-
 def check_clients_unique(clients_collection):
     for xcli in clients_collection.clients:
         found = 0
@@ -499,59 +425,21 @@ def check_clients_unique(clients_collection):
 if __name__ == '__main__':
     if DISPLAY['intro']: intro()
 
-    factors = factorize_float(**SETTINGS)
     print('init %d clients' % SETTINGS['clients'])
     surface = TourplannerSurface()
-
     base_clients = load_or_create_clients_list()
+    collection = ClientsCollection(base_clients, 1, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
+    area = Area(Client(0,0), Client(SETTINGS['width'], SETTINGS['height']))
+    collection.small_areas = [area,]
+    area.add_clients_in_area(collection)
+    statistics(collection)
+    calculate_all_tours(collection)
+    print_route(collection, collection.final_areas[-1].tours[-1])
 
-    all_collections = []
-    for fact in factors:
-        collection = ClientsCollection(base_clients, fact, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
-        if TEST['level'] == 1:
-            edge_test_clients(collection)
-        run_client_collection(collection, surface)
-        all_collections.append(collection)
-        sleep(2)
+    surface.change_color('violett-rot')
+    print_screen_set(surface, 'GoOn', [None, collection.clients] , None, [collection, collection.final_areas[-1].tours[-1]])
 
-    print('\n*\n*   tourplanner (version: %s)\n*\n*   %s\n*\n' % (INFO['version'], INFO['usage']))
-
-    least_off_size = None
-    best_length = None
-    for col in all_collections:
-        statistics(col)
-        check_clients_unique(col)
-        assert col.areas_off_size() is not None, 'CRAZY! final statistics missing: off_size!'
-        assert col.total_length, 'CRAZY! final statistics missing: total_length!'
-        if least_off_size is None or col.areas_off_size() < least_off_size.areas_off_size() \
-                or (col.areas_off_size() == least_off_size.areas_off_size() and col.total_length < least_off_size.total_length):
-            least_off_size = col
-        if best_length is None or col.total_length < best_length.total_length:
-            best_length = col
-
-        print('\n///////////////////////////////////////\n')
-
-    print('\n and the winner is...\n')
-    statistics(least_off_size, True)
-    print('\n')
-    if least_off_size == best_length:
-        print('AWESOME! best in length and least areas off-size\n')
-
-    least_off_size.final_print = True if not TEST['long_term'] else False
-    final_surface = TourplannerSurface()
-    final_surface.change_color('violett-rot')
-    print_screen_set(final_surface, 'GoOn', None, None, [least_off_size, least_off_size.final_areas[-1].tours[-1]])
-
-    print('used colors:')
-    print(DISPLAY['color']['spot'])
-    print(DISPLAY['color']['line'])
-
-    if TEST['long_term']:
-        sleep(2)
-        handle_user_events(surface.process)
-        exit(3)
-    else:
-        surface.process.state = ProcessControl.WAIT
-        handle_user_events(surface.process)
+    surface.process.state = ProcessControl.WAIT
+    handle_user_events(surface.process)
 
 

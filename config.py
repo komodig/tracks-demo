@@ -12,29 +12,29 @@ FILES = {
 
 
 SETTINGS = {
-    'clients': 311,
-    'cluster_size_min': 4,
-    'cluster_size_max': 7,
+    'clients': 5,
+    'cluster_size_min': 5,
+    'cluster_size_max': 5,
     'width': 1024,
     'height': 768,
 }
 
 
 OPTIMIZE = {
-    'shrink_areas': True,
-    'merge_areas': True,
-    'push_clients': True,
-    'steal_clients': True,
+    'shrink_areas': False,
+    'merge_areas': False,
+    'push_clients': False,
+    'steal_clients': False,
 }
 
 
 DISPLAY = {
-    'intro': True,
+    'intro': False,
     'clients_intro': False,
     'areas': {
         'init': False,
         'add_info': True,
-        'slow': False,
+        'slow': True,
         'merge': False,
         'client_push': False,
         'client_steal': False,
