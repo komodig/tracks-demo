@@ -12,9 +12,9 @@ FILES = {
 
 
 SETTINGS = {
-    'clients': 5,
-    'cluster_size_min': 5,
-    'cluster_size_max': 5,
+    'clients': 9,
+    'cluster_size_min': 9,
+    'cluster_size_max': 9,
     'width': 1024,
     'height': 768,
 }
