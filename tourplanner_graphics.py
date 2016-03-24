@@ -24,6 +24,10 @@ class TourplannerSurface():
         self.emph_color = pygame.Color(255,255,255)
         self.fps_clock = pygame.time.Clock()
 
+        # Fill background
+        background = pygame.Surface(self.surface.get_size())
+        background = background.convert()
+        background.fill((255, 255, 255))
 
         if self.show_msg:
             self.font_color = pygame.Color(100,150,60)
@@ -32,6 +36,8 @@ class TourplannerSurface():
             self.msg_rect = self.surface_msg.get_rect()
             self.msg_rect.topleft = (250,200)
             self.surface.blit(self.surface_msg, self.msg_rect)
+        else:
+            self.surface.blit(background, (0,0))
 
         self.process = ProcessControl()
 

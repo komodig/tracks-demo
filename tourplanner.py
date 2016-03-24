@@ -223,7 +223,7 @@ if __name__ == '__main__':
     calculate_all_tours(collection)
     print_route(collection, collection.final_areas[-1].tours[-1])
 
-    surface.change_color('violett-rot')
+    surface.change_color('color2')
     print_screen_set(surface, 'GoOn', [None, collection.clients] , None, [collection, collection.final_areas[-1].tours[-1]])
 
     export_as_file(surface, '/tmp/pygame.jpg')
