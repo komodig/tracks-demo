@@ -179,11 +179,11 @@ def check_clients_unique(clients_collection):
 
 def export_as_file(surface, fs_path):
     print('saveing result as image: \'%s\'' % fs_path)
-    image.save(surface.surface, '/tmp/pygame.jpg')
+    image.save(surface.surface, fs_path)
     data = image.tostring(surface.surface, 'RGBA')
     img = Image.fromstring('RGBA', (SETTINGS['width'], SETTINGS['height']), data)
     zdata = StringIO()
-    img.save(zdata, 'JPEG')
+    img.save(zdata, 'PNG')
 
 
 if __name__ == '__main__':
@@ -204,7 +204,7 @@ if __name__ == '__main__':
     surface.change_color('color2')
     print_screen_set(surface, 'GoOn', [None, collection.clients] , None, [collection, collection.final_areas[-1].tours[-1]])
 
-    export_as_file(surface, '/tmp/pygame.jpg')
+    export_as_file(surface, '/tmp/pygame.png')
 
     #surface.process.state = ProcessControl.WAIT
     #handle_user_events(surface.process)

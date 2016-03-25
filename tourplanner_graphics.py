@@ -25,7 +25,7 @@ class TourplannerSurface():
         self.fps_clock = pygame.time.Clock()
 
         # Fill background
-        background = pygame.Surface(self.surface.get_size())
+        background = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA, 32)
         background = background.convert()
         background.fill((255, 255, 255))
 
