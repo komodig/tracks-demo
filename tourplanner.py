@@ -180,12 +180,7 @@ def check_clients_unique(clients_collection):
 def export_as_file(surface, fs_path):
     print('saving result as image: \'%s\'' % fs_path)
     surf = surface.surface
-    print(surf.get_alpha())
     image.save(surf, fs_path)
-    data = image.tostring(surf, 'RGBA')
-    img = Image.fromstring('RGBA', (SETTINGS['width'], SETTINGS['height']), data)
-    zdata = StringIO()
-    img.save(zdata, 'PNG')
 
 
 if __name__ == '__main__':
