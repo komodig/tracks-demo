@@ -26,8 +26,9 @@ class TourplannerSurface():
 
         # Fill background
         background = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA, 32)
-        background = background.convert()
         background.fill((255, 255, 255))
+        #background.set_colorkey((255,255,255))
+        #background = background.convert_alpha()
 
         if self.show_msg:
             self.font_color = pygame.Color(100,150,60)
