@@ -4,6 +4,7 @@ from pygame.locals import *
 from config import SETTINGS, INFO, DISPLAY
 from client import Client
 from copy import copy
+from utils import export_as_file
 
 class ProcessControl():
     WAIT  = 0
@@ -92,18 +93,15 @@ def print_earlier_tours(all_clients, surface):
         previous = None
 
 
-def print_route(display_surface, all_clients, tour, tour_surface=None):
+def print_route(display_surface, all_clients, tour):
     display_clear(display_surface)
     slowly = False
+    tour_surface = TourplannerSurface(display_surface)
     if all_clients.first_print:
-        tour_surface = TourplannerSurface(display_surface)
         slowly = True
         all_clients.first_print = False
         sleep(2)
         handle_user_events(tour_surface.process)
-
-    if tour_surface is None:
-        tour_surface = TourplannerSurface(display_surface)
 
     if all_clients.final_print:
         tour_surface.change_color('color2')
@@ -130,7 +128,7 @@ def print_route(display_surface, all_clients, tour, tour_surface=None):
             tour_surface.change_color('color2')
             for fa in all_clients.final_areas:
                 print_area(tour_surface, all_clients, fa.origin, fa.end)
-        tour_surface.process.state = ProcessControl.WAIT
+        #tour_surface.process.state = ProcessControl.WAIT
     handle_user_events(tour_surface.process)
 
     return tour_surface

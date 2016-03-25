@@ -2,16 +2,13 @@ from random import randrange
 from copy import deepcopy
 from time import sleep
 from client import Client, ClientsCollection, find_next, get_client_area
-from utils import load_clients_file, save_clients_file, load_json_file
+from utils import load_clients_file, save_clients_file, load_json_file, export_as_file
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
 from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
 from tourplanner_test import edge_test_clients
 from tourplanner_graphics import print_route, print_area, pygame_init, \
         TourplannerSurface, handle_user_events, ProcessControl, intro
-from pygame import image, Surface # save image to disk
-from StringIO import StringIO     # save image to disk
-from PIL import Image             # save image to disk
 
 
 def do_routing(display_surface, all_clients, tour):
@@ -177,17 +174,11 @@ def check_clients_unique(clients_collection):
         assert found == 1, 'FATAL! Client in multiple plans'
 
 
-def export_as_file(surface, fs_path):
-    print('saving result as image: \'%s\'' % fs_path)
-    surf = surface.surface
-    image.save(surf, fs_path)
-
-
 if __name__ == '__main__':
     print('init %d clients' % SETTINGS['clients'])
     display_surface = pygame_init()
     if DISPLAY['intro']: intro(display_surface)
-    
+
     base_clients = load_clients_list()   #get_user_clients()
     collection = ClientsCollection(base_clients, 1, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
     area = Area(Client(0,0), Client(SETTINGS['width'], SETTINGS['height']))

@@ -1,6 +1,7 @@
 import pickle
 import json
 from config import SETTINGS, INFO, FILES
+from pygame import image # save image to disk
 
 
 class TourPlannerBase():
@@ -82,5 +83,11 @@ def export_clients_json(clients_list):
     for cl in clients_list:
         cli_dicts.update(cl.__dict__)
     print json.dumps(cli_dicts)
+
+
+def export_as_file(surface, fs_path):
+    print('saving result as image: \'%s\'' % fs_path)
+    surf = surface.surface
+    image.save(surf, fs_path)
 
 
