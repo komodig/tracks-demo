@@ -12,9 +12,9 @@ FILES = {
 
 
 SETTINGS = {
-    'clients': 9,
-    'cluster_size_min': 9,
-    'cluster_size_max': 9,
+    'clients': 5,
+    'cluster_size_min': 5,
+    'cluster_size_max': 5,
     'width': 1024,
     'height': 768,
 }
@@ -43,8 +43,8 @@ DISPLAY = {
     },
     'routing': {
         'all': False,
-        'slow': 0,
-        'best_starter': False,
+        'slow': 0.5,
+        'best_starter': True,
     },
     'clients': {
         'init': False,

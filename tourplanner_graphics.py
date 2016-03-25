@@ -15,20 +15,17 @@ class ProcessControl():
 
 
 class TourplannerSurface():
-    def __init__(self, show_msg=False):
-        pygame.init()
+    def __init__(self, display_surface, show_msg=False):
         self.show_msg = show_msg
-        self.surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
         self.client_color = pygame.Color(*DISPLAY['color']['spot'])
         self.route_color = pygame.Color(*DISPLAY['color']['line'])
         self.emph_color = pygame.Color(255,255,255)
         self.fps_clock = pygame.time.Clock()
+        self.surface = pygame.Surface(display_surface.get_size(), pygame.SRCALPHA, 32)
 
-        # Fill background
-        background = pygame.Surface(self.surface.get_size(), pygame.SRCALPHA, 32)
-        background.fill((255, 255, 255))
-        #background.set_colorkey((255,255,255))
-        #background = background.convert_alpha()
+        self.surface.fill((255,0,255))
+        self.surface.set_colorkey((255,0,255))
+        self.surface = self.surface.convert_alpha()
 
         if self.show_msg:
             self.font_color = pygame.Color(100,150,60)
@@ -36,15 +33,31 @@ class TourplannerSurface():
             self.surface_msg = self.font.render(INFO['usage'], False, self.font_color)
             self.msg_rect = self.surface_msg.get_rect()
             self.msg_rect.topleft = (250,200)
-            self.surface.blit(self.surface_msg, self.msg_rect)
-        else:
-            self.surface.blit(background, (0,0))
+            display_surface.blit(self.surface_msg, self.msg_rect)
 
         self.process = ProcessControl()
 
     def change_color(self, color_scheme):
         self.client_color = pygame.Color(*DISPLAY[color_scheme]['spot'])
         self.route_color = pygame.Color(*DISPLAY[color_scheme]['line'])
+
+
+def pygame_init():
+    pygame.init()
+    surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
+
+    return surface
+
+
+def display_clear(display_surface):
+    display_surface.fill((255,255,255))
+    pygame.display.update()
+
+
+def display_update(display_surf, other_surf):
+    display_surf.blit(other_surf.surface, (0,0))
+    pygame.display.update()
+    other_surf.fps_clock.tick(30)
 
 
 def scaled_radius(clients, cluster_size_min, cluster_size_max, width, height):
@@ -64,11 +77,8 @@ def print_clients(tour_surface, clients, slow=False, circle=False):
     color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
         pygame.draw.circle(tour_surface.surface, color, client.coords(), radius, width)
-        if slow:
-            pygame.display.update()
-            tour_surface.fps_clock.tick(30)
-    if not slow:
-        pygame.display.update()
+
+    return tour_surface
 
 
 def print_earlier_tours(all_clients, surface):
@@ -82,42 +92,47 @@ def print_earlier_tours(all_clients, surface):
         previous = None
 
 
-def print_route(all_clients, tour, tour_surface=None):
+def print_route(display_surface, all_clients, tour, tour_surface=None):
+    display_clear(display_surface)
     slowly = False
     if all_clients.first_print:
-        tour_surface = TourplannerSurface(True)
+        tour_surface = TourplannerSurface(display_surface)
         slowly = True
         all_clients.first_print = False
         sleep(2)
         handle_user_events(tour_surface.process)
 
     if tour_surface is None:
-        tour_surface = TourplannerSurface()
+        tour_surface = TourplannerSurface(display_surface)
 
-    tour_surface = print_screen_set(tour_surface, 'GoOn', [None, all_clients.clients, slowly])
+    if all_clients.final_print:
+        tour_surface.change_color('color2')
+
+    tour_surface = print_clients(tour_surface, all_clients.clients, False)
 
     prev = None
     for rcli in tour.plan:
         if not prev:
             prev = rcli
             continue
-        print_earlier_tours(all_clients, tour_surface)
+#        print_earlier_tours(all_clients, tour_surface)
+#        tour_surface = print_clients(tour_surface, all_clients.clients, False)
         pygame.draw.line(tour_surface.surface, tour_surface.route_color, prev.coords(), rcli.coords(), 2)
         prev = rcli
 
-    pygame.display.update()
-    tour_surface.fps_clock.tick(30)
+    display_update(display_surface, tour_surface)
     seconds = DISPLAY['routing']['slow']
     if seconds:
         sleep(seconds)
 
     if all_clients.final_print:
         if DISPLAY['areas']['show_final']:
-            tour_surface.change_color('color1')
+            tour_surface.change_color('color2')
             for fa in all_clients.final_areas:
                 print_area(tour_surface, all_clients, fa.origin, fa.end)
         tour_surface.process.state = ProcessControl.WAIT
     handle_user_events(tour_surface.process)
+
     return tour_surface
 
 
@@ -129,28 +144,6 @@ def print_area(tour_surface, clients_inside, origin, end):
     pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, end.y), (end.x, end.y), 2)
     pygame.display.update()
     tour_surface.fps_clock.tick(30)
-
-
-def print_screen_set(surface, final_action, p_client_param=None, p_area_param=None, p_tour_param=None):
-    if p_client_param:
-        p_client_param[0] = surface
-        print_clients(*p_client_param)
-    if p_area_param:
-        p_area_param[0] = surface
-        print_area(*p_area_param)
-    if p_tour_param:
-        if len(p_tour_param) == 2:
-            p_tour_param.append(surface)
-        else:
-            p_tour_param[2] = surface
-        print_route(*p_tour_param)
-
-    if final_action == 'ExIt': exit(7)
-    elif final_action == 'HaLt':
-        surface.process.state = ProcessControl.WAIT
-        handle_user_events(surface.process)
-    else:
-        return surface
 
 
 def handle_user_events(process):
@@ -175,7 +168,7 @@ def handle_user_events(process):
                     break
 
 
-def intro():
+def intro(display_surface):
     wd6 = SETTINGS['width'] / 6
     hd6 = SETTINGS['height'] / 6
     center = Client(SETTINGS['width'] / 2, SETTINGS['height'] / 2)
@@ -188,7 +181,7 @@ def intro():
 
     order = (0, 1, 2, 3, 1, 4, 3, 0, 4)
 
-    intro_surface = print_screen_set(TourplannerSurface(), 'GoOn', [None, intro_clients, False])
+    intro_surface = TourplannerSurface(display_surface)
     for cx in range(len(order)):
         try:
             ax = order[cx]

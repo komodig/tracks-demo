@@ -2,31 +2,31 @@ from random import randrange
 from copy import deepcopy
 from time import sleep
 from client import Client, ClientsCollection, find_next, get_client_area
-from utils import load_clients_file, save_clients_file, load_json_file, export_clients_json
+from utils import load_clients_file, save_clients_file, load_json_file
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
 from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
 from tourplanner_test import edge_test_clients
-from tourplanner_graphics import print_route, print_area, print_clients, print_screen_set, \
+from tourplanner_graphics import print_route, print_area, pygame_init, \
         TourplannerSurface, handle_user_events, ProcessControl, intro
 from pygame import image, Surface # save image to disk
 from StringIO import StringIO     # save image to disk
 from PIL import Image             # save image to disk
 
 
-def do_routing(all_clients, tour):
+def do_routing(display_surface, all_clients, tour):
     best_tour = None
     for start_client in tour.clients:
         new_tour = Tour(tour.clients, [start_client,])
-        res_tour = find_best_route(all_clients, new_tour)
-        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour)
+        res_tour = find_best_route(display_surface, all_clients, new_tour)
+        if DISPLAY['routing']['best_starter']: print_route(display_surface, all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
     return best_tour
 
 
-def find_best_route(all_clients, tour):
+def find_best_route(display_surface, all_clients, tour):
     if tour.is_incomplete():
         other_tour = deepcopy(tour)
 
@@ -38,8 +38,8 @@ def find_best_route(all_clients, tour):
         else:
             tour.assign(next_client)
 
-        if DISPLAY['routing']['all']: print_route(all_clients, tour)
-        a = find_best_route(all_clients, tour)
+        if DISPLAY['routing']['all']: print_route(display_surface, all_clients, tour)
+        a = find_best_route(display_surface, all_clients, tour)
 
         next_next_client = find_next(next_client, other_tour, all_clients)
         if next_next_client is None:
@@ -47,7 +47,7 @@ def find_best_route(all_clients, tour):
         else:
             other_tour.assign(next_next_client)
             if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
-            b = find_best_route(all_clients, other_tour)
+            b = find_best_route(display_surface, all_clients, other_tour)
 
         return a if a < b else b
     else:
@@ -94,7 +94,7 @@ def areas_with_client_count(all_clients, count):
     return wanted_areas
 
 
-def calculate_all_tours(all_clients):
+def calculate_all_tours(display_surface, all_clients):
     avg = len(all_clients.clients) / pow(1 / all_clients.factor, 2)
     print('\nstart final routing (avg: %d)\n' % avg)
     for final_area in all_clients.get_valid_areas():
@@ -107,12 +107,12 @@ def calculate_all_tours(all_clients):
 
         # here area -> tours needed
         final_tour = Tour(final_area.clients)
-        best_tour = do_routing(all_clients, final_tour)
+        best_tour = do_routing(display_surface, all_clients, final_tour)
         print('best tour length: %f (%d clients)' % (best_tour.length(), len(best_tour.plan)))
         final_area.tours = [best_tour,]
         all_clients.final_areas.append(final_area)
 
-        handle_user_events(surface.process)
+#        handle_user_events(surface.process)
 
 
 def statistics(all_clients, replay=False):
@@ -184,22 +184,20 @@ def export_as_file(surface, fs_path):
 
 
 if __name__ == '__main__':
-    if DISPLAY['intro']: intro()
-
     print('init %d clients' % SETTINGS['clients'])
-    surface = TourplannerSurface()
+    display_surface = pygame_init()
+    if DISPLAY['intro']: intro(display_surface)
+    
     base_clients = load_clients_list()   #get_user_clients()
-    export_clients_json(base_clients)
     collection = ClientsCollection(base_clients, 1, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
     area = Area(Client(0,0), Client(SETTINGS['width'], SETTINGS['height']))
     collection.small_areas = [area,]
     area.add_clients_in_area(collection)
     statistics(collection)
-    calculate_all_tours(collection)
-    print_route(collection, collection.final_areas[-1].tours[-1])
+    calculate_all_tours(display_surface, collection)
 
-    surface.change_color('color2')
-    print_screen_set(surface, 'GoOn', [None, collection.clients] , None, [collection, collection.final_areas[-1].tours[-1]])
+    collection.final_print = True
+    surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
 
     export_as_file(surface, '/tmp/pygame.png')
 
