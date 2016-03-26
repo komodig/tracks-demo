@@ -7,8 +7,7 @@ from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
 from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
 from tourplanner_test import edge_test_clients
-from tourplanner_graphics import print_route, print_area, pygame_init, \
-        TourplannerSurface, handle_user_events, ProcessControl, intro
+from tourplanner_graphics import print_route, print_area, graphics_init, intro
 
 
 def do_routing(display_surface, all_clients, tour):
@@ -109,8 +108,6 @@ def calculate_all_tours(display_surface, all_clients):
         final_area.tours = [best_tour,]
         all_clients.final_areas.append(final_area)
 
-#        handle_user_events(surface.process)
-
 
 def statistics(all_clients, replay=False):
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
@@ -176,7 +173,7 @@ def check_clients_unique(clients_collection):
 
 if __name__ == '__main__':
     print('init %d clients' % SETTINGS['clients'])
-    display_surface = pygame_init()
+    display_surface = graphics_init()
     if DISPLAY['intro']: intro(display_surface)
 
     base_clients = load_clients_list()   #get_user_clients()
@@ -191,8 +188,4 @@ if __name__ == '__main__':
     surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
 
     export_as_file(surface, '/tmp/pygame.png')
-
-    #surface.process.state = ProcessControl.WAIT
-    #handle_user_events(surface.process)
-
 

@@ -1,63 +1,45 @@
 from time import sleep
-import pygame
+from pygame import display, SRCALPHA, Color, Surface, draw, time as pygame_time, init as pygame_init
 from pygame.locals import *
 from config import SETTINGS, INFO, DISPLAY
 from client import Client
 from copy import copy
 from utils import export_as_file
 
-class ProcessControl():
-    WAIT  = 0
-    RUN   = 1
-    PAUSE = 2
-
-    def __init__(self):
-        self.state = ProcessControl.RUN
-
 
 class TourplannerSurface():
     def __init__(self, display_surface, show_msg=False):
-        self.show_msg = show_msg
-        self.client_color = pygame.Color(*DISPLAY['color']['spot'])
-        self.route_color = pygame.Color(*DISPLAY['color']['line'])
-        self.emph_color = pygame.Color(255,255,255)
-        self.fps_clock = pygame.time.Clock()
-        self.surface = pygame.Surface(display_surface.get_size(), pygame.SRCALPHA, 32)
+        self.client_color = Color(*DISPLAY['color']['spot'])
+        self.route_color = Color(*DISPLAY['color']['line'])
+        self.emph_color = Color(255,255,255)
+        self.fps_clock = pygame_time.Clock()
+        self.surface = Surface(display_surface.get_size(), SRCALPHA, 32)
 
         self.surface.fill((255,0,255))
         self.surface.set_colorkey((255,0,255))
         self.surface = self.surface.convert_alpha()
 
-        if self.show_msg:
-            self.font_color = pygame.Color(100,150,60)
-            self.font = pygame.font.Font('freesansbold.ttf', 24)
-            self.surface_msg = self.font.render(INFO['usage'], False, self.font_color)
-            self.msg_rect = self.surface_msg.get_rect()
-            self.msg_rect.topleft = (250,200)
-            display_surface.blit(self.surface_msg, self.msg_rect)
-
-        self.process = ProcessControl()
 
     def change_color(self, color_scheme):
-        self.client_color = pygame.Color(*DISPLAY[color_scheme]['spot'])
-        self.route_color = pygame.Color(*DISPLAY[color_scheme]['line'])
+        self.client_color = Color(*DISPLAY[color_scheme]['spot'])
+        self.route_color = Color(*DISPLAY[color_scheme]['line'])
 
 
-def pygame_init():
-    pygame.init()
-    surface = pygame.display.set_mode((SETTINGS['width'], SETTINGS['height']))
+def graphics_init():
+    pygame_init()
+    surface = display.set_mode((SETTINGS['width'], SETTINGS['height']))
 
     return surface
 
 
 def display_clear(display_surface):
     display_surface.fill((255,255,255))
-    pygame.display.update()
+    display.update()
 
 
 def display_update(display_surf, other_surf):
     display_surf.blit(other_surf.surface, (0,0))
-    pygame.display.update()
+    display.update()
     other_surf.fps_clock.tick(30)
 
 
@@ -77,7 +59,7 @@ def print_clients(tour_surface, clients, slow=False, circle=False):
     radius = 16 if circle else scaled_radius(**SETTINGS)
     color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
-        pygame.draw.circle(tour_surface.surface, color, client.coords(), radius, width)
+        draw.circle(tour_surface.surface, color, client.coords(), radius, width)
 
     return tour_surface
 
@@ -88,7 +70,7 @@ def print_earlier_tours(all_clients, surface):
         area_tour = earlier.tours[-1]
         for assigned in area_tour.plan:
             if previous is not None:
-                pygame.draw.line(surface.surface, surface.route_color, previous.coords(), assigned.coords(), 2)
+                draw.line(surface.surface, surface.route_color, previous.coords(), assigned.coords(), 2)
             previous = assigned
         previous = None
 
@@ -101,7 +83,6 @@ def print_route(display_surface, all_clients, tour):
         slowly = True
         all_clients.first_print = False
         sleep(2)
-        handle_user_events(tour_surface.process)
 
     if all_clients.final_print:
         tour_surface.change_color('color2')
@@ -115,7 +96,7 @@ def print_route(display_surface, all_clients, tour):
             continue
 #        print_earlier_tours(all_clients, tour_surface)
 #        tour_surface = print_clients(tour_surface, all_clients.clients, False)
-        pygame.draw.line(tour_surface.surface, tour_surface.route_color, prev.coords(), rcli.coords(), 2)
+        draw.line(tour_surface.surface, tour_surface.route_color, prev.coords(), rcli.coords(), 2)
         prev = rcli
 
     display_update(display_surface, tour_surface)
@@ -128,42 +109,18 @@ def print_route(display_surface, all_clients, tour):
             tour_surface.change_color('color2')
             for fa in all_clients.final_areas:
                 print_area(tour_surface, all_clients, fa.origin, fa.end)
-        #tour_surface.process.state = ProcessControl.WAIT
-    handle_user_events(tour_surface.process)
 
     return tour_surface
 
 
 def print_area(tour_surface, clients_inside, origin, end):
     if clients_inside: print_clients(tour_surface, clients_inside.clients, False)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (end.x, origin.y), (end.x, end.y), 2)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (origin.x, end.y), 2)
-    pygame.draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, end.y), (end.x, end.y), 2)
-    pygame.display.update()
+    draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
+    draw.line(tour_surface.surface, tour_surface.route_color, (end.x, origin.y), (end.x, end.y), 2)
+    draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (origin.x, end.y), 2)
+    draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, end.y), (end.x, end.y), 2)
+    display.update()
     tour_surface.fps_clock.tick(30)
-
-
-def handle_user_events(process):
-    while True:
-        event = pygame.event.poll()
-
-        if event.type == NOEVENT:
-            if process.state == ProcessControl.RUN:
-                break
-            elif process.state == ProcessControl.WAIT or process.state == ProcessControl.PAUSE:
-                sleep(1)
-        elif event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
-                pygame.quit()
-                exit(0)
-            elif event.key == K_SPACE:
-                if process.state == ProcessControl.RUN:
-                    print('  === paused ===')
-                    process.state = ProcessControl.PAUSE
-                elif process.state == ProcessControl.PAUSE:
-                    process.state = ProcessControl.RUN
-                    break
 
 
 def intro(display_surface):
@@ -186,14 +143,13 @@ def intro(display_surface):
             bx = order[cx + 1]
         except IndexError:
             sleep(3)
-            handle_user_events(intro_surface.process)
             return
 
         a = intro_clients[ax]
         b = intro_clients[bx]
-        pygame.draw.line(intro_surface.surface, intro_surface.route_color, (a.x, a.y), (b.x, b.y), 8)
+        draw.line(intro_surface.surface, intro_surface.route_color, (a.x, a.y), (b.x, b.y), 8)
         sleep(0.1)
-        pygame.display.update()
+        display.update()
         intro_surface.fps_clock.tick(30)
 
 
