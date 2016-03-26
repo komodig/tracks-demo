@@ -1,5 +1,5 @@
 from time import sleep
-from pygame import display, SRCALPHA, Color, Surface, draw, time as pygame_time, init as pygame_init
+from pygame import display, SRCALPHA, NOFRAME, Color, Surface, draw, time as pygame_time, init as pygame_init
 from pygame.locals import *
 from config import SETTINGS, INFO, DISPLAY
 from client import Client
@@ -27,20 +27,26 @@ class TourplannerSurface():
 
 def graphics_init():
     pygame_init()
-    surface = display.set_mode((SETTINGS['width'], SETTINGS['height']))
+    if DISPLAY['enable']:
+        surface = display.set_mode((SETTINGS['width'], SETTINGS['height']))
+    else:
+        surface = display.set_mode((SETTINGS['width'], SETTINGS['height']), NOFRAME)
 
     return surface
 
 
 def display_clear(display_surface):
     display_surface.fill((255,255,255))
-    display.update()
+    if DISPLAY['enable']:
+        display.update()
 
 
 def display_update(display_surf, other_surf):
     display_surf.blit(other_surf.surface, (0,0))
-    display.update()
-    other_surf.fps_clock.tick(30)
+
+    if DISPLAY['enable']:
+        display.update()
+        other_surf.fps_clock.tick(30)
 
 
 def scaled_radius(clients, cluster_size_min, cluster_size_max, width, height):

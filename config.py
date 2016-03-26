@@ -20,15 +20,8 @@ SETTINGS = {
 }
 
 
-OPTIMIZE = {
-    'shrink_areas': False,
-    'merge_areas': False,
-    'push_clients': False,
-    'steal_clients': False,
-}
-
-
 DISPLAY = {
+    'enable': False,
     'intro': False,
     'clients_intro': False,
     'areas': {

@@ -5,7 +5,7 @@ from client import Client, ClientsCollection, find_next, get_client_area
 from utils import load_clients_file, save_clients_file, load_json_file, export_as_file
 from tour import Tour
 from area import Area, get_clients_in_area, get_neighbours
-from config import SETTINGS, INFO, TEST, DISPLAY, OPTIMIZE
+from config import SETTINGS, INFO, TEST, DISPLAY
 from tourplanner_test import edge_test_clients
 from tourplanner_graphics import print_route, print_area, graphics_init, intro
 
