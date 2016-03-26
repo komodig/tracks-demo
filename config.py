@@ -21,7 +21,7 @@ SETTINGS = {
 
 
 DISPLAY = {
-    'enable': False,
+    'enable': True,
     'intro': False,
     'clients_intro': False,
     'areas': {
