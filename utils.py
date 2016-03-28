@@ -1,7 +1,8 @@
 import pickle
 import json
 from config import SETTINGS, INFO, FILES
-from pygame import image # save image to disk
+if DISPLAY['enable']:
+    from pygame import image # save image to disk
 
 
 class TourPlannerBase():
