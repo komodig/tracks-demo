@@ -140,14 +140,14 @@ def statistics(all_clients, replay=False):
             if cnt == SETTINGS['cluster_size_max']: print('- - - - - - - - - - - - - - - -')
 
 
-def serialize_final_route(tour):
-    tour_plan = {}
+def serialize_final_route(tour, counter):
+    tour_plan = {'counter': counter, 'spots': {}}
     prev = None
     for idx, rcli in enumerate(tour.plan):
         if not prev:
             prev = rcli
             continue
-        tour_plan[idx] = (prev.coords(), rcli.coords())
+        tour_plan['spots'][idx] = (prev.coords(), rcli.coords())
         prev = rcli
 
     return json.dumps(tour_plan)
@@ -184,29 +184,47 @@ def check_clients_unique(clients_collection):
         assert found == 1, 'FATAL! Client in multiple plans'
 
 
-def single_tour_serialized():
-    print('init %d clients' % SETTINGS['clients'])
+def single_tour_serialized(req_data=None):
     if DISPLAY['enable']: display_surface = graphics_init()
     else: display_surface = None
     if DISPLAY['intro']: intro(display_surface)
 
-    base_clients = load_clients_list()   #get_user_clients()
-    collection = ClientsCollection(base_clients, 1, SETTINGS['clients'], SETTINGS['width'], SETTINGS['height'])
-    area = Area(Client(0,0), Client(SETTINGS['width'], SETTINGS['height']))
+    if not req_data:
+        base_clients = load_clients_list()
+        client_count = SETTINGS['clients']
+        screen_width = SETTINGS['width']
+        screen_height = SETTINGS['height']
+    else:
+        base_clients = []
+        for k,v in req_data['spots'].items():
+            base_clients.append(Client(v['x'], v['y']))
+
+        client_count = req_data['counter']
+        screen_width = req_data['screen']['x']
+        screen_height = req_data['screen']['y']
+
+    if not base_clients:
+        return None
+
+    print base_clients
+
+    collection = ClientsCollection(base_clients, 1, client_count, screen_width, screen_height)
+    area = Area(Client(0,0), Client(screen_width, screen_height))
     collection.small_areas = [area,]
     area.add_clients_in_area(collection)
     statistics(collection)
     calculate_all_tours(display_surface, collection)
 
     collection.final_print = True
-    if DISPLAY['enable']: surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
-    else: tour_serialized = serialize_final_route(collection.final_areas[-1].tours[-1])
-    print tour_serialized
+    if DISPLAY['enable']:
+        surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
+    else:
+        return serialize_final_route(collection.final_areas[-1].tours[-1], client_count)
 
     if DISPLAY['enable']: export_as_file(surface, '/tmp/pygame.png')
 
 
 if __name__ == '__main__':
-    single_tour_serialized()
+    print(single_tour_serialized())
 
 
