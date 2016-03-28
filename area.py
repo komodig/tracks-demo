@@ -1,5 +1,6 @@
 from config import DISPLAY
-from tourplanner_graphics import print_area
+if DISPLAY['enable']:
+    from tourplanner_graphics import print_area
 
 class Area():
     def __init__(self, origin, end):

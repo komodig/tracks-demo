@@ -1,9 +1,3 @@
-from copy import copy
-from config import SETTINGS, DISPLAY
-from time import sleep
-from pygame import quit
-from client import Client, has_area, get_client_area
-
 
 class Tour():
     def __init__(self, clients, plan=None):

@@ -12,22 +12,22 @@ FILES = {
 
 
 SETTINGS = {
-    'clients': 5,
-    'cluster_size_min': 5,
-    'cluster_size_max': 5,
+    'clients': 9,
+    'cluster_size_min': 9,
+    'cluster_size_max': 9,
     'width': 1024,
     'height': 768,
 }
 
 
 DISPLAY = {
-    'enable': True,
+    'enable': False,
     'intro': False,
     'clients_intro': False,
     'areas': {
         'init': False,
-        'add_info': True,
-        'slow': True,
+        'add_info': False,
+        'slow': False,
         'merge': False,
         'client_push': False,
         'client_steal': False,
@@ -37,7 +37,7 @@ DISPLAY = {
     'routing': {
         'all': False,
         'slow': 0.5,
-        'best_starter': True,
+        'best_starter': False,
     },
     'clients': {
         'init': False,

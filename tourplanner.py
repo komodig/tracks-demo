@@ -1,13 +1,13 @@
 from random import randrange
+import json
 from copy import deepcopy
-from time import sleep
-from client import Client, ClientsCollection, find_next, get_client_area
+from client import Client, ClientsCollection, find_next
 from utils import load_clients_file, save_clients_file, load_json_file, export_as_file
 from tour import Tour
-from area import Area, get_clients_in_area, get_neighbours
+from area import Area
 from config import SETTINGS, INFO, TEST, DISPLAY
-from tourplanner_test import edge_test_clients
-from tourplanner_graphics import print_route, print_area, graphics_init, intro
+if DISPLAY['enable']:
+    from tourplanner_graphics import print_route, graphics_init, intro
 
 
 def do_routing(display_surface, all_clients, tour):
@@ -140,6 +140,19 @@ def statistics(all_clients, replay=False):
             if cnt == SETTINGS['cluster_size_max']: print('- - - - - - - - - - - - - - - -')
 
 
+def serialize_final_route(tour):
+    tour_plan = {}
+    prev = None
+    for idx, rcli in enumerate(tour.plan):
+        if not prev:
+            prev = rcli
+            continue
+        tour_plan[idx] = (prev.coords(), rcli.coords())
+        prev = rcli
+
+    return json.dumps(tour_plan)
+
+
 def load_clients_list():
     unpickled = load_clients_file()
     if unpickled is None:
@@ -171,9 +184,10 @@ def check_clients_unique(clients_collection):
         assert found == 1, 'FATAL! Client in multiple plans'
 
 
-if __name__ == '__main__':
+def single_tour_serialized():
     print('init %d clients' % SETTINGS['clients'])
-    display_surface = graphics_init()
+    if DISPLAY['enable']: display_surface = graphics_init()
+    else: display_surface = None
     if DISPLAY['intro']: intro(display_surface)
 
     base_clients = load_clients_list()   #get_user_clients()
@@ -185,7 +199,14 @@ if __name__ == '__main__':
     calculate_all_tours(display_surface, collection)
 
     collection.final_print = True
-    surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
+    if DISPLAY['enable']: surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
+    else: tour_serialized = serialize_final_route(collection.final_areas[-1].tours[-1])
+    print tour_serialized
 
-    export_as_file(surface, '/tmp/pygame.png')
+    if DISPLAY['enable']: export_as_file(surface, '/tmp/pygame.png')
+
+
+if __name__ == '__main__':
+    single_tour_serialized()
+
 
