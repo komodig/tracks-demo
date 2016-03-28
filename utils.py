@@ -1,6 +1,6 @@
 import pickle
 import json
-from config import SETTINGS, INFO, FILES
+from config import SETTINGS, INFO, FILES, DISPLAY
 if DISPLAY['enable']:
     from pygame import image # save image to disk
 

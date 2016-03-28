@@ -1,8 +1,8 @@
 from time import sleep
+from config import SETTINGS, INFO, DISPLAY
 if DISPLAY['enable']:
     from pygame import display, SRCALPHA, NOFRAME, Color, Surface, draw, time as pygame_time, init as pygame_init
     from pygame.locals import *
-from config import SETTINGS, INFO, DISPLAY
 from client import Client
 from copy import copy
 from utils import export_as_file
