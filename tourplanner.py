@@ -206,13 +206,11 @@ def single_tour_serialized(req_data=None):
     if not base_clients:
         return None
 
-    print base_clients
-
     collection = ClientsCollection(base_clients, 1, client_count, screen_width, screen_height)
     area = Area(Client(0,0), Client(screen_width, screen_height))
     collection.small_areas = [area,]
     area.add_clients_in_area(collection)
-    statistics(collection)
+    #statistics(collection)
     calculate_all_tours(display_surface, collection)
 
     collection.final_print = True
