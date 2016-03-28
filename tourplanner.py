@@ -140,8 +140,8 @@ def statistics(all_clients, replay=False):
             if cnt == SETTINGS['cluster_size_max']: print('- - - - - - - - - - - - - - - -')
 
 
-def serialize_final_route(tour, counter):
-    tour_plan = {'counter': counter, 'spots': {}}
+def serialize_final_route(tour, counter, error):
+    tour_plan = {'error': error, 'counter': counter, 'spots': {}}
     prev = None
     for idx, rcli in enumerate(tour.plan):
         if not prev:
@@ -184,7 +184,7 @@ def check_clients_unique(clients_collection):
         assert found == 1, 'FATAL! Client in multiple plans'
 
 
-def single_tour_serialized(req_data=None):
+def single_tour_serialized(req_data=None, maximum=10):
     if DISPLAY['enable']: display_surface = graphics_init()
     else: display_surface = None
     if DISPLAY['intro']: intro(display_surface)
@@ -194,14 +194,17 @@ def single_tour_serialized(req_data=None):
         client_count = SETTINGS['clients']
         screen_width = SETTINGS['width']
         screen_height = SETTINGS['height']
+        error_code = 0
     else:
         base_clients = []
         for k,v in req_data['spots'].items():
-            base_clients.append(Client(v['x'], v['y']))
+            if len(base_clients) < maximum:
+                base_clients.append(Client(v['x'], v['y']))
 
         client_count = req_data['counter']
         screen_width = req_data['screen']['x']
         screen_height = req_data['screen']['y']
+        error_code = req_data['error']
 
     if not base_clients:
         return None
@@ -217,7 +220,7 @@ def single_tour_serialized(req_data=None):
     if DISPLAY['enable']:
         surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
     else:
-        return serialize_final_route(collection.final_areas[-1].tours[-1], client_count)
+        return serialize_final_route(collection.final_areas[-1].tours[-1], client_count, error_code)
 
     if DISPLAY['enable']: export_as_file(surface, '/tmp/pygame.png')
 
