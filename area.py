@@ -29,7 +29,7 @@ class Area():
 
 
     def __repr__(self):
-        return ('%s' % self.clients)
+        return ('%s (%s x %s)' % (self.clients, self.origin, self.end))
 
 
     def add_clients_in_area(self, all_clients):

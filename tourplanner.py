@@ -112,7 +112,7 @@ def calculate_all_tours(display_surface, all_clients):
 def statistics(all_clients, replay=False):
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
-    area_count = len(all_clients.get_valid_areas())
+    area_count = len(all_clients.get_valid_areas(True))
     print(' %d areas/tours and %d clients' % (area_count, len(all_clients.clients)))
     fac = SETTINGS['clients'] / pow(1 / all_clients.factor, 2)
     print(' average of %d members (%d by factor)' % (get_average_members(all_clients), fac))
@@ -213,8 +213,9 @@ def single_tour_serialized(req_data=None, maximum=10):
     area = Area(Client(0,0), Client(screen_width, screen_height))
     collection.small_areas = [area,]
     area.add_clients_in_area(collection)
-    #statistics(collection)
     calculate_all_tours(display_surface, collection)
+    if DISPLAY['enable']:
+        statistics(collection)
 
     collection.final_print = True
     if DISPLAY['enable']:

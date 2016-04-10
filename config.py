@@ -21,12 +21,12 @@ SETTINGS = {
 
 
 DISPLAY = {
-    'enable': False,
+    'enable': True,
     'intro': False,
     'clients_intro': False,
     'areas': {
         'init': False,
-        'add_info': False,
+        'add_info': True,
         'slow': False,
         'merge': False,
         'client_push': False,

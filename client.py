@@ -74,8 +74,13 @@ class ClientsCollection():
         return total_length
 
 
-    def get_valid_areas(self):
-        return [ area for area in self.small_areas if area.valid ]
+    def get_valid_areas(self, info=False):
+        valid_areas = [ area for area in self.small_areas if area.valid ]
+        if info:
+            for va in valid_areas:
+                print(va)
+            print('%d valid areas' % len(valid_areas))
+        return valid_areas
 
 
     def areas_off_size(self):
