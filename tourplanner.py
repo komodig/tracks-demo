@@ -10,6 +10,7 @@ from config import SETTINGS, INFO, TEST, DISPLAY
 if DISPLAY['enable']:
     from tourplanner_graphics import print_route, graphics_init, intro
 
+
 class Counter():
     value = 0
 
@@ -36,16 +37,13 @@ def do_routing(display_surface, all_clients, tour):
 
 def find_best_route(display_surface, all_clients, tour, iterations):
     if tour.is_incomplete():
-        iterations.incr()
         other_tour = deepcopy(tour)
 
         latest = tour.get_last_assigned()
         assert latest, 'FATAL! No start_client found'
         next_client = find_next(latest, tour, all_clients)
-        if next_client is None:
-            return tour
-        else:
-            tour.assign(next_client)
+        assert next_client, 'FATAL! How can tour.plan be incomplete without next client?'
+        tour.assign(next_client)
 
         if DISPLAY['routing']['all']: print_route(display_surface, all_clients, tour)
         a = find_best_route(display_surface, all_clients, tour, iterations)
@@ -55,11 +53,12 @@ def find_best_route(display_surface, all_clients, tour, iterations):
             b = a
         else:
             other_tour.assign(next_next_client)
-            if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
+            if DISPLAY['routing']['all']: print_route(display_surface, all_clients, other_tour)
             b = find_best_route(display_surface, all_clients, other_tour, iterations)
 
         return a if a < b else b
     else:
+        iterations.incr()
         return tour
 
 
