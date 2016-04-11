@@ -1,4 +1,5 @@
 from random import randrange
+from math import factorial
 import json
 from copy import deepcopy
 from client import Client, ClientsCollection, find_next
@@ -9,21 +10,33 @@ from config import SETTINGS, INFO, TEST, DISPLAY
 if DISPLAY['enable']:
     from tourplanner_graphics import print_route, graphics_init, intro
 
+class Counter():
+    value = 0
+
+    def incr(self):
+        self.value += 1
+
 
 def do_routing(display_surface, all_clients, tour):
+    iterations = Counter()
     best_tour = None
+
     for start_client in tour.clients:
         new_tour = Tour(tour.clients, [start_client,])
-        res_tour = find_best_route(display_surface, all_clients, new_tour)
+        res_tour = find_best_route(display_surface, all_clients, new_tour, iterations)
         if DISPLAY['routing']['best_starter']: print_route(display_surface, all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
 
+    max_iterations = factorial(len(tour.clients))
+    print('%d of %d possible iterations' % (iterations.value, max_iterations))
+
     return best_tour
 
 
-def find_best_route(display_surface, all_clients, tour):
+def find_best_route(display_surface, all_clients, tour, iterations):
     if tour.is_incomplete():
+        iterations.incr()
         other_tour = deepcopy(tour)
 
         latest = tour.get_last_assigned()
@@ -35,7 +48,7 @@ def find_best_route(display_surface, all_clients, tour):
             tour.assign(next_client)
 
         if DISPLAY['routing']['all']: print_route(display_surface, all_clients, tour)
-        a = find_best_route(display_surface, all_clients, tour)
+        a = find_best_route(display_surface, all_clients, tour, iterations)
 
         next_next_client = find_next(next_client, other_tour, all_clients)
         if next_next_client is None:
@@ -43,7 +56,7 @@ def find_best_route(display_surface, all_clients, tour):
         else:
             other_tour.assign(next_next_client)
             if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
-            b = find_best_route(display_surface, all_clients, other_tour)
+            b = find_best_route(display_surface, all_clients, other_tour, iterations)
 
         return a if a < b else b
     else:
@@ -113,7 +126,7 @@ def statistics(all_clients, replay=False):
 #    if duplicates: print('avoided second tour calculation: %d' % duplicates)
 
     area_count = len(all_clients.get_valid_areas(True))
-    print(' %d areas/tours and %d clients' % (area_count, len(all_clients.clients)))
+    print('\n %d areas/tours and %d clients' % (area_count, len(all_clients.clients)))
     fac = SETTINGS['clients'] / pow(1 / all_clients.factor, 2)
     print(' average of %d members (%d by factor)' % (get_average_members(all_clients), fac))
     l_min, l_max = get_min_max_members(all_clients)
@@ -138,6 +151,7 @@ def statistics(all_clients, replay=False):
             if cnt == SETTINGS['cluster_size_min']: print('- - - - - - - - - - - - - - - -')
             print(' tours with size %d = %d' % (cnt, acount))
             if cnt == SETTINGS['cluster_size_max']: print('- - - - - - - - - - - - - - - -')
+    print('')
 
 
 def serialize_final_route(tour, counter, error):
@@ -227,6 +241,6 @@ def single_tour_serialized(req_data=None, maximum=10):
 
 
 if __name__ == '__main__':
-    print(single_tour_serialized())
+    single_tour_serialized()
 
 
