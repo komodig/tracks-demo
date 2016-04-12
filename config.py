@@ -13,12 +13,12 @@ FILES = {
 
 SETTINGS = {
     'clients': 9,
-    'cluster_size_min': 9,
-    'cluster_size_max': 9,
     'width': 1024,
     'height': 768,
 }
 
+SETTINGS['cluster_size_min'] = SETTINGS['clients']
+SETTINGS['cluster_size_max'] = SETTINGS['clients']
 
 DISPLAY = {
     'enable': True,
