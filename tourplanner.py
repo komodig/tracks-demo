@@ -28,7 +28,9 @@ def do_routing(display_surface, all_clients, tour):
         if DISPLAY['routing']['best_starter']: print_route(display_surface, all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
-            if DISPLAY['routing']['best']: print_route(display_surface, all_clients, best_tour)
+            if DISPLAY['routing']['best']:
+                print('new best tour: %f' % best_tour.length())
+                print_route(display_surface, all_clients, best_tour)
 
     max_iterations = factorial(len(tour.clients))
     print('%d of %d possible iterations' % (iterations.value, max_iterations))
