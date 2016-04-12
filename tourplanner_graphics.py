@@ -12,7 +12,7 @@ class TourplannerSurface():
     def __init__(self, display_surface, show_msg=False):
         self.client_color = Color(*DISPLAY['color']['spot'])
         self.route_color = Color(*DISPLAY['color']['line'])
-        self.emph_color = Color(255,255,255)
+        self.emph_color = Color(255,0,0)
         self.fps_clock = pygame_time.Clock()
         self.surface = Surface(display_surface.get_size(), SRCALPHA, 32)
 
@@ -61,12 +61,14 @@ def scaled_radius(clients, cluster_size_min, cluster_size_max, width, height):
         return 3
 
 
-def print_clients(tour_surface, clients, slow=False, circle=False):
+def print_clients(tour_surface, clients, slow=False, circle=False, tour=None):
     width = 2 if circle else 0
     radius = 16 if circle else scaled_radius(**SETTINGS)
     color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
         draw.circle(tour_surface.surface, color, client.coords(), radius, width)
+        if tour and client == tour.plan[0]:
+            draw.circle(tour_surface.surface, tour_surface.emph_color, client.coords(), 16, 2)
 
     return tour_surface
 
@@ -94,7 +96,7 @@ def print_route(display_surface, all_clients, tour):
     if all_clients.final_print:
         tour_surface.change_color('color2')
 
-    tour_surface = print_clients(tour_surface, all_clients.clients, False)
+    tour_surface = print_clients(tour_surface, tour.clients, False, False, tour)
 
     prev = None
     for rcli in tour.plan:
