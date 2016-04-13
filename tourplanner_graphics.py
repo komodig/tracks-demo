@@ -67,8 +67,14 @@ def print_clients(tour_surface, clients, slow=False, circle=False, tour=None):
     color = tour_surface.emph_color if circle else tour_surface.client_color
     for client in clients:
         draw.circle(tour_surface.surface, color, client.coords(), radius, width)
-        if tour and client == tour.plan[0]:
-            draw.circle(tour_surface.surface, tour_surface.emph_color, client.coords(), 16, 2)
+        if tour:
+            if client == tour.plan[0]:
+                draw.circle(tour_surface.surface, tour_surface.emph_color, client.coords(), 16, 2)
+
+            if DISPLAY['routing']['intersections']:
+                xing = tour.intersections()
+                for cli in xing:
+                    draw.circle(tour_surface.surface, tour_surface.emph_color, cli.coords(), 6, 1)
 
     return tour_surface
 

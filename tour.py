@@ -1,3 +1,5 @@
+from line import Line
+
 
 class Tour():
     def __init__(self, clients, plan=None):
@@ -43,3 +45,32 @@ class Tour():
     def is_incomplete(self):
         return True if len(self.plan) < len(self.clients) else False
 
+
+    def intersections(self):
+        lines = []
+        intersect = []
+
+        if len(self.plan) < 2:
+            return None
+
+        origin = self.plan[0]
+
+        for end in self.plan:
+            if end == self.plan[0]:
+                continue
+
+            new_line = Line(origin, end)
+            lines.append(new_line)
+            origin = end
+
+        for line1 in lines:
+            for line2 in lines:
+                if line1 == line2:
+                    continue
+
+                crossing = line1.intersection_with(line2)
+                if crossing:
+                    intersect.append(crossing)
+
+        print('%d intersections' % len(intersect))
+        return intersect
