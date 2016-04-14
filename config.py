@@ -21,15 +21,15 @@ SETTINGS['cluster_size_min'] = SETTINGS['clients']
 SETTINGS['cluster_size_max'] = SETTINGS['clients']
 
 DISPLAY = {
-    'enable': True,
+    'enable': False,
     'intro': False,
     'clients_intro': False,
     'routing': {
-        'all': True,
-        'slow': 0.5,
-        'best': True,
-        'best_starter': True,
-        'intersections': True,
+        'all': False,
+        'slow': 1,
+        'best': False,
+        'best_starter': False,
+        'intersections': False,
     },
     'clients': {
         'init': False,

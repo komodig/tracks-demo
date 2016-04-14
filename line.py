@@ -40,19 +40,10 @@ class Line():
         int_y = self.slope * int_x + self.addition
         intersect_coords = Client(int(int_x), int(int_y))
 
-        if self.within_line_boundary(intersect_coords):
+        if within_line_boundary(self, intersect_coords) and within_line_boundary(other_line, intersect_coords):
             return intersect_coords
         else:
             return None
-
-
-    def within_line_boundary(self, coords):
-        x_min = self.origin.x if self.origin.x < self.end.x else self.end.x
-        x_max = self.origin.x if self.origin.x > self.end.x else self.end.x
-        y_min = self.origin.y if self.origin.y < self.end.y else self.end.y
-        y_max = self.origin.y if self.origin.y > self.end.y else self.end.y
-
-        return True if x_min < coords.x < x_max and y_min < coords.y < y_max else False
 
 
     def calculate_and_verify(self):
@@ -63,4 +54,14 @@ class Line():
         assert y_val >= self.origin.y - 1 and y_val <= self.origin.y + 1, 'calculations incorrect for y: %d != %d' % (self.origin.y, y_val)
         y_val = m_val * self.end.x + n_val
         assert y_val >= self.end.y - 1 and y_val <= self.end.y + 1, 'calculations incorrect for y: %d != %d' % (self.end.y, y_val)
+
+
+def within_line_boundary(line, coords):
+    x_min = line.origin.x if line.origin.x < line.end.x else line.end.x
+    x_max = line.origin.x if line.origin.x > line.end.x else line.end.x
+    y_min = line.origin.y if line.origin.y < line.end.y else line.end.y
+    y_max = line.origin.y if line.origin.y > line.end.y else line.end.y
+
+    return True if x_min < coords.x < x_max and y_min < coords.y < y_max else False
+
 

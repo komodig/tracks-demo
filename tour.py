@@ -70,8 +70,8 @@ class Tour():
                 line2 = lines[it2]
                 crossing = line1.intersection_with(line2)
                 if crossing:
-                    if DISPLAY['routing']['intersections']:
-                        print('intersection:  %s  X  %s  @  %s' % (line1, line2, crossing))
+                    #if DISPLAY['routing']['intersections']:
+                    #    print('intersection:  %s  X  %s  @  %s' % (line1, line2, crossing))
                     intersect.append(crossing)
 
         return intersect

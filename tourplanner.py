@@ -19,8 +19,8 @@ class Counter():
         self.value += 1
 
     def another_break_up(self):
-        if DISPLAY['enable']: print('iteration break-up!')
         self.break_ups += 1
+        if DISPLAY['enable']: print('iteration break-up %d' % self.break_ups)
 
 
 def do_routing(display_surface, all_clients, tour):
@@ -31,7 +31,7 @@ def do_routing(display_surface, all_clients, tour):
         new_tour = Tour(tour.clients, [start_client,])
         res_tour = find_best_route(display_surface, all_clients, new_tour, iterations)
 
-        if not res_tour or res_tour.intersections():
+        if not res_tour:
             continue
 
         if DISPLAY['routing']['best_starter']: print_route(display_surface, all_clients, res_tour)
@@ -81,6 +81,10 @@ def find_best_route(display_surface, all_clients, tour, iterations):
         else:
             return a if a < b else b
     else:
+        if tour.intersections():
+            iterations.another_break_up()
+            return None
+
         iterations.incr()
         return tour
 
