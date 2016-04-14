@@ -25,6 +25,10 @@ def do_routing(display_surface, all_clients, tour):
     for start_client in tour.clients:
         new_tour = Tour(tour.clients, [start_client,])
         res_tour = find_best_route(display_surface, all_clients, new_tour, iterations)
+
+        if not res_tour or res_tour.intersections():
+            continue
+
         if DISPLAY['routing']['best_starter']: print_route(display_surface, all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
@@ -40,6 +44,10 @@ def do_routing(display_surface, all_clients, tour):
 
 def find_best_route(display_surface, all_clients, tour, iterations):
     if tour.is_incomplete():
+        if tour.intersections():
+            print('not continuing with intersections!')
+            return None
+
         other_tour = deepcopy(tour)
 
         latest = tour.get_last_assigned()
@@ -59,7 +67,14 @@ def find_best_route(display_surface, all_clients, tour, iterations):
             if DISPLAY['routing']['all']: print_route(display_surface, all_clients, other_tour)
             b = find_best_route(display_surface, all_clients, other_tour, iterations)
 
-        return a if a < b else b
+        if a is None and b is None:
+            return None
+        elif b is None:
+            return a
+        elif a is None:
+            return b
+        else:
+            return a if a < b else b
     else:
         iterations.incr()
         return tour

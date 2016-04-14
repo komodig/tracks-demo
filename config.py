@@ -39,7 +39,7 @@ DISPLAY = {
         'slow': 1,
         'best': False,
         'best_starter': False,
-        'intersections': True,
+        'intersections': False,
     },
     'clients': {
         'init': False,
