@@ -1,4 +1,5 @@
 from line import Line
+from config import DISPLAY
 
 
 class Tour():
@@ -69,8 +70,8 @@ class Tour():
                 line2 = lines[it2]
                 crossing = line1.intersection_with(line2)
                 if crossing:
-                    print('%s  X  %s  @  %s' % (line1, line2, crossing))
+                    if DISPLAY['routing']['intersections']:
+                        print('intersection:  %s  X  %s  @  %s' % (line1, line2, crossing))
                     intersect.append(crossing)
 
-        print('%d intersections' % len(intersect))
         return intersect
