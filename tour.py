@@ -60,7 +60,6 @@ class Tour():
                 continue
 
             new_line = Line(origin, end)
-            print(new_line)
             lines.append(new_line)
             origin = end
 
