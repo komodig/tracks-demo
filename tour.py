@@ -60,14 +60,14 @@ class Tour():
                 continue
 
             new_line = Line(origin, end)
+            print(new_line)
             lines.append(new_line)
             origin = end
 
-        for line1 in lines:
-            for line2 in lines:
-                if line1 == line2:
-                    continue
-
+        for it1 in range(len(lines)):
+            line1 = lines[it1]
+            for it2 in range(it1 + 1, len(lines)):
+                line2 = lines[it2]
                 crossing = line1.intersection_with(line2)
                 if crossing:
                     print('%s  X  %s  @  %s' % (line1, line2, crossing))
