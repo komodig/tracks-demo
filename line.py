@@ -8,6 +8,7 @@ class Line():
         self.slope = None           # m
         self.addition = None        # n
                                     # f(x) = m * x + n
+        self.verify_calculations()
 
     def __repr__(self):
         return '%s -> %s' % (self.origin, self.end)
@@ -52,3 +53,17 @@ class Line():
         y_max = self.origin.y if self.origin.y > self.end.y else self.end.y
 
         return True if x_min < coords.x < x_max and y_min < coords.y < y_max else False
+
+
+    def verify_calculations(self):
+        m_val = self.get_slope()
+        n_val = self.get_addition()
+
+        y_val = m_val * self.origin.x + n_val
+        if y_val != self.origin.y:
+            print(self)
+            print('calculations incorrect for y: %d != %d' % (self.origin.y, y_val))
+        y_val = m_val * self.end.x + n_val
+        if y_val != self.end.y:
+            print(self)
+            print('calculations incorrect for y: %d != %d' % (self.end.y, y_val))
