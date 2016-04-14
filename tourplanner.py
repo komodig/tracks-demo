@@ -13,9 +13,14 @@ if DISPLAY['enable']:
 
 class Counter():
     value = 0
+    break_ups = 0
 
     def incr(self):
         self.value += 1
+
+    def another_break_up(self):
+        if DISPLAY['enable']: print('iteration break-up!')
+        self.break_ups += 1
 
 
 def do_routing(display_surface, all_clients, tour):
@@ -37,7 +42,7 @@ def do_routing(display_surface, all_clients, tour):
                 print_route(display_surface, all_clients, best_tour)
 
     max_iterations = factorial(len(tour.clients))
-    print('%d of %d possible iterations' % (iterations.value, max_iterations))
+    print('%d of %d possible iterations (%d dis-continued)' % (iterations.value, max_iterations, iterations.break_ups))
 
     return best_tour
 
@@ -45,7 +50,7 @@ def do_routing(display_surface, all_clients, tour):
 def find_best_route(display_surface, all_clients, tour, iterations):
     if tour.is_incomplete():
         if tour.intersections():
-            print('not continuing with intersections!')
+            iterations.another_break_up()
             return None
 
         other_tour = deepcopy(tour)
