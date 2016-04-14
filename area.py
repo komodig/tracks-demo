@@ -1,7 +1,3 @@
-from config import DISPLAY
-if DISPLAY['enable']:
-    from tourplanner_graphics import print_area
-
 class Area():
     def __init__(self, origin, end):
         self.origin = origin
@@ -35,8 +31,6 @@ class Area():
     def add_clients_in_area(self, all_clients):
         self.clients = get_clients_in_area(self, all_clients)
         assert len(self.clients), 'FATAL! there should be clients in this area'
-        if DISPLAY['areas']['add_info']: print('%d clients in area: ORIG(%d,%d) END(%d,%d) (%d x %d)' % \
-                (len(self.clients), self.origin.x, self.origin.y, self.end.x, self.end.y, self.width, self.height))
 
 
 def located_in_area(client, area):
@@ -61,7 +55,5 @@ def get_neighbours(area, all_clients, surface):
                 (xa.origin.x == area.origin.x and xa.origin.y == area.end.y) or \
                 (xa.end.x == area.origin.x and xa.end.y == area.end.y):
             neighbours.append(xa)
-    for show in neighbours:
-        if DISPLAY['areas']['merge']: print_area(surface, all_clients, show.origin, show.end)
 
     return neighbours

@@ -24,22 +24,12 @@ DISPLAY = {
     'enable': True,
     'intro': False,
     'clients_intro': False,
-    'areas': {
-        'init': False,
-        'add_info': True,
-        'slow': False,
-        'merge': False,
-        'client_push': False,
-        'client_steal': False,
-        'unite_info': False,
-        'show_final': False,  # inaccurate when final merged area is not a rectangle
-    },
     'routing': {
-        'all': False,
-        'slow': 1,
-        'best': False,
-        'best_starter': False,
-        'intersections': False,
+        'all': True,
+        'slow': 0.5,
+        'best': True,
+        'best_starter': True,
+        'intersections': True,
     },
     'clients': {
         'init': False,

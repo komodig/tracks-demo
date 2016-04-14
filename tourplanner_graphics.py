@@ -79,17 +79,6 @@ def print_clients(tour_surface, clients, slow=False, circle=False, tour=None):
     return tour_surface
 
 
-def print_earlier_tours(all_clients, surface):
-    previous = None
-    for earlier in all_clients.final_areas:
-        area_tour = earlier.tours[-1]
-        for assigned in area_tour.plan:
-            if previous is not None:
-                draw.line(surface.surface, surface.route_color, previous.coords(), assigned.coords(), 2)
-            previous = assigned
-        previous = None
-
-
 def print_route(display_surface, all_clients, tour):
     display_clear(display_surface)
     slowly = False
@@ -109,8 +98,7 @@ def print_route(display_surface, all_clients, tour):
         if not prev:
             prev = rcli
             continue
-#        print_earlier_tours(all_clients, tour_surface)
-#        tour_surface = print_clients(tour_surface, all_clients.clients, False)
+
         draw.line(tour_surface.surface, tour_surface.route_color, prev.coords(), rcli.coords(), 2)
         prev = rcli
 
@@ -118,12 +106,6 @@ def print_route(display_surface, all_clients, tour):
     seconds = DISPLAY['routing']['slow']
     if seconds:
         sleep(seconds)
-
-    if all_clients.final_print:
-        if DISPLAY['areas']['show_final']:
-            tour_surface.change_color('color2')
-            for fa in all_clients.final_areas:
-                print_area(tour_surface, all_clients, fa.origin, fa.end)
 
     return tour_surface
 
