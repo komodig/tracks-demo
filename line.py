@@ -37,7 +37,18 @@ class Line():
 
         int_x = (other_line.get_addition() - self.get_addition()) / (self.get_slope() - other_line.get_slope())
         int_y = self.slope * int_x + self.addition
+        intersect_coords = Client(int_x, int_y)
 
-        return Client(int_x, int_y) 
+        if self.within_line_boundary(intersect_coords):
+            return intersect_coords
+        else:
+            return None
 
 
+    def within_line_boundary(self, coords):
+        x_min = self.origin.x if self.origin.x < self.end.x else self.end.x
+        x_max = self.origin.x if self.origin.x > self.end.x else self.end.x
+        y_min = self.origin.y if self.origin.y < self.end.y else self.end.y
+        y_max = self.origin.y if self.origin.y > self.end.y else self.end.y
+
+        return True if x_min < coords.x < x_max and y_min < coords.y < y_max else False

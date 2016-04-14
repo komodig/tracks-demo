@@ -70,6 +70,7 @@ class Tour():
 
                 crossing = line1.intersection_with(line2)
                 if crossing:
+                    print('%s  X  %s  @  %s' % (line1, line2, crossing))
                     intersect.append(crossing)
 
         print('%d intersections' % len(intersect))
