@@ -8,7 +8,7 @@ class Line():
         self.slope = None           # m
         self.addition = None        # n
                                     # f(x) = m * x + n
-        self.verify_calculations()
+        self.calculate_and_verify()
 
     def __repr__(self):
         return '%s -> %s' % (self.origin, self.end)
@@ -20,7 +20,7 @@ class Line():
 
     def get_slope(self):
         if not self.slope:
-            self.slope = (self.end.y - self.origin.y)/(self.end.x - self.origin.x)
+            self.slope = (self.end.y - self.origin.y)/float(self.end.x - self.origin.x)
 
         return self.slope
 
@@ -38,7 +38,7 @@ class Line():
 
         int_x = (other_line.get_addition() - self.get_addition()) / (self.get_slope() - other_line.get_slope())
         int_y = self.slope * int_x + self.addition
-        intersect_coords = Client(int_x, int_y)
+        intersect_coords = Client(int(int_x), int(int_y))
 
         if self.within_line_boundary(intersect_coords):
             return intersect_coords
@@ -55,15 +55,12 @@ class Line():
         return True if x_min < coords.x < x_max and y_min < coords.y < y_max else False
 
 
-    def verify_calculations(self):
+    def calculate_and_verify(self):
         m_val = self.get_slope()
         n_val = self.get_addition()
 
         y_val = m_val * self.origin.x + n_val
-        if y_val != self.origin.y:
-            print(self)
-            print('calculations incorrect for y: %d != %d' % (self.origin.y, y_val))
+        assert y_val >= self.origin.y - 1 and y_val <= self.origin.y + 1, 'calculations incorrect for y: %d != %d' % (self.origin.y, y_val)
         y_val = m_val * self.end.x + n_val
-        if y_val != self.end.y:
-            print(self)
-            print('calculations incorrect for y: %d != %d' % (self.end.y, y_val))
+        assert y_val >= self.end.y - 1 and y_val <= self.end.y + 1, 'calculations incorrect for y: %d != %d' % (self.end.y, y_val)
+
