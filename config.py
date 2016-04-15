@@ -1,7 +1,7 @@
 from random import randrange
 
 INFO = {
-    'version': '1.2.2',
+    'version': '1.5',
     'usage': 'use <ESC> to quit and <SPACE> to pause',
 }
 
@@ -12,7 +12,7 @@ FILES = {
 
 
 SETTINGS = {
-    'clients': 9,
+    'clients': 13,
     'width': 1024,
     'height': 768,
 }
@@ -21,15 +21,15 @@ SETTINGS['cluster_size_min'] = SETTINGS['clients']
 SETTINGS['cluster_size_max'] = SETTINGS['clients']
 
 DISPLAY = {
-    'enable': True,
+    'enable': False,
     'intro': False,
     'clients_intro': False,
     'routing': {
-        'all': True,
+        'all': False,
         'slow': 1,
         'best': False,
         'best_starter': False,
-        'intersections': True,
+        'intersections': False,
     },
     'clients': {
         'init': False,

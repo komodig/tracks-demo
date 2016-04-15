@@ -51,7 +51,7 @@ def load_clients_file():
             exit(1)
 
         base_hash = hash_client_list(unpickled.clients_list)
-        print("base clients hash: %d" % base_hash)
+        #print("base clients hash: %d" % base_hash)
         if unpickled.clients_hash != base_hash:
             print("\nFATAL! corrupt file (hash mismatch)\n")
             exit(1)

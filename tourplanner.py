@@ -132,7 +132,6 @@ def areas_with_client_count(all_clients, count):
 
 def calculate_all_tours(all_clients):
     avg = len(all_clients.clients) / pow(1 / all_clients.factor, 2)
-    print('\nstart final routing (avg: %d)\n' % avg)
     for final_area in all_clients.get_valid_areas():
         if len(final_area.tours):
             calculation = final_area.tours[-1]
@@ -225,7 +224,7 @@ def check_clients_unique(clients_collection):
         assert found == 1, 'FATAL! Client in multiple plans'
 
 
-def single_tour_serialized(req_data=None, maximum=10):
+def single_tour_serialized(req_data=None, maximum=13):
     if DISPLAY['enable']: display_surface = graphics_init()
     else: display_surface = None
     if DISPLAY['intro']: intro(display_surface)
