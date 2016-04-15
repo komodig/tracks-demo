@@ -47,8 +47,6 @@ def do_routing(all_clients, tour):
 
 
 def find_best_route(all_clients, tour, iterations):
-    assert all_clients.__module__ == 'client', 'FATAL! all_clients seems not to be ClientsCollection'
-
     if tour.is_incomplete():
         if tour.intersections():
             iterations.another_break_up()
