@@ -1,5 +1,4 @@
 from line import Line
-from config import DISPLAY
 
 
 class Tour():
@@ -47,8 +46,7 @@ class Tour():
         return True if len(self.plan) < len(self.clients) else False
 
 
-    def intersections(self, all_clients):
-        assert all_clients.__module__ == 'client', 'FATAL! all_clients seems not to be ClientsCollection'
+    def intersections(self):
         lines = []
         intersect = []
 
@@ -69,12 +67,10 @@ class Tour():
             line1 = lines[it1]
             for it2 in range(it1 + 1, len(lines)):
                 line2 = lines[it2]
-                crossing = line1.intersection_with(line2, all_clients)
-                if DISPLAY['routing']['intersections']:
-                    print('checking %s(%d) VS. %s(%d)' % (line1, it1, line2, it2))
+                crossing = line1.intersection_with(line2)
                 if crossing:
-                    if DISPLAY['routing']['intersections']:
-                        print('intersection:  %s  X  %s  @  %s' % (line1, line2, crossing))
+                    #if DISPLAY['routing']['intersections']:
+                    #    print('intersection:  %s  X  %s  @  %s' % (line1, line2, crossing))
                     intersect.append(crossing)
 
         return intersect

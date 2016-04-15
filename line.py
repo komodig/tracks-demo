@@ -1,7 +1,4 @@
-from config import DISPLAY
 from client import Client
-if DISPLAY['routing']['intersections']:
-    from tourplanner_graphics import print_area
 
 
 class Line():
@@ -36,16 +33,15 @@ class Line():
         return self.addition
 
 
-    def intersection_with(self, other_line, all_clients):
+    def intersection_with(self, other_line):
         if self.get_slope() == other_line.get_slope():
-            if DISPLAY['routing']['intersections']: print('same slope means no intersection')
             return None
 
         int_x = (other_line.get_addition() - self.get_addition()) / (self.get_slope() - other_line.get_slope())
         int_y = self.slope * int_x + self.addition
         intersect_coords = Client(int(int_x), int(int_y))
 
-        if within_line_boundary(self, intersect_coords, all_clients) and within_line_boundary(other_line, intersect_coords, all_clients):
+        if within_line_boundary(self, intersect_coords) and within_line_boundary(other_line, intersect_coords):
             return intersect_coords
         else:
             return None
@@ -61,14 +57,15 @@ class Line():
         assert y_val >= self.end.y - 1 and y_val <= self.end.y + 1, 'calculations incorrect for y: %d != %d' % (self.end.y, y_val)
 
 
-def within_line_boundary(line, coords, all_clients):
+def within_line_boundary(line, coords):
     x_min = line.origin.x if line.origin.x < line.end.x else line.end.x
     x_max = line.origin.x if line.origin.x > line.end.x else line.end.x
     y_min = line.origin.y if line.origin.y < line.end.y else line.end.y
     y_max = line.origin.y if line.origin.y > line.end.y else line.end.y
 
-    if DISPLAY['routing']['intersections']: print_area(all_clients, None, Client(x_min, y_min), Client(x_max, y_max))
+    if coords == line.end or coords == line.origin:
+        return False
 
-    return True if x_min < coords.x < x_max and y_min < coords.y < y_max else False
+    return True if x_min <= coords.x <= x_max and y_min <= coords.y <= y_max else False
 
 

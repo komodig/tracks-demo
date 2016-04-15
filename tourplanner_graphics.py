@@ -89,7 +89,7 @@ def print_route(all_clients, tour):
 
     tour_surface = print_clients(tour_surface, tour.clients, False, False, tour)
     if DISPLAY['routing']['intersections']:
-        xing = tour.intersections(all_clients)
+        xing = tour.intersections()
         for cli in xing:
             draw.circle(tour_surface.surface, tour_surface.emph_color, cli.coords(), 6, 1)
 
