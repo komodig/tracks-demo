@@ -71,15 +71,11 @@ def print_clients(tour_surface, clients, slow=False, circle=False, tour=None):
             if client == tour.plan[0]:
                 draw.circle(tour_surface.surface, tour_surface.emph_color, client.coords(), 16, 2)
 
-            if DISPLAY['routing']['intersections']:
-                xing = tour.intersections()
-                for cli in xing:
-                    draw.circle(tour_surface.surface, tour_surface.emph_color, cli.coords(), 6, 1)
-
     return tour_surface
 
 
-def print_route(display_surface, all_clients, tour):
+def print_route(all_clients, tour):
+    display_surface = all_clients.display_surface
     display_clear(display_surface)
     slowly = False
     tour_surface = TourplannerSurface(display_surface)
@@ -92,6 +88,10 @@ def print_route(display_surface, all_clients, tour):
         tour_surface.change_color('color2')
 
     tour_surface = print_clients(tour_surface, tour.clients, False, False, tour)
+    if DISPLAY['routing']['intersections']:
+        xing = tour.intersections(all_clients)
+        for cli in xing:
+            draw.circle(tour_surface.surface, tour_surface.emph_color, cli.coords(), 6, 1)
 
     prev = None
     for rcli in tour.plan:
@@ -110,14 +110,15 @@ def print_route(display_surface, all_clients, tour):
     return tour_surface
 
 
-def print_area(tour_surface, clients_inside, origin, end):
+def print_area(all_clients, clients_inside, origin, end):
+    assert all_clients.__module__ == 'client', 'FATAL! all_clients seems not to be ClientsCollection'
+    tour_surface = TourplannerSurface(all_clients.display_surface)
     if clients_inside: print_clients(tour_surface, clients_inside.clients, False)
     draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (end.x, origin.y), 2)
     draw.line(tour_surface.surface, tour_surface.route_color, (end.x, origin.y), (end.x, end.y), 2)
     draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, origin.y), (origin.x, end.y), 2)
     draw.line(tour_surface.surface, tour_surface.route_color, (origin.x, end.y), (end.x, end.y), 2)
-    display.update()
-    tour_surface.fps_clock.tick(30)
+    display_update(all_clients.display_surface, tour_surface)
 
 
 def intro(display_surface):

@@ -35,7 +35,8 @@ class Client():
 
 
 class ClientsCollection():
-    def __init__(self, clients, factor, num_of_clients, width, height):
+    def __init__(self, clients, factor, num_of_clients, surface):
+        self.display_surface = surface
         self.clients = clients
         self.factor = factor
         self.small_areas = []

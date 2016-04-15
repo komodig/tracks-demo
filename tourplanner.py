@@ -23,23 +23,23 @@ class Counter():
         if DISPLAY['enable']: print('iteration break-up %d' % self.break_ups)
 
 
-def do_routing(display_surface, all_clients, tour):
+def do_routing(all_clients, tour):
     iterations = Counter()
     best_tour = None
 
     for start_client in tour.clients:
         new_tour = Tour(tour.clients, [start_client,])
-        res_tour = find_best_route(display_surface, all_clients, new_tour, iterations)
+        res_tour = find_best_route(all_clients, new_tour, iterations)
 
         if not res_tour:
             continue
 
-        if DISPLAY['routing']['best_starter']: print_route(display_surface, all_clients, res_tour)
+        if DISPLAY['routing']['best_starter']: print_route(all_clients, res_tour)
         if best_tour is None or res_tour < best_tour:
             best_tour = res_tour
             if DISPLAY['routing']['best']:
                 print('new best tour: %f' % best_tour.length())
-                print_route(display_surface, all_clients, best_tour)
+                print_route(all_clients, best_tour)
 
     max_iterations = factorial(len(tour.clients))
     print('%d of %d possible iterations (%d dis-continued)' % (iterations.value, max_iterations, iterations.break_ups))
@@ -47,9 +47,11 @@ def do_routing(display_surface, all_clients, tour):
     return best_tour
 
 
-def find_best_route(display_surface, all_clients, tour, iterations):
+def find_best_route(all_clients, tour, iterations):
+    assert all_clients.__module__ == 'client', 'FATAL! all_clients seems not to be ClientsCollection'
+
     if tour.is_incomplete():
-        if tour.intersections():
+        if tour.intersections(all_clients):
             iterations.another_break_up()
             return None
 
@@ -61,16 +63,16 @@ def find_best_route(display_surface, all_clients, tour, iterations):
         assert next_client, 'FATAL! How can tour.plan be incomplete without next client?'
         tour.assign(next_client)
 
-        if DISPLAY['routing']['all']: print_route(display_surface, all_clients, tour)
-        a = find_best_route(display_surface, all_clients, tour, iterations)
+        if DISPLAY['routing']['all']: print_route(all_clients, tour)
+        a = find_best_route(all_clients, tour, iterations)
 
         next_next_client = find_next(next_client, other_tour, all_clients)
         if next_next_client is None:
             b = a
         else:
             other_tour.assign(next_next_client)
-            if DISPLAY['routing']['all']: print_route(display_surface, all_clients, other_tour)
-            b = find_best_route(display_surface, all_clients, other_tour, iterations)
+            if DISPLAY['routing']['all']: print_route(all_clients, other_tour)
+            b = find_best_route(all_clients, other_tour, iterations)
 
         if a is None and b is None:
             return None
@@ -81,7 +83,7 @@ def find_best_route(display_surface, all_clients, tour, iterations):
         else:
             return a if a < b else b
     else:
-        if tour.intersections():
+        if tour.intersections(all_clients):
             iterations.another_break_up()
             return None
 
@@ -129,7 +131,7 @@ def areas_with_client_count(all_clients, count):
     return wanted_areas
 
 
-def calculate_all_tours(display_surface, all_clients):
+def calculate_all_tours(all_clients):
     avg = len(all_clients.clients) / pow(1 / all_clients.factor, 2)
     print('\nstart final routing (avg: %d)\n' % avg)
     for final_area in all_clients.get_valid_areas():
@@ -142,7 +144,7 @@ def calculate_all_tours(display_surface, all_clients):
 
         # here area -> tours needed
         final_tour = Tour(final_area.clients)
-        best_tour = do_routing(display_surface, all_clients, final_tour)
+        best_tour = do_routing(all_clients, final_tour)
         print('best tour length: %f (%d clients)' % (best_tour.length(), len(best_tour.plan)))
         final_area.tours = [best_tour,]
         all_clients.final_areas.append(final_area)
@@ -249,17 +251,17 @@ def single_tour_serialized(req_data=None, maximum=10):
     if not base_clients:
         return None
 
-    collection = ClientsCollection(base_clients, 1, client_count, screen_width, screen_height)
+    collection = ClientsCollection(base_clients, 1, client_count, display_surface)
     area = Area(Client(0,0), Client(screen_width, screen_height))
     collection.small_areas = [area,]
     area.add_clients_in_area(collection)
-    calculate_all_tours(display_surface, collection)
+    calculate_all_tours(collection)
     if DISPLAY['enable']:
         statistics(collection)
 
     collection.final_print = True
     if DISPLAY['enable']:
-        surface = print_route(display_surface, collection, collection.final_areas[-1].tours[-1])
+        surface = print_route(collection, collection.final_areas[-1].tours[-1])
     else:
         return serialize_final_route(collection.final_areas[-1].tours[-1], client_count, error_code)
 

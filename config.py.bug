@@ -26,7 +26,7 @@ DISPLAY = {
     'clients_intro': False,
     'routing': {
         'all': True,
-        'slow': 0.5,
+        'slow': 1.5,
         'best': False,
         'best_starter': False,
         'intersections': True,
