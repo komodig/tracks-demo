@@ -15,8 +15,8 @@ SETTINGS = {
     'clients': 311,
     'cluster_size_min': 4,
     'cluster_size_max': 7,
-    'width': 1024,
-    'height':1024,
+    'width': 850,
+    'height':850,
 }
 
 
