@@ -42,7 +42,7 @@ class TourplannerSurface():
 
 def scaled_radius(clients, cluster_size_min, cluster_size_max, width, height):
     space_per_client = width * height / clients
-    print('space per client: %d' % space_per_client)
+    #print('space per client: %d' % space_per_client)
     if space_per_client < 500:
         return 1
     elif space_per_client < 1000:
@@ -199,3 +199,45 @@ def intro():
         intro_surface.fps_clock.tick(30)
 
 
+def draw_matrix(x_y_tuples, max_index, final):
+    wd6 = SETTINGS['width'] / 10
+    hd6 = SETTINGS['height'] / 10
+    intro_clients = []
+    #intro_clients.append(Client((x, y))
+
+    padding = 10
+    stretch_factor = 9
+    assert max_index * stretch_factor + padding < SETTINGS['height'], 'stretch_factor is most likely too big'
+
+    for xyt in x_y_tuples:
+        intro_clients.append(Client(xyt[0] * stretch_factor + wd6, xyt[1] * stretch_factor + hd6))
+
+    intro_surface = print_screen_set(TourplannerSurface(), 'GoOn', [None, intro_clients, False])
+
+    xy0 = (wd6 - padding, hd6 - padding)
+    xy1 = (max_index * stretch_factor + wd6 + padding, hd6 - padding)
+    xy2 = (max_index * stretch_factor + wd6 + padding, max_index * stretch_factor + hd6 + padding)
+    xy3 = (wd6 - padding, max_index * stretch_factor + hd6 + padding)
+
+    pygame.draw.line(intro_surface.surface, intro_surface.route_color, xy0 , xy1, 1)
+    pygame.draw.line(intro_surface.surface, intro_surface.route_color, xy1, xy2, 1)
+    pygame.draw.line(intro_surface.surface, intro_surface.route_color, xy2, xy3, 1)
+    pygame.draw.line(intro_surface.surface, intro_surface.route_color, xy2, xy3, 1)
+    pygame.draw.line(intro_surface.surface, intro_surface.route_color, xy3, xy0, 1)
+
+    for ic in range(len(intro_clients)):
+        a = intro_clients[ic]
+        try:
+            b = intro_clients[ic + 1]
+        except IndexError:
+            pass
+        else:
+            pygame.draw.line(intro_surface.surface, intro_surface.route_color, (a.x, a.y), (b.x, b.y), 3)
+        #    sleep(0.005)
+    pygame.display.update()
+    intro_surface.fps_clock.tick(30)
+    handle_user_events(intro_surface.process)
+
+    if final:
+        intro_surface.process.state = ProcessControl.PAUSE
+        handle_user_events(intro_surface.process)

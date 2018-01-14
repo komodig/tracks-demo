@@ -16,7 +16,7 @@ SETTINGS = {
     'cluster_size_min': 4,
     'cluster_size_max': 7,
     'width': 1024,
-    'height': 768,
+    'height':1024,
 }
 
 
