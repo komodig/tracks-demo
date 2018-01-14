@@ -21,6 +21,7 @@ do
         break
     fi
 
+    rm clients.bin
     sleep 2
     let runs++
 done
