@@ -39,6 +39,10 @@ class TourplannerSurface():
         self.client_color = pygame.Color(*DISPLAY[color_scheme]['spot'])
         self.route_color = pygame.Color(*DISPLAY[color_scheme]['line'])
 
+    def switch_color(self, theme='color4'):
+        self.client_color = pygame.Color(*DISPLAY[theme]['spot'])
+        self.route_color = pygame.Color(*DISPLAY[theme]['line'])
+
 
 def scaled_radius(clients, cluster_size_min, cluster_size_max, width, height):
     space_per_client = width * height / clients
