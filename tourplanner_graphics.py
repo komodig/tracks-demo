@@ -198,7 +198,7 @@ def intro():
         intro_surface.fps_clock.tick(30)
 
 
-def draw_matrix(x_y_tuples, max_index, final, draw_surface=None):
+def draw_matrix(x_y_tuples, max_index, draw_surface=None, final=False):
     wd6 = SETTINGS['width'] / 16
     hd6 = SETTINGS['height'] / 16
     intro_clients = []
