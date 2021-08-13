@@ -7,7 +7,7 @@ def edge_test_clients(all_clients):
     all_clients.clients[1].x = config.SETTINGS['width']
     all_clients.clients[2].y = 0
     all_clients.clients[3].y = config.SETTINGS['height']
-    print all_clients.clients[0:4]
+    print(all_clients.clients[0:4])
 
 
 def length_test_client_generator():
@@ -26,7 +26,7 @@ def length_test_client_generator():
     clients.append(client.Client(400, 10))
     clients.append(client.Client(450, 10))
     for it in clients:
-        print it
+        print(it)
     return clients
 
 
