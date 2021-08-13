@@ -12,11 +12,11 @@ FILES = {
 
 
 SETTINGS = {
-    'clients': 311,
+    'clients': 100,
     'cluster_size_min': 4,
     'cluster_size_max': 7,
-    'width': 850,
-    'height':850,
+    'width': 1600,
+    'height':1000,
 }
 
 
@@ -35,11 +35,11 @@ DISPLAY = {
         'init': False,
         'add_info': True,
         'slow': False,
-        'merge': False,
-        'client_push': False,
-        'client_steal': False,
-        'unite_info': False,
-        'show_final': False,  # inaccurate when final merged area is not a rectangle
+        'merge': True,
+        'client_push': True,
+        'client_steal': True,
+        'unite_info': True,
+        'show_final': True,  # inaccurate when final merged area is not a rectangle
     },
     'routing': {
         'all': False,
