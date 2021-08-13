@@ -2,6 +2,9 @@
 
 runs=1
 
+# remove not to show same again
+rm clients.bin
+
 while true
 do
     echo ""
